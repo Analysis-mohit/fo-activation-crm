@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FO Activation CRM — Wheelseye</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --purple-50:#EEEDFE; --purple-200:#AFA9EC; --purple-600:#534AB7; --purple-800:#3C3489;
+  --teal-50:#E1F5EE;   --teal-600:#0F6E56;   --teal-800:#085041;
+  --blue-50:#E6F1FB;   --blue-600:#185FA5;   --blue-800:#0C447C;
+  --amber-50:#FAEEDA;  --amber-600:#854F0B;  --amber-800:#633806;
+  --red-50:#FCEBEB;    --red-600:#A32D2D;    --red-800:#791F1F;
+  --green-50:#EAF3DE;  --green-600:#3B6D11;  --green-800:#27500A;
+  --gray-50:#F1EFE8;   --gray-200:#B4B2A9;   --gray-600:#5F5E5A;
+  --bg:#F7F6F2; --surface:#FFFFFF; --surface-2:#F1EFE8;
+  --border:rgba(0,0,0,.10); --border-md:rgba(0,0,0,.18);
+  --text-1:#1A1A18; --text-2:#5F5E5A; --text-3:#9A9890;
+  --r-md:8px; --r-lg:12px; --r-xl:16px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:'SF Mono','Fira Code','Courier New',monospace;
+  --topbar:52px;
+}
+body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-size:14px; line-height:1.5; height:100vh; overflow:hidden; }
+
+/* TOP BAR */
+.topbar { background:var(--surface); border-bottom:.5px solid var(--border); padding:0 1.25rem; height:var(--topbar); display:flex; align-items:center; gap:14px; position:fixed; top:0; left:0; right:0; z-index:200; }
+.brand  { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.brand-dot { width:26px; height:26px; border-radius:8px; background:var(--purple-600); display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:700; }
+.brand-name { font-size:13px; font-weight:600; } .brand-sub { font-size:10px; color:var(--text-3); }
+.top-search-wrap { flex:1; max-width:360px; position:relative; }
+.top-search-wrap svg.s-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); width:13px; height:13px; stroke:var(--text-3); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+.top-search-wrap input { width:100%; height:32px; padding:0 30px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); color:var(--text-1); font-size:12px; outline:none; transition:border-color .15s,box-shadow .15s; }
+.top-search-wrap input:focus { border-color:var(--purple-600); box-shadow:0 0 0 3px var(--purple-50); }
+.top-search-wrap input::placeholder { color:var(--text-3); }
+.top-clear-btn { position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--text-3); display:none; padding:2px; }
+.top-clear-btn svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; }
+.top-suggestions { position:absolute; top:calc(100% + 6px); left:0; right:0; background:var(--surface); border:.5px solid var(--border-md); border-radius:var(--r-lg); box-shadow:0 8px 24px rgba(0,0,0,.10); z-index:300; overflow:hidden; display:none; }
+.sug-item { padding:8px 12px; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:.5px solid var(--border); transition:background .1s; }
+.sug-item:last-child { border-bottom:none; } .sug-item:hover { background:var(--surface-2); }
+.sug-avatar { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; flex-shrink:0; }
+.sug-code { font-size:12px; font-weight:600; font-family:var(--mono); } .sug-rm { font-size:10px; color:var(--text-2); margin-top:1px; }
+.sug-right { margin-left:auto; text-align:right; flex-shrink:0; }
+.sug-pri { font-size:9px; font-weight:700; padding:1px 6px; border-radius:10px; display:inline-block; margin-bottom:2px; }
+.sug-call { font-size:10px; color:var(--text-3); }
+.sug-no-result { padding:10px 12px; font-size:12px; color:var(--text-3); text-align:center; }
+.status-bar { margin-left:auto; display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.status-chip { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-2); }
+.pulse-dot { width:7px; height:7px; border-radius:50%; background:var(--green-600); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.status-chip.error .pulse-dot { background:var(--red-600); animation:none; }
+.refresh-btn { height:28px; padding:0 10px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); color:var(--text-2); cursor:pointer; font-size:11px; display:flex; align-items:center; gap:5px; }
+.refresh-btn:hover { background:var(--surface-2); }
+.refresh-btn svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.refresh-btn.spinning svg { animation:spin .8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg);} }
+
+/* LAYOUT */
+.app-layout { display:grid; grid-template-columns:320px 1fr; height:calc(100vh - var(--topbar)); margin-top:var(--topbar); overflow:hidden; }
+
+/* LEFT PANEL */
+.lead-panel { display:flex; flex-direction:column; border-right:.5px solid var(--border); background:var(--surface); overflow:hidden; }
+.filter-bar { padding:.5rem .75rem; border-bottom:.5px solid var(--border); display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
+.filter-row { display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
+.filter-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); flex-shrink:0; width:40px; }
+.pri-btn { height:20px; padding:0 7px; border-radius:20px; font-size:9px; font-weight:700; border:.5px solid var(--border-md); background:var(--surface-2); cursor:pointer; color:var(--text-2); transition:all .1s; white-space:nowrap; }
+.pri-btn.a-all  { background:var(--text-1);  color:#fff; border-color:var(--text-1); }
+.pri-btn.a-p0   { background:var(--red-600);    color:#fff; border-color:var(--red-600); }
+.pri-btn.a-p1   { background:var(--purple-600); color:#fff; border-color:var(--purple-600); }
+.pri-btn.a-p2   { background:var(--amber-600);  color:#fff; border-color:var(--amber-600); }
+.pri-btn.a-p3   { background:var(--gray-600);   color:#fff; border-color:var(--gray-600); }
+.pri-btn.a-hot  { background:#C2500A; color:#fff; border-color:#C2500A; }
+.f-sel { height:22px; padding:0 6px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); color:var(--text-1); font-size:10px; cursor:pointer; outline:none; flex:1; min-width:58px; }
+.lead-search-wrap { padding:.3rem .75rem; border-bottom:.5px solid var(--border); flex-shrink:0; position:relative; }
+.lead-search-wrap svg { position:absolute; left:18px; top:50%; transform:translateY(-50%); width:12px; height:12px; stroke:var(--text-3); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+.lead-search { width:100%; height:26px; padding:0 8px 0 25px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface-2); font-size:12px; outline:none; }
+.lead-search:focus { background:var(--surface); border-color:var(--purple-600); box-shadow:0 0 0 2px var(--purple-50); }
+.lead-countbar { padding:.2rem .75rem; background:var(--surface-2); border-bottom:.5px solid var(--border); font-size:10px; color:var(--text-2); display:flex; justify-content:space-between; flex-shrink:0; }
+.lead-list { flex:1; overflow-y:auto; }
+.lead-list::-webkit-scrollbar { width:3px; }
+.lead-list::-webkit-scrollbar-thumb { background:var(--gray-200); border-radius:3px; }
+
+/* LEAD ROW */
+.lead-row { padding:.4rem .75rem; border-bottom:.5px solid var(--border); cursor:pointer; display:flex; align-items:flex-start; gap:7px; transition:background .1s; border-left:3px solid transparent; }
+.lead-row:hover  { background:var(--surface-2); }
+.lead-row.active { background:var(--purple-50); border-left-color:var(--purple-600); }
+.lead-row.is-hot { border-left-color:#C2500A; }
+.lead-row.is-hot.active { border-left-color:var(--purple-600); }
+.lead-rank { font-size:9px; color:var(--text-3); font-family:var(--mono); width:20px; text-align:right; flex-shrink:0; padding-top:3px; }
+.lead-body { flex:1; min-width:0; }
+.lead-top-row { display:flex; align-items:center; gap:4px; }
+.lead-code { font-size:12px; font-weight:700; font-family:var(--mono); letter-spacing:.3px; }
+.hot-dot { width:5px; height:5px; border-radius:50%; background:#C2500A; flex-shrink:0; display:inline-block; margin-bottom:1px; animation:pulse 1.5s infinite; }
+.lead-badges { display:flex; gap:3px; flex-wrap:wrap; margin-top:2px; }
+.lb { display:inline-block; padding:1px 5px; border-radius:10px; font-size:8px; font-weight:700; }
+.lb-p0{background:var(--red-50);color:var(--red-800);} .lb-p1{background:var(--purple-50);color:var(--purple-800);}
+.lb-p2{background:var(--amber-50);color:var(--amber-800);} .lb-p3{background:var(--gray-50);color:var(--gray-600);}
+.lb-rec-7{background:var(--green-50);color:var(--green-800);} .lb-rec-30{background:var(--amber-50);color:var(--amber-800);}
+.lb-rec-old{background:var(--gray-50);color:var(--gray-600);}
+.lb-dr-h{background:var(--blue-50);color:var(--blue-800);} .lb-dr-m{background:var(--teal-50);color:var(--teal-800);}
+.lb-dr-l{background:var(--gray-50);color:var(--gray-600);}
+.lb-hot{background:#FFF0E6;color:#C2500A;} .lb-sheet{background:var(--teal-50);color:var(--teal-800);}
+.lb-reddr{background:#FCEBEB;color:#7A1010;} .lb-lsb{background:#E6F1FB;color:#0C447C;} .lb-score{background:#EEEDFE;color:#3C3489;}
+.last-call-line { font-size:9px; color:var(--text-3); margin-top:2px; display:flex; align-items:center; gap:3px; }
+.call-dot-sm { width:4px; height:4px; border-radius:50%; flex-shrink:0; }
+.pagination { padding:.35rem .75rem; border-top:.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.pg-btn { height:22px; padding:0 8px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); font-size:10px; cursor:pointer; color:var(--text-2); }
+.pg-btn:hover:not(:disabled) { background:var(--surface-2); } .pg-btn:disabled { opacity:.4; cursor:default; }
+.pg-info { font-size:10px; color:var(--text-2); }
+
+/* RIGHT PANEL */
+.detail-panel { overflow-y:auto; background:var(--bg); }
+.detail-panel::-webkit-scrollbar { width:4px; }
+.detail-panel::-webkit-scrollbar-thumb { background:var(--gray-200); border-radius:4px; }
+.detail-inner { max-width:780px; margin:0 auto; padding:1rem 1.25rem 3rem; }
+.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:300px; padding:2rem; text-align:center; }
+.empty-state svg { width:36px; height:36px; stroke:var(--text-3); fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; margin-bottom:12px; }
+.empty-state h2 { font-size:14px; font-weight:600; margin-bottom:5px; } .empty-state p { font-size:12px; color:var(--text-2); }
+
+.section-lbl { font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text-3); margin-bottom:7px; display:flex; align-items:center; gap:5px; }
+
+/* PRIORITY CONTEXT */
+.pcc { border-radius:var(--r-xl); padding:.75rem 1.125rem; margin-bottom:.875rem; border:.5px solid; display:flex; align-items:center; gap:12px; }
+.pcc.p0{background:#FCEBEB;border-color:#E8BEBE;} .pcc.p1{background:var(--purple-50);border-color:var(--purple-200);}
+.pcc.p2{background:var(--amber-50);border-color:#EFD4A0;} .pcc.p3{background:var(--gray-50);border-color:var(--gray-200);}
+.pcc-badge { padding:3px 12px; border-radius:20px; font-size:13px; font-weight:800; flex-shrink:0; }
+.p0 .pcc-badge{background:#A32D2D;color:#fff;} .p1 .pcc-badge{background:var(--purple-600);color:#fff;}
+.p2 .pcc-badge{background:var(--amber-600);color:#fff;} .p3 .pcc-badge{background:var(--gray-600);color:#fff;}
+.pcc-body { flex:1; min-width:0; }
+.pcc-def { font-size:11px; font-weight:700; margin-bottom:5px; }
+.p0 .pcc-def{color:#791F1F;} .p1 .pcc-def{color:var(--purple-800);} .p2 .pcc-def{color:var(--amber-800);} .p3 .pcc-def{color:var(--gray-600);}
+.pcc-stats { display:flex; gap:12px; flex-wrap:wrap; }
+.pcc-stat { text-align:center; } .pcc-val { font-size:16px; font-weight:700; line-height:1; } .pcc-lbl { font-size:9px; color:var(--text-3); margin-top:2px; }
+.pcc-right { text-align:right; flex-shrink:0; }
+.pcc-rank { font-size:10px; color:var(--text-3); font-family:var(--mono); }
+.pcc-recency { font-size:10px; font-weight:600; margin-top:3px; }
+.rec-7{color:var(--green-600);} .rec-30{color:var(--amber-600);} .rec-old{color:var(--gray-600);}
+
+/* ══ HOT TODAY CARD (NEW) ══ */
+.hot-today-wrap { margin-bottom:.875rem; }
+.hot-today-card {
+  border-radius:var(--r-xl);
+  border:1.5px solid #D46B0A;
+  background:linear-gradient(135deg,#FFFAF4 0%,#FFF3E5 100%);
+  padding:.875rem 1.125rem;
+  overflow:hidden;
+}
+.htc-header { display:flex; align-items:center; gap:8px; margin-bottom:.75rem; }
+.htc-pulse { width:8px; height:8px; border-radius:50%; background:#C2500A; animation:pulse 1.4s infinite; flex-shrink:0; }
+.htc-title { font-size:11px; font-weight:800; color:#7A3006; letter-spacing:.5px; text-transform:uppercase; }
+.htc-time  { font-size:10px; color:#B06030; margin-left:auto; }
+.htc-grid  { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+.htc-grid.single { grid-template-columns:1fr; }
+.htc-box { background:rgba(255,255,255,.8); border:.5px solid rgba(194,80,10,.2); border-radius:var(--r-lg); padding:.625rem .875rem; }
+.htc-box-hdr { display:flex; align-items:center; gap:6px; margin-bottom:.5rem; }
+.htc-box-icon { font-size:14px; line-height:1; }
+.htc-box-ttl  { font-size:11px; font-weight:700; color:#6B3808; flex:1; }
+.htc-box-cnt  { font-size:9px; font-weight:700; background:#C2500A; color:#fff; padding:1px 6px; border-radius:10px; flex-shrink:0; }
+.htc-items { display:flex; flex-direction:column; gap:4px; }
+.htc-item { display:flex; gap:5px; align-items:flex-start; }
+.htc-item-dot { width:4px; height:4px; border-radius:50%; background:#C2500A; flex-shrink:0; margin-top:5px; }
+.htc-item-txt { font-size:11px; color:var(--text-2); line-height:1.4; flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.htc-item-txt b { color:var(--text-1); font-weight:600; }
+.htc-item-txt .amt { color:var(--green-600); font-weight:700; }
+.htc-empty { font-size:11px; color:#A07050; font-style:italic; }
+.htc-veh-list { display:flex; flex-wrap:wrap; gap:3px; }
+.htc-veh-pill { display:inline-flex; align-items:center; gap:3px; background:rgba(255,255,255,.9); border:.5px solid rgba(194,80,10,.2); border-radius:6px; padding:2px 6px; }
+.htc-veh-pill .vn { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--green-800); }
+.htc-veh-pill .vt { font-size:9px; color:var(--text-2); }
+
+/* PROFILE CARD */
+.profile-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); padding:.875rem 1.125rem; margin-bottom:.875rem; display:flex; align-items:center; gap:12px; }
+.profile-avatar { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; }
+.profile-body { flex:1; min-width:0; }
+.profile-code { font-size:17px; font-weight:700; font-family:var(--mono); cursor:pointer; letter-spacing:.4px; }
+.profile-code:hover { text-decoration:underline; }
+.profile-rm { font-size:12px; color:var(--text-2); margin-top:1px; }
+.profile-meta { display:flex; gap:5px; margin-top:5px; flex-wrap:wrap; }
+.badge { display:inline-flex; align-items:center; gap:3px; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:500; }
+.badge-teal{background:var(--teal-50);color:var(--teal-800);} .badge-purple{background:var(--purple-50);color:var(--purple-800);}
+.badge-amber{background:var(--amber-50);color:var(--amber-800);} .badge-red{background:var(--red-50);color:var(--red-800);}
+.badge-blue{background:var(--blue-50);color:var(--blue-800);} .badge-green{background:var(--green-50);color:var(--green-800);}
+.badge-gray{background:var(--gray-50);color:var(--gray-600);} .badge-sheet{background:var(--teal-50);color:var(--teal-800);}
+.score-block { text-align:center; flex-shrink:0; padding-left:12px; border-left:.5px solid var(--border); }
+.score-val { font-size:22px; font-weight:700; color:var(--purple-600); line-height:1; }
+.score-label { font-size:9px; color:var(--text-3); margin-top:3px; text-transform:uppercase; letter-spacing:.4px; }
+
+/* ACTION BANNER */
+.action-banner { border-radius:var(--r-xl); padding:.75rem 1.125rem; margin-bottom:.875rem; display:flex; align-items:center; gap:10px; background:var(--purple-50); border:.5px solid var(--purple-200); }
+.action-banner.warm{background:var(--amber-50);border-color:#EF9F27;} .action-banner.cold{background:var(--surface-2);border-color:var(--border-md);}
+.action-icon { width:30px; height:30px; border-radius:50%; flex-shrink:0; background:var(--purple-600); color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px; }
+.action-banner.warm .action-icon{background:var(--amber-600);} .action-banner.cold .action-icon{background:var(--gray-600);}
+.action-text { flex:1; min-width:0; }
+.action-title { font-size:12px; font-weight:700; } .action-sub { font-size:11px; color:var(--text-2); margin-top:2px; }
+.action-pitch { font-size:11px; margin-top:5px; background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-md); padding:4px 8px; }
+.action-pitch b { color:var(--purple-800); }
+
+/* METRICS */
+.metrics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:.875rem; }
+.metric-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-lg); padding:.6rem .75rem; }
+.metric-label { font-size:10px; color:var(--text-2); margin-bottom:2px; } .metric-val { font-size:20px; font-weight:700; line-height:1; } .metric-sub { font-size:9px; color:var(--text-3); margin-top:2px; }
+
+/* FUNNEL */
+.funnel-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; margin-bottom:.875rem; }
+.funnel-header { padding:.6rem 1.125rem; display:flex; align-items:center; justify-content:space-between; border-bottom:.5px solid var(--border); }
+.funnel-title { font-size:12px; font-weight:600; display:flex; align-items:center; gap:6px; } .funnel-hint { font-size:10px; color:var(--text-3); }
+.funnel-steps { display:flex; }
+.funnel-step { flex:1; padding:.6rem .875rem; text-align:center; border-right:.5px solid var(--border); }
+.funnel-step:last-child { border-right:none; }
+.funnel-step.clickable { cursor:pointer; transition:background .12s; }
+.funnel-step.clickable:hover { background:var(--purple-50); } .funnel-step.clickable.active { background:var(--purple-50); }
+.fs-label { font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+.fs-val { font-size:22px; font-weight:700; line-height:1; }
+.fs-val.blue{color:var(--blue-600);} .fs-val.purple{color:var(--purple-600);} .fs-val.green{color:var(--green-600);}
+.fs-hint { font-size:9px; color:var(--text-3); margin-top:3px; } .fs-hint-click { color:var(--purple-600); }
+.dr-drawer { display:none; border-top:.5px solid var(--border); } .dr-drawer.open { display:block; }
+.dr-drawer-header { padding:.5rem 1.125rem; display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border-bottom:.5px solid var(--border); }
+.dr-drawer-title { font-size:11px; font-weight:600; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.dr-close-btn { background:none; border:.5px solid var(--border-md); border-radius:var(--r-md); cursor:pointer; color:var(--text-2); width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; }
+.dr-close-btn:hover { background:var(--surface); }
+.dr-table-wrap { overflow-x:auto; } .dr-table { width:100%; border-collapse:collapse; font-size:12px; }
+.dr-table th { text-align:left; padding:6px 1.125rem; font-size:9px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--text-3); background:var(--surface-2); border-bottom:.5px solid var(--border); white-space:nowrap; }
+.dr-table td { padding:8px 1.125rem; border-bottom:.5px solid var(--border); vertical-align:middle; }
+.dr-table tr:last-child td { border-bottom:none; } .dr-table tr:hover td { background:var(--bg); }
+.did-txt { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--blue-600); cursor:pointer; } .did-txt:hover { text-decoration:underline; }
+.route-txt { font-size:11px; max-width:180px; line-height:1.4; } .meta-txt { font-size:10px; color:var(--text-2); white-space:nowrap; }
+.bid-in-row { font-size:12px; font-weight:700; color:var(--green-600); white-space:nowrap; } .bid-in-row.top3 { color:var(--amber-600); } .bid-none { font-size:10px; color:var(--text-3); }
+.tok-badge { padding:2px 6px; border-radius:20px; font-size:9px; font-weight:600; display:inline-block; white-space:nowrap; }
+.tok-paid{background:var(--green-50);color:var(--green-800);} .tok-open{background:var(--surface-2);color:var(--text-3);}
+.dr-empty { padding:1rem; text-align:center; color:var(--text-3); font-size:12px; }
+
+/* BOTTOM GRID */
+.bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:.875rem; margin-bottom:.875rem; }
+.info-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; }
+.info-card-title { font-size:11px; font-weight:600; display:flex; align-items:center; gap:5px; padding:.6rem 1.125rem; border-bottom:.5px solid var(--border); }
+.veh-stats { display:flex; padding:.6rem 1.125rem; border-bottom:.5px solid var(--border); }
+.veh-stat { flex:1; text-align:center; border-right:.5px solid var(--border); } .veh-stat:last-child { border-right:none; }
+.veh-val { font-size:18px; font-weight:700; } .veh-val.red{color:var(--red-600);} .veh-val.green{color:var(--green-600);}
+.veh-label { font-size:9px; color:var(--text-3); margin-top:2px; }
+.avail-section { padding:.5rem 1.125rem; border-bottom:.5px solid var(--border); }
+.avail-lbl { font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--text-3); margin-bottom:5px; display:flex; align-items:center; gap:4px; }
+.avail-lbl .dot { width:6px; height:6px; border-radius:50%; background:var(--green-600); animation:pulse 2s infinite; }
+.avail-list { display:flex; flex-wrap:wrap; gap:4px; max-height:80px; overflow-y:auto; }
+.veh-pill { display:inline-flex; align-items:center; gap:4px; background:var(--green-50); border:.5px solid #BFE08F; border-radius:7px; padding:2px 7px; cursor:pointer; }
+.veh-pill .vn { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--green-800); } .veh-pill .vt { font-size:9px; color:var(--text-2); }
+.avail-empty { font-size:11px; color:var(--text-3); }
+.tyre-section { padding:.625rem 1.125rem; }
+.tyre-section-lbl { font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--text-3); margin-bottom:7px; }
+.tyre-row { margin-bottom:7px; } .tyre-row:last-child { margin-bottom:0; }
+.tyre-row-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; }
+.tyre-name { font-size:11px; font-weight:600; } .tyre-counts { font-size:10px; color:var(--text-2); } .tyre-counts span { font-weight:700; color:var(--green-600); }
+.bar-track { height:4px; background:var(--surface-2); border-radius:4px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--green-600),var(--teal-600)); }
+
+/* LANE TABS */
+.lane-tabs { display:flex; border-bottom:.5px solid var(--border); }
+.lane-tab { flex:1; padding:.45rem .625rem; font-size:10px; font-weight:600; color:var(--text-3); background:none; border:none; cursor:pointer; border-bottom:2px solid transparent; transition:color .12s,border-color .12s; white-space:nowrap; font-family:var(--font); }
+.lane-tab:hover { color:var(--text-2); } .lane-tab.active { color:var(--purple-600); border-bottom-color:var(--purple-600); }
+.lane-cnt { display:inline-flex; align-items:center; justify-content:center; background:var(--purple-50); color:var(--purple-800); min-width:15px; height:15px; padding:0 3px; border-radius:8px; font-size:8px; font-weight:700; margin-left:3px; vertical-align:middle; }
+.lane-tab.active .lane-cnt { background:var(--purple-600); color:#fff; }
+.lane-body { display:none; padding:.625rem 1.125rem; max-height:260px; overflow-y:auto; } .lane-body.active { display:block; }
+.lane-card { border:.5px solid var(--border); border-radius:var(--r-md); padding:.45rem .75rem; margin-bottom:5px; background:var(--bg); } .lane-card:last-child { margin-bottom:0; }
+.lane-card.paid-card{border-color:var(--green-600);background:var(--green-50);} .lane-card.best-card{border-color:var(--amber-600);box-shadow:inset 3px 0 0 var(--amber-600);} .lane-card.lost-card{border-color:#E0B4B4;}
+.lane-card-top { display:flex; align-items:center; gap:6px; margin-bottom:2px; flex-wrap:wrap; }
+.lane-did { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--blue-600); cursor:pointer; } .lane-did:hover { text-decoration:underline; }
+.lane-route { font-size:12px; font-weight:600; line-height:1.3; }
+.lane-meta { display:flex; gap:7px; flex-wrap:wrap; margin-top:3px; align-items:center; } .lane-meta-item { font-size:10px; color:var(--text-2); }
+.lane-bid { font-size:12px; font-weight:700; color:var(--green-600); margin-left:auto; white-space:nowrap; } .lane-bid.none { color:var(--text-3); font-weight:500; }
+.lane-placed { font-size:11px; font-weight:700; color:var(--purple-800); white-space:nowrap; }
+.lane-offered { font-size:10px; color:var(--blue-600); font-weight:600; }
+.lane-empty { font-size:11px; color:var(--text-3); text-align:center; padding:1rem 0; }
+.pill { font-size:8px; font-weight:700; padding:1px 5px; border-radius:10px; }
+.pill-amber{background:var(--amber-50);color:var(--amber-800);} .pill-green{background:var(--green-50);color:var(--green-800);}
+.pill-red{background:var(--red-50);color:var(--red-800);} .pill-gray{background:var(--surface-2);color:var(--text-2);}
+.method-chip { padding:2px 6px; border-radius:20px; font-size:9px; font-weight:600; display:inline-block; }
+.method-chip.bidding{background:var(--blue-50);color:var(--blue-800);} .method-chip.matching{background:var(--green-50);color:var(--green-800);}
+.verdict-note { font-size:10px; margin-top:4px; font-weight:600; border-radius:5px; padding:3px 7px; }
+.verdict-note.bad { background:var(--red-50); color:var(--red-800); }
+.hist-card { cursor:pointer; } .hist-card .chev { font-size:10px; color:var(--text-3); transition:transform .15s; display:inline-block; }
+.hist-card.open .chev { transform:rotate(90deg); } .hist-card .hist-details { display:none; margin-top:5px; } .hist-card.open .hist-details { display:block; }
+.hist-cmp { margin-left:auto; font-size:10px; font-weight:700; color:var(--text-2); white-space:nowrap; }
+
+/* CALL HISTORY */
+.call-section { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; margin-bottom:.875rem; }
+.call-section-hdr { padding:.625rem 1.125rem; border-bottom:.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.call-section-title { font-size:11px; font-weight:600; display:flex; align-items:center; gap:5px; }
+.ch-table { width:100%; border-collapse:collapse; font-size:12px; }
+.ch-table th { text-align:left; padding:6px 1.125rem; font-size:9px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--text-3); background:var(--surface-2); border-bottom:.5px solid var(--border); white-space:nowrap; }
+.ch-table td { padding:8px 1.125rem; border-bottom:.5px solid var(--border); vertical-align:middle; }
+.ch-table tr:last-child td { border-bottom:none; } .ch-table tr:hover td { background:var(--bg); }
+.disp-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:600; white-space:nowrap; }
+.disp-conn{background:var(--green-50);color:var(--green-800);} .disp-notreach{background:var(--red-50);color:var(--red-800);}
+.disp-callback{background:var(--amber-50);color:var(--amber-800);} .disp-default{background:var(--surface-2);color:var(--text-2);}
+.call-empty { padding:1rem; text-align:center; color:var(--text-3); font-size:11px; }
+
+.toast { position:fixed; bottom:20px; right:20px; background:var(--text-1); color:#fff; border-radius:var(--r-md); padding:8px 14px; font-size:12px; z-index:9999; display:none; max-width:280px; box-shadow:0 4px 12px rgba(0,0,0,.18); }
+.toast.show { display:block; }
+.notice-bar { background:var(--amber-50); border-bottom:.5px solid #EF9F27; padding:7px 1.25rem; font-size:11px; color:var(--amber-800); display:none; }
+.notice-bar a { color:var(--amber-600); font-weight:600; cursor:pointer; }
+svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-2px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-dot">FO</div>
+    <div><div class="brand-name">FO Activation CRM</div><div class="brand-sub">Wheelseye · FO Growth</div></div>
+  </div>
+  <div class="top-search-wrap">
+    <svg class="s-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="topSearch" placeholder="Jump to operator code…" autocomplete="off" spellcheck="false"/>
+    <button class="top-clear-btn" id="topClearBtn"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div class="top-suggestions" id="topSuggestions"></div>
+  </div>
+  <div class="status-bar">
+    <div class="status-chip" id="statusChip"><div class="pulse-dot" id="pulseDot"></div><span id="statusText">Loading…</span></div>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
+      <svg id="refreshIcon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Refresh
+    </button>
+  </div>
+</header>
+
+<div class="notice-bar" id="noticeBanner">
+  ⚠️ Could not load data from Google Sheets. Make sure the sheet is shared as <b>"Anyone with the link can view"</b>. &nbsp;<a onclick="loadData()">Retry</a>
+</div>
+
+<div class="app-layout" id="appLayout" style="margin-top:var(--topbar)">
+
+  <!-- LEFT: LEAD LIST -->
+  <aside class="lead-panel">
+    <div class="filter-bar">
+      <div class="filter-row">
+        <span class="filter-lbl">Priority</span>
+        <button class="pri-btn a-all" data-pri="P0P1" title="P0 + P1 + all hot operators (default)">P0+P1+Hot</button>
+        <button class="pri-btn" data-pri="ALL" title="Show all 39K operators (slower)">All</button>
+        <button class="pri-btn" data-pri="P0">P0</button>
+        <button class="pri-btn" data-pri="P1">P1</button>
+        <button class="pri-btn" data-pri="P2">P2</button>
+        <button class="pri-btn" data-pri="P3">P3</button>
+        <button class="pri-btn" id="hotFilterBtn" data-pri="HOT" title="Bid today or vehicle available today">🔴 Hot</button>
+      </div>
+      <div class="filter-row">
+        <span class="filter-lbl">Filter</span>
+        <select class="f-sel" id="fRecency">
+          <option value="">All recency</option>
+          <option value="Last 7 days">Last 7d</option>
+          <option value="8-30 days">8–30d</option>
+          <option value="30+ days">30+ days</option>
+        </select>
+        <select class="f-sel" id="fDR">
+          <option value="">All DR tiers</option>
+          <option value="High DR">High DR</option>
+          <option value="Mid DR">Mid DR</option>
+          <option value="Low DR">Low DR</option>
+        </select>
+      </div>
+      <div class="filter-row">
+        <span class="filter-lbl">RM</span>
+        <select class="f-sel" id="fRM"><option value="">All RMs</option></select>
+        <select class="f-sel" id="fCalled">
+          <option value="">All statuses</option>
+          <option value="called">Called</option>
+          <option value="not_called">Not Called</option>
+        </select>
+      </div>
+    </div>
+    <div class="lead-search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="lead-search" id="leadSearch" placeholder="Filter by code or RM…" autocomplete="off">
+    </div>
+    <div class="lead-countbar">
+      <strong id="filteredCount">0</strong>&nbsp;leads
+      <span id="pageRangeInfo" style="color:var(--text-3)"></span>
+    </div>
+    <div class="lead-list" id="leadList">
+      <div style="padding:1.5rem;text-align:center;color:var(--text-3);font-size:12px" id="listPlaceholder">Loading leads…</div>
+    </div>
+    <div class="pagination">
+      <button class="pg-btn" id="prevBtn" onclick="changePage(-1)" disabled>← Prev</button>
+      <span class="pg-info" id="pageLabel">—</span>
+      <button class="pg-btn" id="nextBtn" onclick="changePage(1)" disabled>Next →</button>
+    </div>
+  </aside>
+
+  <!-- RIGHT: DETAIL -->
+  <main class="detail-panel" id="detailPanel">
+    <div class="detail-inner">
+
+      <div class="empty-state" id="emptyState">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <h2>Select a lead to view profile</h2>
+        <p>Click any operator from the list, or use the search bar to jump to one.</p>
+      </div>
+
+      <div id="profileSection" style="display:none">
+
+        <!-- 1. PRIORITY CONTEXT -->
+        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Activation Priority</div>
+        <div class="pcc" id="pccCard">
+          <div class="pcc-badge" id="pccBadge">P0</div>
+          <div class="pcc-body">
+            <div class="pcc-def" id="pccDef">—</div>
+            <div class="pcc-stats">
+              <div class="pcc-stat"><div class="pcc-val" id="pccLDPs">—</div><div class="pcc-lbl">Lifetime LDPs</div></div>
+              <div class="pcc-stat"><div class="pcc-val" id="pccToks">—</div><div class="pcc-lbl">Lifetime Tokens</div></div>
+              <div class="pcc-stat"><div class="pcc-val" id="pccDRs">—</div><div class="pcc-lbl">DR Appearances</div></div>
+              <div class="pcc-stat"><div class="pcc-val" id="pccTrips">—</div><div class="pcc-lbl">Lifetime Trips</div></div>
+            </div>
+          </div>
+          <div class="pcc-right">
+            <div class="pcc-rank" id="pccRank">Rank #—</div>
+            <div class="pcc-recency" id="pccRecency">—</div>
+          </div>
+        </div>
+
+        <!-- 2. HOT TODAY (new — shown only when bid_today or vehicle_available_today) -->
+        <div id="hotTodayWrap" style="display:none">
+          <div class="section-lbl" style="color:#8B4010">
+            <span style="font-size:12px;line-height:1">🔥</span>Active Today
+          </div>
+          <div class="hot-today-card">
+            <div class="htc-header">
+              <div class="htc-pulse"></div>
+              <div class="htc-title" id="htcTitle">—</div>
+              <div class="htc-time"  id="htcTime"></div>
+            </div>
+            <div class="htc-grid" id="htcGrid"><!-- populated by renderHotToday() --></div>
+          </div>
+        </div>
+
+        <!-- 3. OPERATOR PROFILE -->
+        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Operator</div>
+        <div class="profile-card">
+          <div class="profile-avatar" id="profileAvatar">OP</div>
+          <div class="profile-body">
+            <div class="profile-code" id="profileCode" title="Click to copy">—</div>
+            <div class="profile-rm"   id="profileRM">—</div>
+            <div class="profile-meta" id="profileMeta">
+              <span class="badge badge-teal" id="clusterBadge">—</span>
+            </div>
+          </div>
+          <div class="score-block">
+            <div class="score-val" id="scoreVal">—</div>
+            <div class="score-label">Activity Score<br><span style="color:var(--text-3)">last 15d</span></div>
+          </div>
+        </div>
+
+        <!-- 4. ACTION BANNER -->
+        <div class="action-banner" id="actionBanner">
+          <div class="action-icon" id="actionIcon">📞</div>
+          <div class="action-text">
+            <div class="action-title" id="actionTitle">—</div>
+            <div class="action-sub"   id="actionSub">—</div>
+            <div class="action-pitch" id="actionPitch" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- 5. ACTIVITY METRICS -->
+        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Activity — last 15 days</div>
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">VA days</div><div class="metric-val" id="vaDays">—</div><div class="metric-sub">vehicle available</div></div>
+          <div class="metric-card"><div class="metric-label">LDP days</div><div class="metric-val" id="ldpDays">—</div><div class="metric-sub">browsed loads</div></div>
+          <div class="metric-card"><div class="metric-label">Total LDPs</div><div class="metric-val" id="ldpCount">—</div><div class="metric-sub">load detail views</div></div>
+          <div class="metric-card"><div class="metric-label">Tokens paid</div><div class="metric-val" id="tokenCount">—</div><div class="metric-sub">paid (15d)</div></div>
+        </div>
+
+        <!-- 6. DR FUNNEL -->
+        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Live DR Funnel — today <span class="badge badge-green" style="font-size:9px;padding:1px 7px">● LIVE</span></div>
+        <div class="funnel-card">
+          <div class="funnel-header">
+            <div class="funnel-title"><svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Demand request pipeline</div>
+            <div class="funnel-hint">click steps to see lanes + bids</div>
+          </div>
+          <div class="funnel-steps">
+            <div class="funnel-step clickable" id="drStep" onclick="toggleDrawer('dr')"><div class="fs-label">In op-search</div><div class="fs-val blue" id="drCountVal">—</div><div class="fs-hint fs-hint-click">▾ lanes + bids</div></div>
+            <div class="funnel-step clickable" id="tokStep" onclick="toggleDrawer('tok')"><div class="fs-label">Tokens paid</div><div class="fs-val purple" id="tokenDRVal">—</div><div class="fs-hint fs-hint-click">▾ paid lanes</div></div>
+            <div class="funnel-step"><div class="fs-label">Conversion</div><div class="fs-val green" id="convRateVal">—</div><div class="fs-hint">token / search</div></div>
+          </div>
+          <div class="dr-drawer" id="drDrawer">
+            <div class="dr-drawer-header">
+              <div class="dr-drawer-title"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Live lanes + bid rates <span style="font-size:9px;color:var(--amber-600)">● lowest bids on demand</span></div>
+              <button class="dr-close-btn" onclick="toggleDrawer('dr')">✕</button>
+            </div>
+            <div class="dr-table-wrap"><table class="dr-table"><thead><tr><th>#</th><th>Demand ID</th><th>Route</th><th>Truck</th><th>Loading</th><th>Bid Rate</th><th>Token</th></tr></thead><tbody id="drTableBody"></tbody></table></div>
+          </div>
+          <div class="dr-drawer" id="tokDrawer">
+            <div class="dr-drawer-header">
+              <div class="dr-drawer-title"><svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Token paid lanes today</div>
+              <button class="dr-close-btn" onclick="toggleDrawer('tok')">✕</button>
+            </div>
+            <div class="dr-table-wrap"><table class="dr-table"><thead><tr><th>#</th><th>Demand ID</th><th>Route</th><th>Truck</th><th>Your Bid</th><th>Placed Rate</th></tr></thead><tbody id="tokTableBody"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- 7. VEHICLE + LANE VISIBILITY -->
+        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle &amp; Lane Visibility</div>
+        <div class="bottom-grid">
+          <div class="info-card">
+            <div class="info-card-title"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle profile</div>
+            <div class="veh-stats">
+              <div class="veh-stat"><div class="veh-val" id="totalVeh">—</div><div class="veh-label">total trucks</div></div>
+              <div class="veh-stat"><div class="veh-val green" id="corrVeh">—</div><div class="veh-label">verified</div></div>
+              <div class="veh-stat"><div class="veh-val red" id="unverVeh">—</div><div class="veh-label">unverified</div></div>
+            </div>
+            <div class="avail-section">
+              <div class="avail-lbl"><span class="dot"></span>Available today <span id="availCnt" style="color:var(--text-3)"></span></div>
+              <div class="avail-list" id="availList"></div>
+            </div>
+            <div class="tyre-section">
+              <div class="tyre-section-lbl">Tyre-wise breakdown</div>
+              <div id="tyreBreakdown"></div>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title"><svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>Lane visibility</div>
+            <div class="lane-tabs">
+              <button class="lane-tab active" id="tab-live" onclick="switchTab('live')">Live <span class="lane-cnt" id="cntLive">0</span></button>
+              <button class="lane-tab" id="tab-paid" onclick="switchTab('paid')">Paid Today <span class="lane-cnt" id="cntPaid">0</span></button>
+              <button class="lane-tab" id="tab-hist" onclick="switchTab('hist')">Bid History <span class="lane-cnt" id="cntHist">0</span></button>
+            </div>
+            <div class="lane-body active" id="body-live"></div>
+            <div class="lane-body" id="body-paid"></div>
+            <div class="lane-body" id="body-hist"></div>
+          </div>
+        </div>
+
+        <!-- 8. CALL HISTORY -->
+        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call History — MP Load Support</div>
+        <div class="call-section">
+          <div class="call-section-hdr">
+            <div class="call-section-title"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Calling records</div>
+            <span style="font-size:10px;color:var(--text-3)" id="callBadge"></span>
+          </div>
+          <div id="callHistoryBody"><div class="call-empty">Select an operator to view call history.</div></div>
+        </div>
+
+      </div><!-- /profileSection -->
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── DATA SOURCE: Google Sheets CSV ─────────────────────────────────
+   Sheet must be shared as "Anyone with the link can view"
+   Pipeline writes here every run (activation_calling_pipeline.py)
+   ─────────────────────────────────────────────────────────────────── */
+var SHEET_KEY  = '1tMvabz3c4-Fj2DuKnEFSzf49AHa3iBbElixBsaLhrmA';
+var SHEET_GID  = '2088843534';
+var SHEET_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_KEY
+               + '/gviz/tq?tqx=out:csv&gid=' + SHEET_GID;
+var REFRESH_MS = 10*60*1000;
+var PAGE_SIZE  = 30;
+
+/* STATE */
+var allData=[],filtered=[],currentCode=null,currentPage=1;
+// Default: P0P1 = show only P0 + P1 + hot operators (fast load)
+// Change to 'ALL' to see everything including P2/P3
+var filterPri='P0P1',filterHot=false,drawerOpen=null;
+var activeTyre=null,currentLanes=[],currentTokenSet={};
+
+/* HELPERS */
+function rs(v){var n=parseFloat((v||'').toString().replace(/[^0-9.]/g,''));return(isNaN(n)||n<=0)?null:n;}
+function frs(n){if(n==null||isNaN(n)||n<=0)return'—';return'&#8377;'+Math.round(n).toLocaleString('en-IN');}
+function isTrueVal(v){return v===true||v==='TRUE'||v==='true'||v==='True'||v==='1'||v==='Yes';}
+
+function minsAgo(tsStr) {
+  /* Returns "X mins ago" string from an IST timestamp string like "2026-06-23 10:32:45".
+     Returns '' if unparseable or > 180 mins (outside 3-hr window). */
+  if(!tsStr||tsStr==='nan'||tsStr===''||tsStr==='NaT') return '';
+  var ts = new Date(tsStr.replace(' ','T'));
+  if(isNaN(ts)) return '';
+  // server returns IST; browser Date() treats as local — offset correction:
+  // add IST offset (+5:30 = +330 min) then subtract local offset
+  var diffMs = Date.now() - ts.getTime();
+  var mins = Math.round(diffMs / 60000);
+  if(mins < 0 || mins > 200) return '';
+  if(mins < 1)  return 'just now';
+  if(mins === 1) return '1 min ago';
+  return mins + ' mins ago';
+}
+function priColor(p){return{P0:'#A32D2D',P1:'var(--purple-600)',P2:'var(--amber-600)',P3:'var(--gray-600)'}[p]||'var(--gray-600)';}
+function copyText(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){showToast('Copied: '+t);});}else showToast(t);}
+function set(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+function fmtN(n){var v=Number(n||0);return isNaN(v)?'0':v.toLocaleString();}
+
+/* PARSERS */
+function parseLanes(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;var lows=(p[4]||'').split(';').map(rs).filter(function(x){return x!=null;});return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),loading:(p[3]||'').trim(),lows:lows,bid:lows.length?lows[0]:null,offered:rs(p[5]),own:rs(p[6]),tyre_req:(p[7]||'').trim()};}).filter(Boolean);}
+function parseTokenLanes(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),bid:rs(p[3]),placed:rs(p[4]),method:(p[5]||'').trim().toUpperCase()};}).filter(Boolean);}
+function parseHist(raw){if(!raw)return[];var out=raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),bid:rs(p[3]),placed:rs(p[4]),verdict:(p[5]||'').trim().toUpperCase(),date:(p[6]||'').trim()};}).filter(Boolean);out.sort(function(a,b){return b.date.localeCompare(a.date);});return out;}
+function parseTyres(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');return{tyres:(p[0]||'?').trim(),total:parseInt(p[1]||'0',10),verified:parseInt(p[2]||'0',10)};}).filter(Boolean).sort(function(a,b){return(parseInt(a.tyres)||9999)-(parseInt(b.tyres)||9999);});}
+function parseAvail(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var vn=(p[0]||'').trim();if(!vn)return null;return{vn:vn,tyre:(p[1]||'').trim(),body:(p[2]||'').trim(),size:(p[3]||'').trim()};}).filter(Boolean);}
+function parseCallHistory(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');return{date:(p[0]||'').trim(),disposition:(p[1]||'').trim(),caller:(p[2]||'').trim(),disp_code:(p[3]||'').trim()};}).filter(Boolean);}
+function bidsTitle(l){return l.lows.length?'Lowest bids: '+l.lows.map(function(x){return'₹'+Math.round(x).toLocaleString('en-IN');}).join(' · '):'';}
+function tagLowest(lanes){lanes.forEach(function(l){l.isLow=(l.own!=null&&l.lows.length&&l.own<=l.lows[0]);});return lanes;}
+
+/* DATA LOAD — PapaParse reads CSV directly from Google Sheets CDN (~2-3s) */
+var _loadTimer = null;
+function loadData(){
+  setLoading(true);
+  Papa.parse(SHEET_URL + '&t=' + Date.now(), {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results){
+      document.getElementById('noticeBanner').style.display='none';
+      allData=(results.data||[]).map(function(row){
+        var c={};
+        Object.keys(row).forEach(function(k){
+          c[k.trim()]=(row[k]===null||row[k]===undefined)?'':String(row[k]).trim();
+        });
+        return c;
+      });
+      populateRMFilter();applyFilters();
+      setStatus('ok', allData.length);
+      if(currentCode){var r=findRow(currentCode);if(r)renderProfile(r);}
+      setLoading(false);
+      if(_loadTimer) clearTimeout(_loadTimer);
+      _loadTimer = setTimeout(loadData, REFRESH_MS);
+    },
+    error: function(){
+      setStatus('error');
+      document.getElementById('noticeBanner').style.display='block';
+      setLoading(false);
+      if(_loadTimer) clearTimeout(_loadTimer);
+      _loadTimer = setTimeout(loadData, REFRESH_MS);
+    }
+  });
+}
+function findRow(code){code=code.toUpperCase();for(var i=0;i<allData.length;i++){if((allData[i].operator_code||'').toUpperCase()===code)return allData[i];}return null;}
+function setStatus(state,count,updated){
+  var chip=document.getElementById('statusChip'),dot=document.getElementById('pulseDot');
+  chip.classList.toggle('error',state==='error');
+  dot.style.background=state==='error'?'var(--red-600)':'var(--green-600)';
+  dot.style.animation=state==='error'?'none':'pulse 2s infinite';
+  var txt = state==='error' ? 'Data load failed — check Apps Script URL' :
+    (count||allData.length).toLocaleString('en-IN')+' leads'+(updated?' · '+updated:'');
+  document.getElementById('statusText').textContent=txt;
+}
+function setLoading(on){var btn=document.getElementById('refreshBtn');btn.classList.toggle('spinning',on);btn.disabled=on;}
+
+/* FILTERS */
+function applyFilters(){
+  var recency=document.getElementById('fRecency').value,dr=document.getElementById('fDR').value;
+  var rm=document.getElementById('fRM').value,called=document.getElementById('fCalled').value;
+  var search=document.getElementById('leadSearch').value.trim().toUpperCase();
+  filtered=allData.filter(function(row){
+    var rowIsHot=isTrueVal(row.bid_today)||isTrueVal(row.vehicle_available_today)||(row.hot_flag||'')!=='';
+    if(filterHot&&!rowIsHot)return false;
+    if(!filterHot&&filterPri!=='ALL'){
+      if(filterPri==='P0P1'){
+        // Show P0 + P1 + any hot operator (P2/P3 hot operators still surface)
+        if(!rowIsHot&&row.priority!=='P0'&&row.priority!=='P1')return false;
+      } else {
+        if(row.priority!==filterPri)return false;
+      }
+    }
+    if(recency&&row.recency_tier!==recency)return false;
+    if(dr&&row.dr_tier!==dr)return false;
+    if(rm&&(row.rm_name||'').toUpperCase()!==rm.toUpperCase())return false;
+    if(search&&!(row.operator_code||'').toUpperCase().includes(search)&&!(row.rm_name||'').toUpperCase().includes(search))return false;
+    if(called==='called'&&!row.last_call_date)return false;
+    if(called==='not_called'&&row.last_call_date)return false;
+    return true;
+  });
+  // In P0P1 mode, cap P1 at top 1000 to keep the list fast
+  if(filterPri==='P0P1'&&!filterHot){
+    var p1Seen=0;
+    filtered=filtered.filter(function(row){
+      if(row.priority==='P1'){p1Seen++;return p1Seen<=1000;}
+      return true;
+    });
+  }
+  currentPage=1;
+  document.getElementById('filteredCount').textContent=filtered.length.toLocaleString('en-IN');
+  renderLeadList();
+}
+document.querySelectorAll('.pri-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    if(btn.dataset.pri==='HOT'){
+      filterHot=!filterHot;filterPri='P0P1';
+      document.querySelectorAll('.pri-btn:not([data-pri="HOT"])').forEach(function(b){b.className='pri-btn';});
+      document.querySelector('.pri-btn[data-pri="P0P1"]').classList.add('a-all');
+      btn.className='pri-btn'+(filterHot?' a-hot':'');
+    }else{
+      filterHot=false;document.getElementById('hotFilterBtn').className='pri-btn';
+      document.querySelectorAll('.pri-btn:not([data-pri="HOT"])').forEach(function(b){b.className='pri-btn';});
+      filterPri=btn.dataset.pri;
+      var cls=filterPri==='ALL'||filterPri==='P0P1'?'a-all':'a-'+filterPri.toLowerCase();
+      btn.classList.add(cls);
+    }
+    applyFilters();
+  });
+});
+['fRecency','fDR','fRM','fCalled'].forEach(function(id){document.getElementById(id).addEventListener('change',applyFilters);});
+document.getElementById('leadSearch').addEventListener('input',applyFilters);
+function populateRMFilter(){
+  var rms=[...new Set(allData.map(function(r){return(r.rm_name||'').toUpperCase();}).filter(Boolean))].sort();
+  var sel=document.getElementById('fRM'),cur=sel.value;sel.innerHTML='<option value="">All RMs</option>';
+  rms.forEach(function(rm){var o=document.createElement('option');o.value=rm;o.textContent=rm;if(rm===cur)o.selected=true;sel.appendChild(o);});
+}
+
+/* LEAD LIST */
+function callDotColor(d){var v=(d||'').toLowerCase();if(v.includes('connect'))return'var(--green-600)';if(v.includes('callback')||v.includes('call back'))return'var(--amber-600)';if(v.includes('not reach')||v.includes('no answer')||v.includes('busy')||v.includes('switch'))return'var(--red-600)';return'var(--gray-200)';}
+function renderLeadList(){
+  var start=(currentPage-1)*PAGE_SIZE,page=filtered.slice(start,start+PAGE_SIZE);
+  var total=Math.ceil(filtered.length/PAGE_SIZE)||1;
+  document.getElementById('pageLabel').textContent=currentPage+' / '+total;
+  document.getElementById('pageRangeInfo').textContent=(start+1)+'–'+Math.min(start+PAGE_SIZE,filtered.length);
+  document.getElementById('prevBtn').disabled=currentPage<=1;document.getElementById('nextBtn').disabled=currentPage>=total;
+  var lp=document.getElementById('listPlaceholder');if(lp)lp.style.display='none';
+  if(!page.length){document.getElementById('leadList').innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--text-3);font-size:12px">No leads match.</div>';return;}
+  var recCls={'Last 7 days':'lb-rec-7','8-30 days':'lb-rec-30','30+ days':'lb-rec-old'};
+  var drCls={'High DR':'lb-dr-h','Mid DR':'lb-dr-m','Low DR':'lb-dr-l'};
+  var priCls={P0:'lb-p0',P1:'lb-p1',P2:'lb-p2',P3:'lb-p3'};
+  document.getElementById('leadList').innerHTML=page.map(function(row){
+    var code=(row.operator_code||'').toUpperCase(),pri=row.priority||'P3';
+    var bidT=isTrueVal(row.bid_today), vaT=isTrueVal(row.vehicle_available_today);
+    var isHot=bidT||vaT||(row.hot_flag||'')!=='';
+    var isSheet=(row.source||'')==='Sheet';
+    var active=code===currentCode?' active':'',hotCls=isHot?' is-hot':'';
+    var pB='<span class="lb '+priCls[pri]+'">'+pri+'</span>';
+    var rB=row.recency_tier?'<span class="lb '+(recCls[row.recency_tier]||'lb-rec-old')+'">'+row.recency_tier+'</span>':'';
+    var dB=row.dr_tier?'<span class="lb '+(drCls[row.dr_tier]||'lb-dr-l')+'">'+row.dr_tier+'</span>':'';
+    // Hot badges: time-window aware labels
+    var hotB='';
+    if(bidT&&vaT) hotB='<span class="lb lb-hot">BID+VA (3h)</span>';
+    else if(bidT) hotB='<span class="lb lb-hot">BID (3h)</span>';
+    else if(vaT)  hotB='<span class="lb" style="background:#EAF3DE;color:#27500A">VA (4h)</span>';
+
+    // Activation score badge (top 200+ = fire, 100+ = warm, rest = plain)
+    var sc=parseInt(row.activation_score||'0',10);
+    var scColor=sc>=100?'#C2500A':sc>=30?'#534AB7':'#9A9890';
+    var scB=sc>0?'<span class="lb lb-score" style="color:'+scColor+'">#'+sc+'</span>':'';
+    var sheetB=isSheet?'<span class="lb lb-sheet">Sheet</span>':'';
+    var hotDot=isHot?'<span class="hot-dot"></span>':'';
+    // Bid recency tag — shown if bid was entered in last 3h
+    var bidAge=bidT?minsAgo(row.last_bid_time||''):'';
+    var bidAgeTag=bidAge?'<span style="font-size:8.5px;font-weight:700;color:#C2500A;background:#FFF0E6;padding:1px 6px;border-radius:8px;margin-left:3px">bid '+bidAge+'</span>':'';
+    var lastCall='';
+    if(row.last_call_date){var clr=callDotColor(row.last_call_disposition);lastCall='<div class="last-call-line"><div class="call-dot-sm" style="background:'+clr+'"></div>'+row.last_call_date+' · '+(row.last_call_disposition||'Called')+(row.last_caller?' · '+row.last_caller:'')+'</div>';}
+    return '<div class="lead-row'+active+hotCls+'" data-code="'+code+'" onclick="selectOperator(\''+code+'\')">'+
+      '<div class="lead-rank">'+(row.calling_rank||'—')+'</div>'+
+      '<div class="lead-body">'+
+        '<div class="lead-top-row"><span class="lead-code">'+code+'</span>'+hotDot+bidAgeTag+'</div>'+
+        '<div class="lead-badges">'+scB+pB+hotB+rB+dB+sheetB+'<span style="font-size:9px;color:var(--text-3)">'+(row.rm_name||'').toUpperCase()+'</span></div>'+
+        lastCall+
+      '</div></div>';
+  }).join('');
+}
+function changePage(dir){currentPage=Math.max(1,Math.min(Math.ceil(filtered.length/PAGE_SIZE)||1,currentPage+dir));renderLeadList();document.getElementById('leadList').scrollTop=0;}
+
+/* TOP SEARCH */
+var topSearch=document.getElementById('topSearch'),topSugg=document.getElementById('topSuggestions'),topClear=document.getElementById('topClearBtn');
+topSearch.addEventListener('input',function(){
+  var q=this.value.trim().toUpperCase();topClear.style.display=q?'block':'none';
+  if(q.length<2){topSugg.style.display='none';return;}
+  var matches=allData.filter(function(r){return(r.operator_code||'').toUpperCase().includes(q);}).slice(0,8);
+  if(!matches.length){topSugg.innerHTML='<div class="sug-no-result">No operators found</div>';topSugg.style.display='block';return;}
+  topSugg.innerHTML=matches.map(function(r){
+    var code=(r.operator_code||'').toUpperCase(),ini=code.replace(/[^A-Z0-9]/g,'').substring(0,2);
+    var pri=r.priority||'P3';var priColors={P0:'#FCEBEB',P1:'var(--purple-50)',P2:'var(--amber-50)',P3:'var(--gray-50)'};
+    var isHot=isTrueVal(r.bid_today)||isTrueVal(r.vehicle_available_today);
+    var hotTag=isHot?'<span style="font-size:9px;color:#C2500A;font-weight:700">● Hot</span> ':'';
+    var lastCall=r.last_call_date?'📞 '+r.last_call_date+' · '+(r.last_call_disposition||'Called'):'Not called';
+    return '<div class="sug-item" data-code="'+code+'">'+
+      '<div class="sug-avatar" style="background:'+priColors[pri]+';color:'+priColor(pri)+'">'+ini+'</div>'+
+      '<div><div class="sug-code">'+hotTag+code+'</div><div class="sug-rm">'+(r.rm_name||'—').toUpperCase()+'</div></div>'+
+      '<div class="sug-right"><div class="sug-pri" style="background:'+priColor(pri)+';color:#fff">'+pri+'</div><div class="sug-call">'+lastCall+'</div></div>'+
+    '</div>';
+  }).join('');
+  topSugg.querySelectorAll('.sug-item').forEach(function(el){el.addEventListener('click',function(){topSearch.value=el.dataset.code;topClear.style.display='block';topSugg.style.display='none';selectOperator(el.dataset.code);});});
+  topSugg.style.display='block';
+});
+topSearch.addEventListener('keydown',function(e){
+  if(e.key==='Escape')topSugg.style.display='none';
+  if(e.key==='Enter'){var q=topSearch.value.trim().toUpperCase();var r=findRow(q);if(r){topSugg.style.display='none';selectOperator(q);}}
+});
+topClear.addEventListener('click',function(){topSearch.value='';topClear.style.display='none';topSugg.style.display='none';});
+document.addEventListener('click',function(e){if(!e.target.closest('.top-search-wrap'))topSugg.style.display='none';});
+
+/* SELECT & RENDER */
+function selectOperator(code){
+  var row=findRow(code);if(!row){showToast('Operator '+code+' not found.');return;}
+  currentCode=code.toUpperCase();
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('profileSection').style.display='block';
+  document.getElementById('detailPanel').scrollTop=0;
+  try{renderLeadList();}catch(e){console.warn('renderLeadList:',e);}
+  try{renderProfile(row);}catch(e){console.error('renderProfile:',e);showToast('Profile error: '+e.message);}
+}
+function renderProfile(row){
+  drawerOpen=null;
+  ['drDrawer','tokDrawer'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('open');});
+  ['drStep','tokStep'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('active');});
+  var code=(row.operator_code||'').toUpperCase(),ini=code.replace(/[^A-Z0-9]/g,'').substring(0,2);
+  var pri=row.priority||'P3';
+  var defMap={P0:'High LDP + High Token',P1:'High LDP + Low Token',P2:'Low LDP + High Token',P3:'Low LDP + Low Token'};
+  var avatarBg={P0:'#FCEBEB',P1:'var(--purple-50)',P2:'var(--amber-50)',P3:'var(--gray-50)'}[pri]||'var(--purple-50)';
+
+  /* Priority context */
+  var card=document.getElementById('pccCard');if(card)card.className='pcc '+pri.toLowerCase();
+  set('pccBadge',pri);set('pccDef',defMap[pri]||'');
+  set('pccLDPs',fmtN(row.lifetime_ldps));set('pccToks',fmtN(row.lifetime_tokens));
+  set('pccDRs',fmtN(row.appeared_in_drs));set('pccTrips',fmtN(row.life_time_trips));
+  set('pccRank','Rank #'+(row.calling_rank||'—'));
+  var recEl=document.getElementById('pccRecency');
+  if(recEl){recEl.textContent=row.recency_tier||'';recEl.className='pcc-recency '+({'Last 7 days':'rec-7','8-30 days':'rec-30','30+ days':'rec-old'}[row.recency_tier]||'');}
+
+  /* Hot Today */
+  renderHotToday(row);
+
+  /* Profile */
+  var av=document.getElementById('profileAvatar');if(av){av.textContent=ini;av.style.background=avatarBg;av.style.color=priColor(pri);}
+  var pc=document.getElementById('profileCode');if(pc){pc.textContent=code;pc.onclick=function(){copyText(code);};}
+  set('profileRM','RM: '+(row.rm_name?row.rm_name.toUpperCase():'—'));
+  set('scoreVal',fmtN(row.fo_activity_score));
+  var metaEl=document.getElementById('profileMeta');
+  if(metaEl){
+    var cluster=row.Cluster||row.cluster||'—';
+    var src=row.source||'Cohort';
+    metaEl.innerHTML='<span class="badge badge-teal">'+cluster+'</span>'+(src==='Sheet'?'<span class="badge badge-sheet">Sheet</span>':'');
+  }
+
+  /* Activity */
+  set('vaDays',row.va_days||'0');set('ldpDays',row.ldp_days||'0');
+  set('ldpCount',row.total_ldp_count||'0');set('tokenCount',row.token_count||'0');
+
+  /* Funnel */
+  var drN=parseInt(row.num_of_drs_in_opsearch||'0',10),tokN=parseInt(row.num_of_drs_paid_token||'0',10);
+  var conv=drN>0?Math.round(tokN/drN*100):0;
+  set('drCountVal',drN);set('tokenDRVal',tokN);set('convRateVal',conv+'%');
+
+  var lanes=tagLowest(parseLanes(row.lane_vt_details||''));
+  var tokenSet={};(row.token_demand_ids||'').split(',').forEach(function(s){s=s.trim();if(s)tokenSet[s]=true;});
+  var tokenLanes=parseTokenLanes(row.token_lane_details||'');
+  var hist=parseHist(row.hist_token_details||'');
+
+  renderLiveDrawer(lanes,tokenSet);renderTokDrawer(tokenLanes);
+  renderLaneTabs(lanes,tokenSet,tokenLanes,hist);renderActionBanner(drN,tokN,lanes,tokenSet);
+
+  /* Vehicles */
+  var tot=parseInt(row.total_vehicles||'0',10),ver=parseInt(row.corrected_vehicles||'0',10);
+  set('totalVeh',tot);set('corrVeh',ver);set('unverVeh',Math.max(0,tot-ver));
+  renderAvail(parseAvail(row.avail_vehicles||''));
+  renderTyres(parseTyres(row.tyre_breakdown||''));
+  renderCallHistory(row);
+  switchTab('live');
+}
+
+/* HOT TODAY */
+function renderHotToday(row){
+  var bidToday=isTrueVal(row.bid_today),vaToday=isTrueVal(row.vehicle_available_today);
+  var wrap=document.getElementById('hotTodayWrap'),grid=document.getElementById('htcGrid');
+  if(!bidToday&&!vaToday){wrap.style.display='none';return;}
+  wrap.style.display='block';
+
+  // Activation score badge next to title
+  var sc=parseInt(row.activation_score||'0',10);
+  var scStr=sc>0?' <span style="font-size:10px;font-weight:800;background:#534AB7;color:#fff;padding:1px 7px;border-radius:10px;">Score: '+sc+'</span>':'';
+  document.getElementById('htcTime').innerHTML=scStr;
+
+  var parts=[];
+  if(bidToday)  parts.push('Bid (last 3h)');
+  if(vaToday)   parts.push('VA (last 4h)');
+  set('htcTitle',parts.join(' + '));
+
+  // grid: if 3+ signals, single column; if 2, side-by-side; if 1, single
+  grid.className='htc-grid'+(bidToday&&vaToday?'':' single');
+  var html='';
+
+  /* Bid Today box — uses bid_today_lane_details (all bids incl. INITIATED/EXPIRED)
+     Falls back to token_lane_details (paid tokens) if that column is empty.       */
+  if(bidToday){
+    // parse bid_today_lane_details: did####route####truck####amount
+    // bid_today_lane_details: did####route####truck####opfreight####token_paid(0/1)
+    // opFreight > 0 = bid submitted; token_paid=1 = also token paid
+    var btRaw=row.bid_today_lane_details||'';
+    var btLanes=btRaw?btRaw.split('||||').map(function(seg){
+      seg=seg.trim();if(!seg)return null;
+      var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;
+      return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),
+             bid:rs(p[3]),tokenPaid:(p[4]||'0')==='1'};
+    }).filter(Boolean):[];
+
+    var paidCount=btLanes.filter(function(l){return l.tokenPaid;}).length;
+    var items=btLanes.length?btLanes.slice(0,3).map(function(l){
+      var route=l.route||(l.did?'Demand #'+l.did:'');
+      var truck=l.truck?'<span style="color:var(--text-3)"> · '+l.truck+'</span>':'';
+      var amt=l.bid!=null?'<span class="amt">₹'+Math.round(l.bid).toLocaleString('en-IN')+'</span>':'';
+      var paid=l.tokenPaid?'<span style="font-size:9px;font-weight:700;background:var(--green-50);color:var(--green-800);padding:1px 5px;border-radius:8px;margin-left:3px">✓ Paid</span>':'';
+      return '<div class="htc-item"><div class="htc-item-dot"></div><div class="htc-item-txt"><b>'+route+'</b>'+truck+(amt?' · '+amt:'')+paid+'</div></div>';
+    }).join('')+(btLanes.length>3?'<div style="font-size:10px;color:#A05018;margin-top:3px">+'+(btLanes.length-3)+' more demands…</div>':'')
+    :'<div class="htc-empty">Rate entered — demand details unavailable</div>';
+    var cntLabel=btLanes.length+(paidCount?' ('+paidCount+' paid)':'');
+    // Bid recency — shown prominently so caller can say "you bid X mins ago, please pay token"
+    var bidAge=minsAgo(row.last_bid_time||'');
+    var bidAgeBar=bidAge
+      ? '<div style="background:#FFF3E5;border-radius:6px;padding:5px 8px;margin-bottom:5px;display:flex;align-items:center;gap:6px;">'
+        +'<span style="font-size:16px;line-height:1">⏱</span>'
+        +'<span style="font-size:11px;font-weight:700;color:#C2500A;">Last bid: <b>'+bidAge+'</b> — push for token payment now!</span>'
+        +'</div>'
+      : '';
+    html+='<div class="htc-box"><div class="htc-box-hdr"><span class="htc-box-icon">🔴</span><span class="htc-box-ttl">Bid Today (last 3h)</span>'+(btLanes.length?'<span class="htc-box-cnt">'+cntLabel+'</span>':'')+'</div><div class="htc-items">'+bidAgeBar+items+'</div></div>';
+  }
+
+  /* Vehicle Available Today box */
+  if(vaToday){
+    var avail=parseAvail(row.avail_vehicles||'');
+    var vehHtml=avail.length?'<div class="htc-veh-list">'+avail.slice(0,6).map(function(v){
+      var spec=[v.tyre?v.tyre+'T':'',v.body,v.size?v.size+'ft':''].filter(Boolean).join(' ');
+      return '<span class="htc-veh-pill"><span class="vn">'+v.vn+'</span>'+(spec?'<span class="vt">'+spec+'</span>':'')+'</span>';
+    }).join('')+(avail.length>6?'<span style="font-size:10px;color:#A05018;align-self:center">+'+(avail.length-6)+' more</span>':'')+'</div>'
+    :'<div class="htc-empty">Vehicle details loading…</div>';
+    html+='<div class="htc-box"><div class="htc-box-hdr"><span class="htc-box-icon">🟡</span><span class="htc-box-ttl">Vehicle Available (last 4h)</span>'+(avail.length?'<span class="htc-box-cnt">'+avail.length+'</span>':'')+'</div><div class="htc-items">'+vehHtml+'</div></div>';
+  }
+
+  grid.innerHTML=html;
+}
+
+/* ACTION BANNER */
+function renderActionBanner(drN,tokN,lanes,tokenSet){
+  var banner=document.getElementById('actionBanner'),icon=document.getElementById('actionIcon'),
+      title=document.getElementById('actionTitle'),sub=document.getElementById('actionSub'),
+      pitch=document.getElementById('actionPitch');
+  banner.className='action-banner';pitch.style.display='none';
+  var open=lanes.filter(function(l){return!tokenSet[l.did];});
+  var best=open.filter(function(l){return l.bid!=null;}).sort(function(a,b){return a.bid-b.bid;})[0]||
+           open.filter(function(l){return l.offered!=null;}).sort(function(a,b){return a.offered-b.offered;})[0]||open[0];
+  if(drN===0){banner.classList.add('cold');icon.textContent='🔍';title.textContent='No live lanes in op-search right now';sub.textContent='Ask the operator to mark a vehicle available & set preferred lanes, then refresh.';}
+  else if(tokN===0){banner.classList.add('warm');icon.textContent='🎯';title.textContent=drN+' live lane'+(drN>1?'s':'')+' · 0 tokens paid today';sub.textContent='Push the operator to pay a token now. Lead with the lowest-bid lane.';}
+  else{icon.textContent='✅';title.textContent=tokN+' token'+(tokN>1?'s':'')+' paid · '+open.length+' lane'+(open.length!==1?'s':'')+' still open';sub.textContent=open.length?'Keep pushing — close the remaining open lanes.':'All live lanes converted today!';}
+  if(best){var rate=best.bid!=null?best.bid:best.offered;var lbl=best.bid!=null?'lowest bid':'~rate';pitch.style.display='block';
+    pitch.innerHTML='Pitch → <b>'+(best.route||'Demand '+best.did)+'</b>'+(rate?' · '+lbl+' <b>₹'+Math.round(rate).toLocaleString('en-IN')+'</b>':'')+(best.truck?' · '+best.truck:'')+' &nbsp;<span class="lane-did" onclick="copyText(\''+best.did+'\')">&#35;'+best.did+' ⧉</span>';}
+}
+
+/* DRAWERS */
+function toggleDrawer(name){
+  drawerOpen=drawerOpen===name?null:name;
+  document.getElementById('drDrawer').classList.toggle('open',drawerOpen==='dr');
+  document.getElementById('tokDrawer').classList.toggle('open',drawerOpen==='tok');
+  document.getElementById('drStep').classList.toggle('active',drawerOpen==='dr');
+  document.getElementById('tokStep').classList.toggle('active',drawerOpen==='tok');
+}
+function renderLiveDrawer(lanes,tokenSet){
+  var tb=document.getElementById('drTableBody');
+  if(!lanes.length){tb.innerHTML='<tr><td colspan="7" class="dr-empty">No live demand matches today</td></tr>';return;}
+  tb.innerHTML=lanes.map(function(l,i){
+    var paid=!!tokenSet[l.did];var badge=paid?'<span class="tok-badge tok-paid">✓ Paid</span>':'<span class="tok-badge tok-open">Open</span>';
+    var bidCell;
+    if(l.lows.length){var extra=l.lows.length>1?' <span style="color:var(--text-3);font-size:10px">+'+(l.lows.length-1)+'</span>':'';var ownTag=l.own!=null?'<div style="font-size:10px;color:var(--blue-600)">you ₹'+Math.round(l.own).toLocaleString('en-IN')+(l.isLow?' · L1':'')+'</div>':'';bidCell='<span class="bid-in-row'+(l.isLow?' top3':'')+'" title="'+bidsTitle(l)+'">₹'+Math.round(l.lows[0]).toLocaleString('en-IN')+extra+'</span>'+ownTag;}
+    else if(l.offered!=null){bidCell='<span style="font-size:11px;color:var(--blue-600);font-weight:600">~₹'+Math.round(l.offered).toLocaleString('en-IN')+'</span>';}
+    else{bidCell='<span class="bid-none">no bid</span>';}
+    return '<tr><td style="color:var(--text-3);font-size:11px;width:24px">'+(i+1)+'</td>'+
+      '<td><span class="did-txt" onclick="copyText(\''+l.did+'\')">'+l.did+'</span></td>'+
+      '<td><span class="route-txt">'+(l.route||'—')+'</span></td>'+
+      '<td><span class="meta-txt">'+(l.truck||'—')+'</span></td>'+
+      '<td><span class="meta-txt">'+(l.loading||'—')+'</span></td>'+
+      '<td>'+bidCell+'</td><td>'+badge+'</td></tr>';}).join('');
+}
+function renderTokDrawer(tl){
+  var tb=document.getElementById('tokTableBody');
+  if(!tl.length){tb.innerHTML='<tr><td colspan="6" class="dr-empty">No tokens paid today</td></tr>';return;}
+  tb.innerHTML=tl.map(function(l,i){
+    return '<tr><td style="color:var(--text-3);font-size:11px;width:24px">'+(i+1)+'</td>'+
+      '<td><span class="did-txt" onclick="copyText(\''+l.did+'\')">'+l.did+'</span></td>'+
+      '<td><span class="route-txt">'+(l.route||'—')+'</span></td>'+
+      '<td><span class="meta-txt">'+(l.truck||'—')+'</span></td>'+
+      '<td>'+(l.bid!=null?'<span class="bid-in-row">₹'+Math.round(l.bid).toLocaleString('en-IN')+'</span>':'<span class="bid-none">—</span>')+'</td>'+
+      '<td>'+(l.placed!=null?'<span class="lane-placed">₹'+Math.round(l.placed).toLocaleString('en-IN')+'</span>':'<span class="bid-none">—</span>')+'</td></tr>';}).join('');
+}
+
+/* LANE TABS */
+function liveCardHTML(l,ts){
+  var isPaid=!!ts[l.did];var cls='lane-card'+(isPaid?' paid-card':(l.isLow?' best-card':''));
+  var pills='';if(isPaid)pills+='<span class="pill pill-green">✓ Paid</span>';else if(l.isLow)pills+='<span class="pill pill-amber">★ You lead (L1)</span>';
+  var rate;if(l.lows.length)rate='<span class="lane-bid" title="'+bidsTitle(l)+'">L1 ₹'+Math.round(l.lows[0]).toLocaleString('en-IN')+'</span>';
+  else if(l.offered!=null)rate='<span class="lane-offered" style="margin-left:auto">~₹'+Math.round(l.offered).toLocaleString('en-IN')+' offered</span>';
+  else rate='<span class="lane-bid none">no bid yet</span>';
+  var lows2=l.lows.length>1?'<span class="lane-meta-item">bids: '+l.lows.map(function(x){return'₹'+Math.round(x).toLocaleString('en-IN');}).join(' · ')+'</span>':'';
+  var own=l.own!=null?'<span class="lane-meta-item">your bid <b>₹'+Math.round(l.own).toLocaleString('en-IN')+'</b></span>':'';
+  return '<div class="'+cls+'"><div class="lane-card-top"><span class="lane-did" onclick="copyText(\''+l.did+'\')">&#35;'+l.did+'</span>'+pills+rate+'</div>'+
+    '<div class="lane-route">'+(l.route||'—')+'</div>'+
+    '<div class="lane-meta">'+
+      (l.truck?'<span class="lane-meta-item">🚛 '+l.truck+'</span>':'')+
+      (l.loading?'<span class="lane-meta-item">🕐 '+l.loading+'</span>':'')+
+      lows2+own+
+    '</div></div>';
+}
+function tokenCardHTML(l){
+  return '<div class="lane-card paid-card"><div class="lane-card-top"><span class="lane-did" onclick="copyText(\''+l.did+'\')">&#35;'+l.did+'</span>'+
+    '<span class="pill pill-green">✓ Paid</span>'+(l.bid!=null?'<span class="lane-bid">₹'+Math.round(l.bid).toLocaleString('en-IN')+'</span>':'')+'</div>'+
+    '<div class="lane-route">'+(l.route||'—')+'</div>'+
+    '<div class="lane-meta">'+
+      (l.truck?'<span class="lane-meta-item">🚛 '+l.truck+'</span>':'')+
+      (l.placed!=null?'<span class="lane-placed">placed ₹'+Math.round(l.placed).toLocaleString('en-IN')+'</span>':'')+
+    '</div></div>';
+}
+function histCardHTML(h){
+  var mc=h.method==='BIDDING'?'bidding':'matching';var chip='',cls='lane-card hist-card',note='';
+  if(h.verdict==='WON'){chip='<span class="pill pill-green">✓ Placed</span>';}
+  else if(h.verdict==='LOST'){chip='<span class="pill pill-red">✗ Lost</span>';cls+=' lost-card';
+    if(h.bid&&h.placed&&h.bid>h.placed){var diff=Math.round(h.bid-h.placed);note='<div class="verdict-note bad">⚠ Bid was ₹'+diff.toLocaleString('en-IN')+' higher than placed rate.</div>';}}
+  else{chip='<span class="pill pill-gray">Not placed</span>';}
+  var cmp=(h.bid?'bid ₹'+Math.round(h.bid).toLocaleString('en-IN'):'')+(h.placed?' → placed ₹'+Math.round(h.placed).toLocaleString('en-IN'):(h.bid?' → not placed':''));
+  return '<div class="'+cls+'" onclick="this.classList.toggle(\'open\')">'+
+    '<div class="lane-card-top"><span class="chev">▸</span><span class="lane-did" onclick="event.stopPropagation();copyText(\''+h.did+'\')">&#35;'+h.did+'</span>'+chip+
+    '<span class="hist-cmp">'+cmp+'</span></div>'+
+    '<div class="hist-details"><div class="lane-route">'+(h.route||'—')+'</div>'+
+    '<div class="lane-meta">'+
+      (h.truck?'<span class="lane-meta-item">🚛 '+h.truck+'</span>':'')+
+      (h.method?'<span class="method-chip '+mc+'">'+h.method+'</span>':'')+
+      (h.bid?'<span class="lane-meta-item">your bid <b>₹'+Math.round(h.bid).toLocaleString('en-IN')+'</b></span>':'')+
+      (h.placed?'<span class="lane-placed">placed ₹'+Math.round(h.placed).toLocaleString('en-IN')+'</span>':'')+
+      (h.date?'<span class="lane-meta-item" style="margin-left:auto;color:var(--text-3)">'+h.date+'</span>':'')+
+    '</div>'+note+'</div></div>';
+}
+var currentTokenSet={};
+function renderLaneTabs(lanes,ts,tl,hist){
+  currentLanes=lanes;currentTokenSet=ts;activeTyre=null;
+  document.getElementById('cntPaid').textContent=tl.length;
+  document.getElementById('cntHist').textContent=hist.length;
+  renderLiveLoads();
+  document.getElementById('body-paid').innerHTML=tl.length?tl.map(tokenCardHTML).join(''):'<div class="lane-empty">No tokens paid today</div>';
+  if(!hist.length){document.getElementById('body-hist').innerHTML='<div class="lane-empty">No bids in last 15 days</div>';}
+  else{var lost=hist.filter(function(h){return h.verdict==='LOST'&&h.bid!=null&&h.placed!=null&&h.bid>h.placed;}).length;
+    var head=lost?'<div style="font-size:11px;color:var(--red-800);background:var(--red-50);border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠️ '+lost+' lane'+(lost>1?'s':'')+' lost where bid > placed rate.</div>':'';
+    document.getElementById('body-hist').innerHTML=head+hist.map(histCardHTML).join('');}
+}
+function switchTab(n){['live','paid','hist'].forEach(function(t){document.getElementById('tab-'+t).classList.toggle('active',t===n);document.getElementById('body-'+t).classList.toggle('active',t===n);});}
+
+/* VEHICLES */
+function renderAvail(av){
+  var el=document.getElementById('availList'),cnt=document.getElementById('availCnt');
+  cnt.textContent=av.length?'· '+av.length+' truck'+(av.length>1?'s':''):'';
+  if(!av.length){el.innerHTML='<div class="avail-empty">No vehicle available right now</div>';return;}
+  el.innerHTML=av.map(function(v){
+    var spec=[v.tyre?v.tyre+'T':'',v.body,v.size?v.size+'ft':''].filter(Boolean).join(' · ');
+    var isActive=activeTyre&&activeTyre===v.tyre;
+    var style=isActive?'background:var(--purple-50);border-color:var(--purple-600)':'';
+    return '<span class="veh-pill" style="'+style+'" onclick="filterByVehicle(\''+v.tyre+'\')" title="Click to see matching loads">'+
+      '<span class="vn">'+v.vn+'</span>'+(spec?'<span class="vt">'+spec+' ▾</span>':'')+'</span>';
+  }).join('');
+}
+function filterByVehicle(tyre){
+  activeTyre=(activeTyre===tyre)?null:tyre;renderLiveLoads();
+  var row=allData.find(function(r){return(r.operator_code||'').toUpperCase()===currentCode;});
+  if(row)renderAvail(parseAvail(row.avail_vehicles||''));
+}
+function renderLiveLoads(){
+  var bl=document.getElementById('body-live');
+  var lanes=activeTyre?currentLanes.filter(function(l){return l.tyre_req===activeTyre;}):currentLanes;
+  var cntEl=document.getElementById('cntLive');
+  cntEl.textContent=activeTyre?(lanes.length+'/'+currentLanes.length):currentLanes.length;
+  var tyreGroups={};currentLanes.forEach(function(l){var t=l.tyre_req||'?';tyreGroups[t]=(tyreGroups[t]||0)+1;});
+  var chips='';
+  if(Object.keys(tyreGroups).length>1){
+    chips='<div style="display:flex;gap:4px;flex-wrap:wrap;padding:.4rem .75rem .25rem;border-bottom:.5px solid var(--border)">';
+    chips+='<button onclick="filterByVehicle(null)" style="height:20px;padding:0 8px;border-radius:20px;font-size:9px;font-weight:700;border:.5px solid var(--border-md);cursor:pointer;'+(activeTyre?'background:var(--surface-2);color:var(--text-2)':'background:var(--text-1);color:#fff')+'">All ('+currentLanes.length+')</button>';
+    Object.keys(tyreGroups).sort(function(a,b){return(parseInt(a)||0)-(parseInt(b)||0);}).forEach(function(t){
+      var isA=activeTyre===t;
+      chips+='<button onclick="filterByVehicle(\''+t+'\')" style="height:20px;padding:0 8px;border-radius:20px;font-size:9px;font-weight:700;border:.5px solid var(--border-md);cursor:pointer;'+(isA?'background:var(--purple-600);color:#fff':'background:var(--surface-2);color:var(--text-2)')+'">'
+        +t+' Tyre ('+tyreGroups[t]+')</button>';
+    });
+    chips+='</div>';
+  }
+  bl.innerHTML=chips+(lanes.length?lanes.map(function(l){return liveCardHTML(l,currentTokenSet);}).join('')
+    :'<div class="lane-empty">'+(activeTyre?'No loads matching '+activeTyre+'-tyre vehicles':'No live matches today')+'</div>');
+}
+function renderTyres(tyres){
+  var el=document.getElementById('tyreBreakdown');
+  el.innerHTML=tyres.length?tyres.map(function(t){var pct=t.total>0?Math.round(t.verified/t.total*100):0;
+    return '<div class="tyre-row"><div class="tyre-row-top"><span class="tyre-name">'+(t.tyres==='Unknown'?'Unknown':t.tyres+' Tyres')+'</span><span class="tyre-counts"><span>'+t.verified+'</span> / '+t.total+' verified</span></div><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%"></div></div></div>';}).join('')
+    :'<div style="font-size:11px;color:var(--text-3)">No tyre data</div>';
+}
+
+/* CALL HISTORY */
+function dispClass(d){var v=(d||'').toLowerCase();if(v.includes('connect'))return'disp-conn';if(v.includes('callback')||v.includes('call back'))return'disp-callback';if(v.includes('not reach')||v.includes('no answer')||v.includes('busy'))return'disp-notreach';return'disp-default';}
+function renderCallHistory(row){
+  var body=document.getElementById('callHistoryBody'),badge=document.getElementById('callBadge');
+  var calls=parseCallHistory(row.call_history||''),total=parseInt(row.total_calls||'0',10);
+  badge.textContent=total?total+' call'+(total>1?'s':'')+' total':'';
+  if(!calls.length){body.innerHTML='<div class="call-empty">No calls made to this operator in the MP Load Support campaign.</div>';return;}
+  body.innerHTML='<div style="overflow-x:auto"><table class="ch-table"><thead><tr><th>#</th><th>Date</th><th>Disposition</th><th>Code</th><th>Caller (RM)</th></tr></thead><tbody>'+
+    calls.map(function(c,i){
+      return '<tr><td style="color:var(--text-3);font-size:11px;width:24px">'+(i+1)+'</td>'+
+        '<td style="font-size:12px;white-space:nowrap">'+c.date+'</td>'+
+        '<td><span class="disp-badge '+dispClass(c.disposition)+'">'+(c.disposition||'—')+'</span></td>'+
+        '<td style="font-size:11px;color:var(--text-2)">'+(c.disp_code||'—')+'</td>'+
+        '<td style="font-size:12px">'+(c.caller||'—')+'</td></tr>';}).join('')+
+    '</tbody></table></div>';
+}
+
+/* TOAST */
+var toastTimer;
+function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},4000);}
+
+/* INIT */
+document.getElementById('noticeBanner').addEventListener('DOMSubtreeModified',function(){
+  var shown=this.style.display!=='none';
+  document.getElementById('appLayout').style.marginTop=shown?'calc(var(--topbar) + 30px)':'var(--topbar)';
+});
+loadData();
+</script>
+</body>
+</html>

@@ -295,6 +295,32 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .disp-callback{background:var(--amber-50);color:var(--amber-800);} .disp-default{background:var(--surface-2);color:var(--text-2);}
 .call-empty { padding:1rem; text-align:center; color:var(--text-3); font-size:11px; }
 
+/* CALL LOG FORM */
+.log-form-wrap { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; margin-bottom:.875rem; }
+.log-form-hdr  { padding:.625rem 1.125rem; border-bottom:.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.log-form-body { padding:1rem 1.125rem; display:flex; flex-direction:column; gap:.75rem; }
+.lf-row   { display:flex; gap:.75rem; flex-wrap:wrap; }
+.lf-field { display:flex; flex-direction:column; gap:4px; flex:1; min-width:140px; }
+.lf-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; color:var(--text-3); }
+.lf-select,.lf-input,.lf-textarea {
+  width:100%; font-family:var(--font); font-size:13px;
+  background:var(--surface-2); border:.5px solid var(--border-md);
+  border-radius:var(--r-md); padding:7px 10px; color:var(--text-1);
+  outline:none; transition:border-color .15s;
+}
+.lf-select:focus,.lf-input:focus,.lf-textarea:focus { border-color:var(--purple-600); }
+.lf-textarea { resize:vertical; min-height:68px; }
+.lf-checks  { display:flex; gap:1.25rem; align-items:center; flex-wrap:wrap; }
+.lf-check   { display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; }
+.lf-check input { width:16px; height:16px; accent-color:var(--purple-600); cursor:pointer; }
+.lf-submit  { align-self:flex-start; background:var(--purple-600); color:#fff; border:none; border-radius:var(--r-md); padding:9px 22px; font-size:13px; font-weight:600; cursor:pointer; transition:background .15s; }
+.lf-submit:hover { background:var(--purple-800); }
+.lf-submit:disabled { background:var(--gray-200); cursor:not-allowed; }
+.lf-status  { font-size:11px; margin-top:2px; min-height:16px; }
+.lf-status.ok  { color:var(--green-600); }
+.lf-status.err { color:var(--red-600); }
+.lf-api-note { font-size:10px; color:var(--amber-600); background:var(--amber-50); border-radius:6px; padding:4px 10px; }
+
 .toast { position:fixed; bottom:20px; right:20px; background:var(--text-1); color:#fff; border-radius:var(--r-md); padding:8px 14px; font-size:12px; z-index:9999; display:none; max-width:280px; box-shadow:0 4px 12px rgba(0,0,0,.18); }
 .toast.show { display:block; }
 .notice-bar { background:var(--amber-50); border-bottom:.5px solid #EF9F27; padding:7px 1.25rem; font-size:11px; color:var(--amber-800); display:none; }
@@ -473,26 +499,12 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
         <div class="funnel-card">
           <div class="funnel-header">
             <div class="funnel-title"><svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Demand request pipeline</div>
-            <div class="funnel-hint">click steps to see lanes + bids</div>
+            <div class="funnel-hint">lane details shown below in Lane Visibility</div>
           </div>
           <div class="funnel-steps">
-            <div class="funnel-step clickable" id="drStep" onclick="toggleDrawer('dr')"><div class="fs-label">In op-search</div><div class="fs-val blue" id="drCountVal">—</div><div class="fs-hint fs-hint-click">▾ lanes + bids</div></div>
-            <div class="funnel-step clickable" id="tokStep" onclick="toggleDrawer('tok')"><div class="fs-label">Tokens paid</div><div class="fs-val purple" id="tokenDRVal">—</div><div class="fs-hint fs-hint-click">▾ paid lanes</div></div>
+            <div class="funnel-step" id="drStep"><div class="fs-label">In op-search</div><div class="fs-val blue" id="drCountVal">—</div><div class="fs-hint">live lanes below</div></div>
+            <div class="funnel-step" id="tokStep"><div class="fs-label">Tokens paid</div><div class="fs-val purple" id="tokenDRVal">—</div><div class="fs-hint">paid lanes below</div></div>
             <div class="funnel-step"><div class="fs-label">Conversion</div><div class="fs-val green" id="convRateVal">—</div><div class="fs-hint">token / search</div></div>
-          </div>
-          <div class="dr-drawer" id="drDrawer">
-            <div class="dr-drawer-header">
-              <div class="dr-drawer-title"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Live lanes + bid rates <span style="font-size:9px;color:var(--amber-600)">● lowest bids on demand</span></div>
-              <button class="dr-close-btn" onclick="toggleDrawer('dr')">✕</button>
-            </div>
-            <div class="dr-table-wrap"><table class="dr-table"><thead><tr><th>#</th><th>Demand ID</th><th>Route</th><th>Truck</th><th>Loading</th><th>Bid Rate</th><th>Token</th></tr></thead><tbody id="drTableBody"></tbody></table></div>
-          </div>
-          <div class="dr-drawer" id="tokDrawer">
-            <div class="dr-drawer-header">
-              <div class="dr-drawer-title"><svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Token paid lanes today</div>
-              <button class="dr-close-btn" onclick="toggleDrawer('tok')">✕</button>
-            </div>
-            <div class="dr-table-wrap"><table class="dr-table"><thead><tr><th>#</th><th>Demand ID</th><th>Route</th><th>Truck</th><th>Your Bid</th><th>Placed Rate</th></tr></thead><tbody id="tokTableBody"></tbody></table></div>
           </div>
         </div>
 
@@ -528,8 +540,50 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
           </div>
         </div>
 
-        <!-- 8. CALL HISTORY -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call History — MP Load Support</div>
+        <!-- 8. LOG A CALL -->
+        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Log a Call</div>
+        <div class="log-form-wrap">
+          <div class="log-form-hdr">
+            <div class="call-section-title"><svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Record outcome after each call</div>
+            <span id="lfApiNote" class="lf-api-note" style="display:none">⚠ API not set — saves disabled</span>
+          </div>
+          <div class="log-form-body">
+            <div class="lf-row">
+              <div class="lf-field">
+                <label class="lf-label" for="lfStatus">Call Status</label>
+                <select class="lf-select" id="lfStatus">
+                  <option value="">— select —</option>
+                  <option value="Connected">✅ Connected</option>
+                  <option value="Not Reachable">📵 Not Reachable</option>
+                  <option value="Callback">🔁 Callback</option>
+                </select>
+              </div>
+              <div class="lf-field">
+                <label class="lf-label" for="lfFollowup">Followup Date</label>
+                <input class="lf-input" type="date" id="lfFollowup">
+              </div>
+              <div class="lf-field">
+                <label class="lf-label" for="lfCaller">Your Name</label>
+                <input class="lf-input" type="text" id="lfCaller" placeholder="Enter your name">
+              </div>
+            </div>
+            <div class="lf-checks">
+              <label class="lf-check"><input type="checkbox" id="lfTraining"> Training Done</label>
+              <label class="lf-check"><input type="checkbox" id="lfInterested"> Operator Interested</label>
+            </div>
+            <div class="lf-field">
+              <label class="lf-label" for="lfNotes">Notes</label>
+              <textarea class="lf-textarea" id="lfNotes" placeholder="e.g. Operator said will pay token tomorrow, wants rate on NCR→HYD route…"></textarea>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <button class="lf-submit" id="lfSubmitBtn" onclick="submitCallLog()">Save Record</button>
+              <span class="lf-status" id="lfStatusMsg"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. CALL HISTORY -->
+        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Call History — MP Load Support</div>
         <div class="call-section">
           <div class="call-section-hdr">
             <div class="call-section-title"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Calling records</div>
@@ -556,6 +610,13 @@ var SHEET_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_KEY
                + '/gviz/tq?tqx=out:csv&gid=' + SHEET_GID;
 var REFRESH_MS = 10*60*1000;
 var PAGE_SIZE  = 30;
+
+/* ── CALL LOG API  ──────────────────────────────────────────────────────
+   Set API_URL to your Cloudflare Tunnel URL (from: cloudflared tunnel run).
+   Example: 'https://your-tunnel-name.trycloudflare.com'
+   Leave as '' to disable saving (form visible but Submit will warn).
+   ─────────────────────────────────────────────────────────────────────── */
+var API_URL = '';   // ← paste your tunnel URL here, no trailing slash
 
 /* STATE */
 var allData=[],filtered=[],currentCode=null,currentPage=1;
@@ -795,9 +856,6 @@ function selectOperator(code){
   try{renderProfile(row);}catch(e){console.error('renderProfile:',e);showToast('Profile error: '+e.message);}
 }
 function renderProfile(row){
-  drawerOpen=null;
-  ['drDrawer','tokDrawer'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('open');});
-  ['drStep','tokStep'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('active');});
   var code=(row.operator_code||'').toUpperCase(),ini=code.replace(/[^A-Z0-9]/g,'').substring(0,2);
   var pri=row.priority||'P3';
   var defMap={P0:'High LDP + High Token',P1:'High LDP + Low Token',P2:'Low LDP + High Token',P3:'Low LDP + Low Token'};
@@ -841,7 +899,6 @@ function renderProfile(row){
   var tokenLanes=parseTokenLanes(row.token_lane_details||'');
   var hist=parseHist(row.hist_token_details||'');
 
-  renderLiveDrawer(lanes,tokenSet);renderTokDrawer(tokenLanes);
   renderLaneTabs(lanes,tokenSet,tokenLanes,hist);renderActionBanner(drN,tokN,lanes,tokenSet);
 
   /* Vehicles */
@@ -850,14 +907,16 @@ function renderProfile(row){
   renderAvail(parseAvail(row.avail_vehicles||''));
   renderTyres(parseTyres(row.tyre_breakdown||''));
   renderCallHistory(row);
+  initLogForm();
   switchTab('live');
 }
 
 /* HOT TODAY */
 function renderHotToday(row){
   var bidToday=isTrueVal(row.bid_today),vaToday=isTrueVal(row.vehicle_available_today);
+  var vehSubmitted=isTrueVal(row.vehicle_submitted);
   var wrap=document.getElementById('hotTodayWrap'),grid=document.getElementById('htcGrid');
-  if(!bidToday&&!vaToday){wrap.style.display='none';return;}
+  if(!bidToday&&!vaToday&&!vehSubmitted){wrap.style.display='none';return;}
   wrap.style.display='block';
 
   // Activation score badge next to title
@@ -866,8 +925,9 @@ function renderHotToday(row){
   document.getElementById('htcTime').innerHTML=scStr;
 
   var parts=[];
-  if(bidToday)  parts.push('Bid (last 3h)');
-  if(vaToday)   parts.push('VA (last 4h)');
+  if(bidToday)     parts.push('Bid (last 3h)');
+  if(vaToday)      parts.push('VA (last 4h)');
+  if(vehSubmitted) parts.push('Vehicle Submitted ✓');
   set('htcTitle',parts.join(' + '));
 
   // grid: if 3+ signals, single column; if 2, side-by-side; if 1, single
@@ -920,6 +980,15 @@ function renderHotToday(row){
     html+='<div class="htc-box"><div class="htc-box-hdr"><span class="htc-box-icon">🟡</span><span class="htc-box-ttl">Vehicle Available (last 4h)</span>'+(avail.length?'<span class="htc-box-cnt">'+avail.length+'</span>':'')+'</div><div class="htc-items">'+vehHtml+'</div></div>';
   }
 
+  /* Vehicle Submitted Today box */
+  if(vehSubmitted){
+    html+='<div class="htc-box" style="border-color:#15803D;background:#F0FFF6;">'
+      +'<div class="htc-box-hdr"><span class="htc-box-icon">🚛</span>'
+      +'<span class="htc-box-ttl" style="color:#15803D;">Vehicle Submitted + Token Paid</span></div>'
+      +'<div class="htc-items"><div style="font-size:11px;color:#15803D;font-weight:600;padding:4px 0;">'
+      +'✅ Operator has submitted vehicle number with token payment today.</div></div></div>';
+  }
+
   grid.innerHTML=html;
 }
 
@@ -937,42 +1006,6 @@ function renderActionBanner(drN,tokN,lanes,tokenSet){
   else{icon.textContent='✅';title.textContent=tokN+' token'+(tokN>1?'s':'')+' paid · '+open.length+' lane'+(open.length!==1?'s':'')+' still open';sub.textContent=open.length?'Keep pushing — close the remaining open lanes.':'All live lanes converted today!';}
   if(best){var rate=best.bid!=null?best.bid:best.offered;var lbl=best.bid!=null?'lowest bid':'~rate';pitch.style.display='block';
     pitch.innerHTML='Pitch → <b>'+(best.route||'Demand '+best.did)+'</b>'+(rate?' · '+lbl+' <b>₹'+Math.round(rate).toLocaleString('en-IN')+'</b>':'')+(best.truck?' · '+best.truck:'')+' &nbsp;<span class="lane-did" onclick="copyText(\''+best.did+'\')">&#35;'+best.did+' ⧉</span>';}
-}
-
-/* DRAWERS */
-function toggleDrawer(name){
-  drawerOpen=drawerOpen===name?null:name;
-  document.getElementById('drDrawer').classList.toggle('open',drawerOpen==='dr');
-  document.getElementById('tokDrawer').classList.toggle('open',drawerOpen==='tok');
-  document.getElementById('drStep').classList.toggle('active',drawerOpen==='dr');
-  document.getElementById('tokStep').classList.toggle('active',drawerOpen==='tok');
-}
-function renderLiveDrawer(lanes,tokenSet){
-  var tb=document.getElementById('drTableBody');
-  if(!lanes.length){tb.innerHTML='<tr><td colspan="7" class="dr-empty">No live demand matches today</td></tr>';return;}
-  tb.innerHTML=lanes.map(function(l,i){
-    var paid=!!tokenSet[l.did];var badge=paid?'<span class="tok-badge tok-paid">✓ Paid</span>':'<span class="tok-badge tok-open">Open</span>';
-    var bidCell;
-    if(l.lows.length){var extra=l.lows.length>1?' <span style="color:var(--text-3);font-size:10px">+'+(l.lows.length-1)+'</span>':'';var ownTag=l.own!=null?'<div style="font-size:10px;color:var(--blue-600)">you ₹'+Math.round(l.own).toLocaleString('en-IN')+(l.isLow?' · L1':'')+'</div>':'';bidCell='<span class="bid-in-row'+(l.isLow?' top3':'')+'" title="'+bidsTitle(l)+'">₹'+Math.round(l.lows[0]).toLocaleString('en-IN')+extra+'</span>'+ownTag;}
-    else if(l.offered!=null){bidCell='<span style="font-size:11px;color:var(--blue-600);font-weight:600">~₹'+Math.round(l.offered).toLocaleString('en-IN')+'</span>';}
-    else{bidCell='<span class="bid-none">no bid</span>';}
-    return '<tr><td style="color:var(--text-3);font-size:11px;width:24px">'+(i+1)+'</td>'+
-      '<td><span class="did-txt" onclick="copyText(\''+l.did+'\')">'+l.did+'</span></td>'+
-      '<td><span class="route-txt">'+(l.route||'—')+'</span></td>'+
-      '<td><span class="meta-txt">'+(l.truck||'—')+'</span></td>'+
-      '<td><span class="meta-txt">'+(l.loading||'—')+'</span></td>'+
-      '<td>'+bidCell+'</td><td>'+badge+'</td></tr>';}).join('');
-}
-function renderTokDrawer(tl){
-  var tb=document.getElementById('tokTableBody');
-  if(!tl.length){tb.innerHTML='<tr><td colspan="6" class="dr-empty">No tokens paid today</td></tr>';return;}
-  tb.innerHTML=tl.map(function(l,i){
-    return '<tr><td style="color:var(--text-3);font-size:11px;width:24px">'+(i+1)+'</td>'+
-      '<td><span class="did-txt" onclick="copyText(\''+l.did+'\')">'+l.did+'</span></td>'+
-      '<td><span class="route-txt">'+(l.route||'—')+'</span></td>'+
-      '<td><span class="meta-txt">'+(l.truck||'—')+'</span></td>'+
-      '<td>'+(l.bid!=null?'<span class="bid-in-row">₹'+Math.round(l.bid).toLocaleString('en-IN')+'</span>':'<span class="bid-none">—</span>')+'</td>'+
-      '<td>'+(l.placed!=null?'<span class="lane-placed">₹'+Math.round(l.placed).toLocaleString('en-IN')+'</span>':'<span class="bid-none">—</span>')+'</td></tr>';}).join('');
 }
 
 /* LANE TABS */
@@ -1077,6 +1110,68 @@ function renderTyres(tyres){
   el.innerHTML=tyres.length?tyres.map(function(t){var pct=t.total>0?Math.round(t.verified/t.total*100):0;
     return '<div class="tyre-row"><div class="tyre-row-top"><span class="tyre-name">'+(t.tyres==='Unknown'?'Unknown':t.tyres+' Tyres')+'</span><span class="tyre-counts"><span>'+t.verified+'</span> / '+t.total+' verified</span></div><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%"></div></div></div>';}).join('')
     :'<div style="font-size:11px;color:var(--text-3)">No tyre data</div>';
+}
+
+/* CALL LOG FORM */
+function initLogForm(){
+  /* Show API warning banner if URL not set */
+  var note=document.getElementById('lfApiNote');
+  if(note) note.style.display=API_URL?'none':'block';
+}
+
+function submitCallLog(){
+  var op=currentCode;
+  if(!op){showToast('Select an operator first.');return;}
+  if(!API_URL){showToast('API URL not configured — set API_URL in the code.');return;}
+
+  var status  = document.getElementById('lfStatus').value;
+  var followup= document.getElementById('lfFollowup').value;
+  var caller  = document.getElementById('lfCaller').value.trim();
+  var training= document.getElementById('lfTraining').checked;
+  var interested=document.getElementById('lfInterested').checked;
+  var notes   = document.getElementById('lfNotes').value.trim();
+
+  if(!status){showToast('Please select a call status.');return;}
+
+  var btn=document.getElementById('lfSubmitBtn');
+  var msg=document.getElementById('lfStatusMsg');
+  btn.disabled=true; btn.textContent='Saving…';
+  msg.className='lf-status'; msg.textContent='';
+
+  fetch(API_URL+'/call',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      operator_code:op,
+      call_status:status,
+      training_done:training,
+      interested:interested,
+      followup_date:followup||null,
+      notes:notes,
+      caller:caller
+    })
+  })
+  .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+  .then(function(res){
+    if(res.ok){
+      msg.className='lf-status ok'; msg.textContent='✓ Saved successfully!';
+      /* reset form */
+      document.getElementById('lfStatus').value='';
+      document.getElementById('lfFollowup').value='';
+      document.getElementById('lfNotes').value='';
+      document.getElementById('lfTraining').checked=false;
+      document.getElementById('lfInterested').checked=false;
+      showToast('Call log saved for '+op);
+    } else {
+      msg.className='lf-status err'; msg.textContent='Error: '+(res.d.error||'save failed');
+    }
+  })
+  .catch(function(e){
+    msg.className='lf-status err'; msg.textContent='Network error — is the API running?';
+  })
+  .finally(function(){
+    btn.disabled=false; btn.textContent='Save Record';
+  });
 }
 
 /* CALL HISTORY */

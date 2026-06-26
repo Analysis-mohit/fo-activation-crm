@@ -613,7 +613,7 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
    Pipeline writes here every run (activation_calling_pipeline.py)
    ─────────────────────────────────────────────────────────────────── */
 var SHEET_KEY  = '1nUhQ5SX0KpE83pYaAmtmXB1HBEFNoBKdc92bWSrhimQ';
-var SHEET_GID  = '351915797';
+var SHEET_GID  = '0';
 var SHEET_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_KEY
                + '/gviz/tq?tqx=out:csv&gid=' + SHEET_GID;
 var REFRESH_MS = 10*60*1000;
@@ -969,7 +969,8 @@ function renderHotToday(row){
       var truck=l.truck?'<span style="color:var(--text-3)"> · '+l.truck+'</span>':'';
       var amt=l.bid!=null?'<span class="amt">₹'+Math.round(l.bid).toLocaleString('en-IN')+'</span>':'';
       var paid=l.tokenPaid?'<span style="font-size:9px;font-weight:700;background:var(--green-50);color:var(--green-800);padding:1px 5px;border-radius:8px;margin-left:3px">✓ Paid</span>':'';
-      return '<div class="htc-item"><div class="htc-item-dot"></div><div class="htc-item-txt"><b>'+route+'</b>'+truck+(amt?' · '+amt:'')+paid+'</div></div>';
+      var didTag=l.did?'<span style="font-size:9px;color:var(--text-3);font-family:var(--mono);margin-left:3px">#'+l.did+'</span>':'';
+      return '<div class="htc-item"><div class="htc-item-dot"></div><div class="htc-item-txt"><b>'+route+'</b>'+truck+(amt?' · '+amt:'')+paid+didTag+'</div></div>';
     }).join('')+(btLanes.length>3?'<div style="font-size:10px;color:#A05018;margin-top:3px">+'+(btLanes.length-3)+' more demands…</div>':'')
     :'<div class="htc-empty">Rate entered — demand details unavailable</div>';
     var cntLabel=btLanes.length+(paidCount?' ('+paidCount+' paid)':'');
@@ -1004,11 +1005,33 @@ function renderHotToday(row){
         +'<span style="font-size:11px;font-weight:700;color:#15803D;">Accepted: <b>'+accAge+'</b> — call now for handholding!</span>'
         +'</div>'
       : '';
+    // Parse accepted_lane_details: did####route####truck####opfreight####placed####method####consignment_code####accepted_time
+    var accRaw=row.accepted_lane_details||'';
+    var accItems=accRaw?accRaw.split('||||').map(function(seg){
+      seg=seg.trim();if(!seg)return null;
+      var p=seg.split('####');
+      return{did:(p[0]||'').trim(),route:(p[1]||'').trim(),truck:(p[2]||'').trim(),
+             cc:(p[6]||'').trim(),ts:(p[7]||'').trim(),state:(p[8]||'').trim()};
+    }).filter(Boolean):[];
+    // state colour map
+    var _stateClr={GOING_TO_LOAD:'#15803D',LOADING:'#0F6E56',LOADED:'#0C447C',
+                   IN_TRANSIT:'#534AB7',DELIVERED:'#3B6D11',CANCELLED:'#A32D2D',
+                   REJECTED:'#A32D2D'};
+    var accDetails=accItems.length?accItems.map(function(a){
+      var route=a.route||(a.did?'Demand #'+a.did:'Unknown demand');
+      var ccTag=a.cc?'<span style="font-size:9px;font-family:var(--mono);color:#0F6E56;background:#E1F5EE;padding:1px 6px;border-radius:6px;margin-left:4px">'+a.cc+'</span>':'';
+      var didTag=a.did?'<span style="font-size:9px;color:var(--text-3);font-family:var(--mono);margin-left:3px">#'+a.did+'</span>':'';
+      var timeTag=a.ts?'<span style="font-size:9px;color:#15803D;margin-left:4px">@ '+a.ts.slice(11,16)+'</span>':'';
+      var stClr=(_stateClr[a.state]||'#5F5E5A');
+      var stateTag=a.state?'<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:4px;background:rgba(0,0,0,.05);color:'+stClr+'">'+a.state.replace(/_/g,' ')+'</span>':'';
+      return '<div class="htc-item"><div class="htc-item-dot" style="background:#15803D"></div>'
+        +'<div class="htc-item-txt"><b>'+route+'</b>'+ccTag+didTag+timeTag+stateTag+'</div></div>';
+    }).join(''):'';
     html+='<div class="htc-box" style="border-color:#15803D;background:#F0FFF6;border-width:2px;">'
       +'<div class="htc-box-hdr"><span class="htc-box-icon">🎉</span>'
       +'<span class="htc-box-ttl" style="color:#15803D;font-weight:800;">Bid Accepted / GOING_TO_LOAD</span>'
       +'<span class="htc-box-cnt" style="background:#15803D;color:#fff;">Stage 4</span></div>'
-      +'<div class="htc-items">'+accAgeBar
+      +'<div class="htc-items">'+accAgeBar+accDetails
       +'<div style="font-size:11px;color:#15803D;font-weight:600;padding:4px 0;">'
       +'Call immediately — handhold loading address, POC number, vehicle readiness &amp; advance policy.</div>'
       +'</div></div>';

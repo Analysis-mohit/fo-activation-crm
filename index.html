@@ -66,12 +66,18 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .filter-row { display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
 .filter-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); flex-shrink:0; width:40px; }
 .pri-btn { height:20px; padding:0 7px; border-radius:20px; font-size:9px; font-weight:700; border:.5px solid var(--border-md); background:var(--surface-2); cursor:pointer; color:var(--text-2); transition:all .1s; white-space:nowrap; }
-.pri-btn.a-all  { background:var(--text-1);  color:#fff; border-color:var(--text-1); }
-.pri-btn.a-p0   { background:var(--red-600);    color:#fff; border-color:var(--red-600); }
-.pri-btn.a-p1   { background:var(--purple-600); color:#fff; border-color:var(--purple-600); }
-.pri-btn.a-p2   { background:var(--amber-600);  color:#fff; border-color:var(--amber-600); }
-.pri-btn.a-p3   { background:var(--gray-600);   color:#fff; border-color:var(--gray-600); }
+.pri-btn.a-all  { background:var(--text-1);      color:#fff; border-color:var(--text-1); }
+.pri-btn.a-s4   { background:var(--green-600);   color:#fff; border-color:var(--green-600); }
+.pri-btn.a-s2   { background:var(--red-600);     color:#fff; border-color:var(--red-600); }
+.pri-btn.a-s3   { background:var(--amber-600);   color:#fff; border-color:var(--amber-600); }
+.pri-btn.a-s5   { background:var(--gray-600);    color:#fff; border-color:var(--gray-600); }
 .pri-btn.a-hot  { background:#C2500A; color:#fff; border-color:#C2500A; }
+/* Stage badges in lead cards */
+.lb-s4 { background:var(--green-50);  color:var(--green-800); }
+.lb-s2 { background:var(--red-50);    color:var(--red-800); }
+.lb-s3 { background:var(--amber-50);  color:var(--amber-800); }
+.lb-s5 { background:var(--gray-50);   color:var(--gray-600); }
+.lb-red-dr { background:#FFF0F0; color:#A32D2D; border:.5px solid #F5C0C0; }
 .f-sel { height:22px; padding:0 6px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); color:var(--text-1); font-size:10px; cursor:pointer; outline:none; flex:1; min-width:58px; }
 .lead-search-wrap { padding:.3rem .75rem; border-bottom:.5px solid var(--border); flex-shrink:0; position:relative; }
 .lead-search-wrap svg { position:absolute; left:18px; top:50%; transform:translateY(-50%); width:12px; height:12px; stroke:var(--text-3); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
@@ -121,16 +127,17 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 
 .section-lbl { font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text-3); margin-bottom:7px; display:flex; align-items:center; gap:5px; }
 
-/* PRIORITY CONTEXT */
+/* STAGE CONTEXT (profile card) */
 .pcc { border-radius:var(--r-xl); padding:.75rem 1.125rem; margin-bottom:.875rem; border:.5px solid; display:flex; align-items:center; gap:12px; }
-.pcc.p0{background:#FCEBEB;border-color:#E8BEBE;} .pcc.p1{background:var(--purple-50);border-color:var(--purple-200);}
-.pcc.p2{background:var(--amber-50);border-color:#EFD4A0;} .pcc.p3{background:var(--gray-50);border-color:var(--gray-200);}
+.pcc.stage-4{background:var(--green-50);border-color:#B0D98E;} .pcc.stage-2{background:var(--red-50);border-color:#E8BEBE;}
+.pcc.stage-3{background:var(--amber-50);border-color:#EFD4A0;} .pcc.stage-5{background:var(--gray-50);border-color:var(--gray-200);}
 .pcc-badge { padding:3px 12px; border-radius:20px; font-size:13px; font-weight:800; flex-shrink:0; }
-.p0 .pcc-badge{background:#A32D2D;color:#fff;} .p1 .pcc-badge{background:var(--purple-600);color:#fff;}
-.p2 .pcc-badge{background:var(--amber-600);color:#fff;} .p3 .pcc-badge{background:var(--gray-600);color:#fff;}
+.stage-4 .pcc-badge{background:var(--green-600);color:#fff;} .stage-2 .pcc-badge{background:var(--red-600);color:#fff;}
+.stage-3 .pcc-badge{background:var(--amber-600);color:#fff;} .stage-5 .pcc-badge{background:var(--gray-600);color:#fff;}
 .pcc-body { flex:1; min-width:0; }
 .pcc-def { font-size:11px; font-weight:700; margin-bottom:5px; }
-.p0 .pcc-def{color:#791F1F;} .p1 .pcc-def{color:var(--purple-800);} .p2 .pcc-def{color:var(--amber-800);} .p3 .pcc-def{color:var(--gray-600);}
+.stage-4 .pcc-def{color:var(--green-800);} .stage-2 .pcc-def{color:var(--red-800);}
+.stage-3 .pcc-def{color:var(--amber-800);} .stage-5 .pcc-def{color:var(--gray-600);}
 .pcc-stats { display:flex; gap:12px; flex-wrap:wrap; }
 .pcc-stat { text-align:center; } .pcc-val { font-size:16px; font-weight:700; line-height:1; } .pcc-lbl { font-size:9px; color:var(--text-3); margin-top:2px; }
 .pcc-right { text-align:right; flex-shrink:0; }
@@ -360,14 +367,13 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
   <aside class="lead-panel">
     <div class="filter-bar">
       <div class="filter-row">
-        <span class="filter-lbl">Priority</span>
-        <button class="pri-btn a-all" data-pri="P0P1" title="P0 + P1 + all hot operators (default)">P0+P1+Hot</button>
-        <button class="pri-btn" data-pri="ALL" title="Show all 39K operators (slower)">All</button>
-        <button class="pri-btn" data-pri="P0">P0</button>
-        <button class="pri-btn" data-pri="P1">P1</button>
-        <button class="pri-btn" data-pri="P2">P2</button>
-        <button class="pri-btn" data-pri="P3">P3</button>
-        <button class="pri-btn" id="hotFilterBtn" data-pri="HOT" title="Bid today or vehicle available today">🔴 Hot</button>
+        <span class="filter-lbl">Stage</span>
+        <button class="pri-btn a-all" data-pri="ALL">All</button>
+        <button class="pri-btn" data-pri="Stage 4" title="Post acceptance/rejection — call immediately">🎉 P0 - Post Acceptance</button>
+        <button class="pri-btn" data-pri="Stage 2" title="Bid submitted, token not paid — highest outbound priority">🔴 P1 - Bid Submitted</button>
+        <button class="pri-btn" data-pri="Stage 3" title="Token paid, vehicle submitted — needs to win bid">🟡 P3 - Token Paid</button>
+        <button class="pri-btn" data-pri="Stage 5" title="Non-active FO qualifying on DRs">P4 - Non Active FO</button>
+        <button class="pri-btn" id="hotFilterBtn" data-pri="HOT" title="Any today activity">🔴 Hot</button>
       </div>
       <div class="filter-row">
         <span class="filter-lbl">Filter</span>
@@ -378,7 +384,9 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
           <option value="30+ days">30+ days</option>
         </select>
         <select class="f-sel" id="fDR">
-          <option value="">All DR tiers</option>
+          <option value="">All DR types</option>
+          <option value="Red DR">🔴 Red DR (&lt;300 FOs)</option>
+          <option value="Normal DR">Normal DR</option>
           <option value="High DR">High DR</option>
           <option value="Mid DR">Mid DR</option>
           <option value="Low DR">Low DR</option>
@@ -425,9 +433,9 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
       <div id="profileSection" style="display:none">
 
         <!-- 1. PRIORITY CONTEXT -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Activation Priority</div>
+        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Activation Stage</div>
         <div class="pcc" id="pccCard">
-          <div class="pcc-badge" id="pccBadge">P0</div>
+          <div class="pcc-badge" id="pccBadge">S5</div>
           <div class="pcc-body">
             <div class="pcc-def" id="pccDef">—</div>
             <div class="pcc-stats">
@@ -604,8 +612,8 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
    Sheet must be shared as "Anyone with the link can view"
    Pipeline writes here every run (activation_calling_pipeline.py)
    ─────────────────────────────────────────────────────────────────── */
-var SHEET_KEY  = '1tMvabz3c4-Fj2DuKnEFSzf49AHa3iBbElixBsaLhrmA';
-var SHEET_GID  = '2088843534';
+var SHEET_KEY  = '1nUhQ5SX0KpE83pYaAmtmXB1HBEFNoBKdc92bWSrhimQ';
+var SHEET_GID  = '0';
 var SHEET_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_KEY
                + '/gviz/tq?tqx=out:csv&gid=' + SHEET_GID;
 var REFRESH_MS = 10*60*1000;
@@ -622,7 +630,7 @@ var API_URL = '';   // ← paste your tunnel URL here, no trailing slash
 var allData=[],filtered=[],currentCode=null,currentPage=1;
 // Default: P0P1 = show only P0 + P1 + hot operators (fast load)
 // Change to 'ALL' to see everything including P2/P3
-var filterPri='P0P1',filterHot=false,drawerOpen=null;
+var filterPri='ALL',filterHot=false,drawerOpen=null;
 var activeTyre=null,currentLanes=[],currentTokenSet={};
 
 /* HELPERS */
@@ -646,6 +654,7 @@ function minsAgo(tsStr) {
   return mins + ' mins ago';
 }
 function priColor(p){return{P0:'#A32D2D',P1:'var(--purple-600)',P2:'var(--amber-600)',P3:'var(--gray-600)'}[p]||'var(--gray-600)';}
+function stageColor(s){return{'Stage 4':'var(--green-600)','Stage 2':'var(--red-600)','Stage 3':'var(--amber-600)','Stage 5':'var(--gray-600)'}[s]||'var(--gray-600)';}
 function copyText(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){showToast('Copied: '+t);});}else showToast(t);}
 function set(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
 function fmtN(n){var v=Number(n||0);return isNaN(v)?'0':v.toLocaleString();}
@@ -711,49 +720,40 @@ function applyFilters(){
   var rm=document.getElementById('fRM').value,called=document.getElementById('fCalled').value;
   var search=document.getElementById('leadSearch').value.trim().toUpperCase();
   filtered=allData.filter(function(row){
-    var rowIsHot=isTrueVal(row.bid_today)||isTrueVal(row.vehicle_available_today)||(row.hot_flag||'')!=='';
+    var rowIsHot=isTrueVal(row.bid_today)||isTrueVal(row.vehicle_available_today)||isTrueVal(row.accepted_today)||(row.hot_flag||'')!=='';
     if(filterHot&&!rowIsHot)return false;
     if(!filterHot&&filterPri!=='ALL'){
-      if(filterPri==='P0P1'){
-        // Show P0 + P1 + any hot operator (P2/P3 hot operators still surface)
-        if(!rowIsHot&&row.priority!=='P0'&&row.priority!=='P1')return false;
-      } else {
-        if(row.priority!==filterPri)return false;
-      }
+      if(row.stage!==filterPri)return false;
     }
     if(recency&&row.recency_tier!==recency)return false;
-    if(dr&&row.dr_tier!==dr)return false;
+    // DR filter: Red DR / Normal DR use dr_supply_type; High/Mid/Low use dr_tier
+    if(dr){
+      if(dr==='Red DR'||dr==='Normal DR'){if(row.dr_supply_type!==dr)return false;}
+      else{if(row.dr_tier!==dr)return false;}
+    }
     if(rm&&(row.rm_name||'').toUpperCase()!==rm.toUpperCase())return false;
     if(search&&!(row.operator_code||'').toUpperCase().includes(search)&&!(row.rm_name||'').toUpperCase().includes(search))return false;
     if(called==='called'&&!row.last_call_date)return false;
     if(called==='not_called'&&row.last_call_date)return false;
     return true;
   });
-  // In P0P1 mode, cap P1 at top 1000 to keep the list fast
-  if(filterPri==='P0P1'&&!filterHot){
-    var p1Seen=0;
-    filtered=filtered.filter(function(row){
-      if(row.priority==='P1'){p1Seen++;return p1Seen<=1000;}
-      return true;
-    });
-  }
   currentPage=1;
   document.getElementById('filteredCount').textContent=filtered.length.toLocaleString('en-IN');
   renderLeadList();
 }
+var _stageClass={'Stage 4':'a-s4','Stage 2':'a-s2','Stage 3':'a-s3','Stage 5':'a-s5','ALL':'a-all'};
 document.querySelectorAll('.pri-btn').forEach(function(btn){
   btn.addEventListener('click',function(){
     if(btn.dataset.pri==='HOT'){
-      filterHot=!filterHot;filterPri='P0P1';
+      filterHot=!filterHot;filterPri='ALL';
       document.querySelectorAll('.pri-btn:not([data-pri="HOT"])').forEach(function(b){b.className='pri-btn';});
-      document.querySelector('.pri-btn[data-pri="P0P1"]').classList.add('a-all');
+      document.querySelector('.pri-btn[data-pri="ALL"]').classList.add('a-all');
       btn.className='pri-btn'+(filterHot?' a-hot':'');
     }else{
       filterHot=false;document.getElementById('hotFilterBtn').className='pri-btn';
       document.querySelectorAll('.pri-btn:not([data-pri="HOT"])').forEach(function(b){b.className='pri-btn';});
       filterPri=btn.dataset.pri;
-      var cls=filterPri==='ALL'||filterPri==='P0P1'?'a-all':'a-'+filterPri.toLowerCase();
-      btn.classList.add(cls);
+      btn.classList.add(_stageClass[filterPri]||'a-all');
     }
     applyFilters();
   });
@@ -778,38 +778,42 @@ function renderLeadList(){
   if(!page.length){document.getElementById('leadList').innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--text-3);font-size:12px">No leads match.</div>';return;}
   var recCls={'Last 7 days':'lb-rec-7','8-30 days':'lb-rec-30','30+ days':'lb-rec-old'};
   var drCls={'High DR':'lb-dr-h','Mid DR':'lb-dr-m','Low DR':'lb-dr-l'};
-  var priCls={P0:'lb-p0',P1:'lb-p1',P2:'lb-p2',P3:'lb-p3'};
+  var stageCls={'Stage 4':'lb-s4','Stage 2':'lb-s2','Stage 3':'lb-s3','Stage 5':'lb-s5'};
+  var stageLbl={'Stage 4':'P0 - Post Acceptance','Stage 2':'P1 - Bid Submitted','Stage 3':'P3 - Token Paid','Stage 5':'P4 - Non Active FO'};
   document.getElementById('leadList').innerHTML=page.map(function(row){
-    var code=(row.operator_code||'').toUpperCase(),pri=row.priority||'P3';
-    var bidT=isTrueVal(row.bid_today), vaT=isTrueVal(row.vehicle_available_today);
-    var isHot=bidT||vaT||(row.hot_flag||'')!=='';
+    var code=(row.operator_code||'').toUpperCase();
+    var stage=row.stage||'Stage 5';
+    var bidT=isTrueVal(row.bid_today), vaT=isTrueVal(row.vehicle_available_today), accT=isTrueVal(row.accepted_today);
+    var isHot=bidT||vaT||accT||(row.hot_flag||'')!=='';
     var isSheet=(row.source||'')==='Sheet';
+    var isRedDR=(row.dr_supply_type||'')==='Red DR';
     var active=code===currentCode?' active':'',hotCls=isHot?' is-hot':'';
-    var pB='<span class="lb '+priCls[pri]+'">'+pri+'</span>';
+    var pB='<span class="lb '+(stageCls[stage]||'lb-s5')+'">'+(stageLbl[stage]||stage)+'</span>';
     var rB=row.recency_tier?'<span class="lb '+(recCls[row.recency_tier]||'lb-rec-old')+'">'+row.recency_tier+'</span>':'';
     var dB=row.dr_tier?'<span class="lb '+(drCls[row.dr_tier]||'lb-dr-l')+'">'+row.dr_tier+'</span>':'';
+    var redDrB=isRedDR?'<span class="lb lb-red-dr">🔴 Red DR</span>':'';
     // Hot badges: time-window aware labels
     var hotB='';
-    if(bidT&&vaT) hotB='<span class="lb lb-hot">BID+VA (3h)</span>';
+    if(accT)      hotB='<span class="lb lb-s4">🎉 Accepted</span>';
+    else if(bidT&&vaT) hotB='<span class="lb lb-hot">BID+VA</span>';
     else if(bidT) hotB='<span class="lb lb-hot">BID (3h)</span>';
     else if(vaT)  hotB='<span class="lb" style="background:#EAF3DE;color:#27500A">VA (4h)</span>';
 
-    // Activation score badge (top 200+ = fire, 100+ = warm, rest = plain)
-    var sc=parseInt(row.activation_score||'0',10);
-    var scColor=sc>=100?'#C2500A':sc>=30?'#534AB7':'#9A9890';
+    // Activation score badge
+    var sc=parseFloat(row.activation_score||'0');
+    var scColor=sc>=50?'#C2500A':sc>=20?'#534AB7':'#9A9890';
     var scB=sc>0?'<span class="lb lb-score" style="color:'+scColor+'">#'+sc+'</span>':'';
     var sheetB=isSheet?'<span class="lb lb-sheet">Sheet</span>':'';
     var hotDot=isHot?'<span class="hot-dot"></span>':'';
-    // Bid recency tag — shown if bid was entered in last 3h
-    var bidAge=bidT?minsAgo(row.last_bid_time||''):'';
-    var bidAgeTag=bidAge?'<span style="font-size:8.5px;font-weight:700;color:#C2500A;background:#FFF0E6;padding:1px 6px;border-radius:8px;margin-left:3px">bid '+bidAge+'</span>':'';
+    var bidAge=bidT?minsAgo(row.last_bid_time||''):(accT?minsAgo(row.last_accepted_time||''):'');
+    var bidAgeTag=bidAge?'<span style="font-size:8.5px;font-weight:700;color:#C2500A;background:#FFF0E6;padding:1px 6px;border-radius:8px;margin-left:3px">'+(accT?'accepted ':'bid ')+bidAge+'</span>':'';
     var lastCall='';
     if(row.last_call_date){var clr=callDotColor(row.last_call_disposition);lastCall='<div class="last-call-line"><div class="call-dot-sm" style="background:'+clr+'"></div>'+row.last_call_date+' · '+(row.last_call_disposition||'Called')+(row.last_caller?' · '+row.last_caller:'')+'</div>';}
     return '<div class="lead-row'+active+hotCls+'" data-code="'+code+'" onclick="selectOperator(\''+code+'\')">'+
       '<div class="lead-rank">'+(row.calling_rank||'—')+'</div>'+
       '<div class="lead-body">'+
         '<div class="lead-top-row"><span class="lead-code">'+code+'</span>'+hotDot+bidAgeTag+'</div>'+
-        '<div class="lead-badges">'+scB+pB+hotB+rB+dB+sheetB+'<span style="font-size:9px;color:var(--text-3)">'+(row.rm_name||'').toUpperCase()+'</span></div>'+
+        '<div class="lead-badges">'+scB+pB+hotB+redDrB+rB+dB+sheetB+'<span style="font-size:9px;color:var(--text-3)">'+(row.rm_name||'').toUpperCase()+'</span></div>'+
         lastCall+
       '</div></div>';
   }).join('');
@@ -825,14 +829,16 @@ topSearch.addEventListener('input',function(){
   if(!matches.length){topSugg.innerHTML='<div class="sug-no-result">No operators found</div>';topSugg.style.display='block';return;}
   topSugg.innerHTML=matches.map(function(r){
     var code=(r.operator_code||'').toUpperCase(),ini=code.replace(/[^A-Z0-9]/g,'').substring(0,2);
-    var pri=r.priority||'P3';var priColors={P0:'#FCEBEB',P1:'var(--purple-50)',P2:'var(--amber-50)',P3:'var(--gray-50)'};
-    var isHot=isTrueVal(r.bid_today)||isTrueVal(r.vehicle_available_today);
+    var st=r.stage||'Stage 5';
+    var stBg={'Stage 4':'#EAF3DE','Stage 2':'#FCEBEB','Stage 3':'#FAEEDA','Stage 5':'#F1EFE8'}[st]||'#F1EFE8';
+    var stShort={'Stage 4':'P0','Stage 2':'P1','Stage 3':'P3','Stage 5':'P4'}[st]||'P4';
+    var isHot=isTrueVal(r.bid_today)||isTrueVal(r.vehicle_available_today)||isTrueVal(r.accepted_today);
     var hotTag=isHot?'<span style="font-size:9px;color:#C2500A;font-weight:700">● Hot</span> ':'';
     var lastCall=r.last_call_date?'📞 '+r.last_call_date+' · '+(r.last_call_disposition||'Called'):'Not called';
     return '<div class="sug-item" data-code="'+code+'">'+
-      '<div class="sug-avatar" style="background:'+priColors[pri]+';color:'+priColor(pri)+'">'+ini+'</div>'+
+      '<div class="sug-avatar" style="background:'+stBg+';color:'+stageColor(st)+'">'+ini+'</div>'+
       '<div><div class="sug-code">'+hotTag+code+'</div><div class="sug-rm">'+(r.rm_name||'—').toUpperCase()+'</div></div>'+
-      '<div class="sug-right"><div class="sug-pri" style="background:'+priColor(pri)+';color:#fff">'+pri+'</div><div class="sug-call">'+lastCall+'</div></div>'+
+      '<div class="sug-right"><div class="sug-pri" style="background:'+stageColor(st)+';color:#fff">'+stShort+'</div><div class="sug-call">'+lastCall+'</div></div>'+
     '</div>';
   }).join('');
   topSugg.querySelectorAll('.sug-item').forEach(function(el){el.addEventListener('click',function(){topSearch.value=el.dataset.code;topClear.style.display='block';topSugg.style.display='none';selectOperator(el.dataset.code);});});
@@ -858,12 +864,20 @@ function selectOperator(code){
 function renderProfile(row){
   var code=(row.operator_code||'').toUpperCase(),ini=code.replace(/[^A-Z0-9]/g,'').substring(0,2);
   var pri=row.priority||'P3';
-  var defMap={P0:'High LDP + High Token',P1:'High LDP + Low Token',P2:'Low LDP + High Token',P3:'Low LDP + Low Token'};
-  var avatarBg={P0:'#FCEBEB',P1:'var(--purple-50)',P2:'var(--amber-50)',P3:'var(--gray-50)'}[pri]||'var(--purple-50)';
+  var stage=row.stage||'Stage 5';
+  var stageCssMap={'Stage 4':'stage-4','Stage 2':'stage-2','Stage 3':'stage-3','Stage 5':'stage-5'};
+  var stageBadgeMap={'Stage 4':'P0 - Post Acceptance','Stage 2':'P1 - Bid Submitted','Stage 3':'P3 - Token Paid','Stage 5':'P4 - Non Active FO'};
+  var stageDefMap={
+    'Stage 4':'Accepted a load today — highest priority',
+    'Stage 2':'Placed bid today — token not yet paid',
+    'Stage 3':'Token/vehicle submitted — awaiting acceptance',
+    'Stage 5':'No activity today — qualify on DR supply'
+  };
+  var avatarBg={'Stage 4':'#EAF3DE','Stage 2':'#FCEBEB','Stage 3':'#FAEEDA','Stage 5':'#F1EFE8'}[stage]||'#F1EFE8';
 
-  /* Priority context */
-  var card=document.getElementById('pccCard');if(card)card.className='pcc '+pri.toLowerCase();
-  set('pccBadge',pri);set('pccDef',defMap[pri]||'');
+  /* Stage context */
+  var card=document.getElementById('pccCard');if(card)card.className='pcc '+(stageCssMap[stage]||'stage-5');
+  set('pccBadge',stageBadgeMap[stage]||stage);set('pccDef',stageDefMap[stage]||'');
   set('pccLDPs',fmtN(row.lifetime_ldps));set('pccToks',fmtN(row.lifetime_tokens));
   set('pccDRs',fmtN(row.appeared_in_drs));set('pccTrips',fmtN(row.life_time_trips));
   set('pccRank','Rank #'+(row.calling_rank||'—'));
@@ -874,7 +888,7 @@ function renderProfile(row){
   renderHotToday(row);
 
   /* Profile */
-  var av=document.getElementById('profileAvatar');if(av){av.textContent=ini;av.style.background=avatarBg;av.style.color=priColor(pri);}
+  var av=document.getElementById('profileAvatar');if(av){av.textContent=ini;av.style.background=avatarBg;av.style.color=stageColor(stage);}
   var pc=document.getElementById('profileCode');if(pc){pc.textContent=code;pc.onclick=function(){copyText(code);};}
   set('profileRM','RM: '+(row.rm_name?row.rm_name.toUpperCase():'—'));
   set('scoreVal',fmtN(row.fo_activity_score));
@@ -914,20 +928,21 @@ function renderProfile(row){
 /* HOT TODAY */
 function renderHotToday(row){
   var bidToday=isTrueVal(row.bid_today),vaToday=isTrueVal(row.vehicle_available_today);
-  var vehSubmitted=isTrueVal(row.vehicle_submitted);
+  var vehSubmitted=isTrueVal(row.vehicle_submitted),acceptedToday=isTrueVal(row.accepted_today);
   var wrap=document.getElementById('hotTodayWrap'),grid=document.getElementById('htcGrid');
-  if(!bidToday&&!vaToday&&!vehSubmitted){wrap.style.display='none';return;}
+  if(!bidToday&&!vaToday&&!vehSubmitted&&!acceptedToday){wrap.style.display='none';return;}
   wrap.style.display='block';
 
   // Activation score badge next to title
-  var sc=parseInt(row.activation_score||'0',10);
+  var sc=parseFloat(row.activation_score||'0');
   var scStr=sc>0?' <span style="font-size:10px;font-weight:800;background:#534AB7;color:#fff;padding:1px 7px;border-radius:10px;">Score: '+sc+'</span>':'';
   document.getElementById('htcTime').innerHTML=scStr;
 
   var parts=[];
-  if(bidToday)     parts.push('Bid (last 3h)');
-  if(vaToday)      parts.push('VA (last 4h)');
-  if(vehSubmitted) parts.push('Vehicle Submitted ✓');
+  if(acceptedToday) parts.push('Accepted ✓ (Stage 4)');
+  if(bidToday)      parts.push('Bid (last 3h)');
+  if(vaToday)       parts.push('VA (last 4h)');
+  if(vehSubmitted)  parts.push('Vehicle Submitted ✓');
   set('htcTitle',parts.join(' + '));
 
   // grid: if 3+ signals, single column; if 2, side-by-side; if 1, single
@@ -978,6 +993,25 @@ function renderHotToday(row){
     }).join('')+(avail.length>6?'<span style="font-size:10px;color:#A05018;align-self:center">+'+(avail.length-6)+' more</span>':'')+'</div>'
     :'<div class="htc-empty">Vehicle details loading…</div>';
     html+='<div class="htc-box"><div class="htc-box-hdr"><span class="htc-box-icon">🟡</span><span class="htc-box-ttl">Vehicle Available (last 4h)</span>'+(avail.length?'<span class="htc-box-cnt">'+avail.length+'</span>':'')+'</div><div class="htc-items">'+vehHtml+'</div></div>';
+  }
+
+  /* Accepted Today box — GOING_TO_LOAD (Stage 4 — highest priority) */
+  if(acceptedToday){
+    var accAge=minsAgo(row.last_accepted_time||'');
+    var accAgeBar=accAge
+      ? '<div style="background:#EAF3DE;border-radius:6px;padding:5px 8px;margin-bottom:5px;display:flex;align-items:center;gap:6px;">'
+        +'<span style="font-size:16px;line-height:1">⏱</span>'
+        +'<span style="font-size:11px;font-weight:700;color:#15803D;">Accepted: <b>'+accAge+'</b> — call now for handholding!</span>'
+        +'</div>'
+      : '';
+    html+='<div class="htc-box" style="border-color:#15803D;background:#F0FFF6;border-width:2px;">'
+      +'<div class="htc-box-hdr"><span class="htc-box-icon">🎉</span>'
+      +'<span class="htc-box-ttl" style="color:#15803D;font-weight:800;">Bid Accepted / GOING_TO_LOAD</span>'
+      +'<span class="htc-box-cnt" style="background:#15803D;color:#fff;">Stage 4</span></div>'
+      +'<div class="htc-items">'+accAgeBar
+      +'<div style="font-size:11px;color:#15803D;font-weight:600;padding:4px 0;">'
+      +'Call immediately — handhold loading address, POC number, vehicle readiness &amp; advance policy.</div>'
+      +'</div></div>';
   }
 
   /* Vehicle Submitted Today box */

@@ -1265,7 +1265,6 @@ function submitCallLog(){
 
   fetch(API_URL,{
     method:'POST',
-    mode:'no-cors',
     headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({
       operator_code:op,
@@ -1278,15 +1277,19 @@ function submitCallLog(){
       snapshot:snapshot
     })
   })
-  .then(function(){
-    /* no-cors → opaque response, can't read body — assume success */
-    msg.className='lf-status ok'; msg.textContent='✓ Saved successfully!';
-    document.getElementById('lfStatus').value='';
-    document.getElementById('lfFollowup').value='';
-    document.getElementById('lfNotes').value='';
-    document.getElementById('lfTraining').checked=false;
-    document.getElementById('lfInterested').checked=false;
-    showToast('Call log saved for '+op);
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.status==='ok'){
+      msg.className='lf-status ok'; msg.textContent='✓ Saved successfully!';
+      document.getElementById('lfStatus').value='';
+      document.getElementById('lfFollowup').value='';
+      document.getElementById('lfNotes').value='';
+      document.getElementById('lfTraining').checked=false;
+      document.getElementById('lfInterested').checked=false;
+      showToast('Call log saved for '+op);
+    } else {
+      msg.className='lf-status err'; msg.textContent='Error: '+(d.msg||'save failed');
+    }
   })
   .catch(function(e){
     msg.className='lf-status err'; msg.textContent='Network error — check API_URL or Apps Script deployment.';

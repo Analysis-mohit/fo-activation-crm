@@ -1263,20 +1263,12 @@ function submitCallLog(){
   btn.disabled=true; btn.textContent='Saving…';
   msg.className='lf-status'; msg.textContent='';
 
-  fetch(API_URL,{
-    method:'POST',
-    headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify({
-      operator_code:op,
-      call_status:status,
-      training_done:training,
-      interested:interested,
-      followup_date:followup||null,
-      notes:notes,
-      caller:caller,
-      snapshot:snapshot
-    })
-  })
+  var _payload=encodeURIComponent(JSON.stringify({
+    operator_code:op,call_status:status,training_done:training,
+    interested:interested,followup_date:followup||null,
+    notes:notes,caller:caller,snapshot:snapshot
+  }));
+  fetch(API_URL+'?payload='+_payload)
   .then(function(r){return r.json();})
   .then(function(d){
     if(d.status==='ok'){

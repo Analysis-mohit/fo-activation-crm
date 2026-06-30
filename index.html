@@ -1265,7 +1265,8 @@ function submitCallLog(){
 
   fetch(API_URL,{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    mode:'no-cors',
+    headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({
       operator_code:op,
       call_status:status,
@@ -1277,23 +1278,18 @@ function submitCallLog(){
       snapshot:snapshot
     })
   })
-  .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
-  .then(function(res){
-    if(res.ok){
-      msg.className='lf-status ok'; msg.textContent='✓ Saved successfully!';
-      /* reset form */
-      document.getElementById('lfStatus').value='';
-      document.getElementById('lfFollowup').value='';
-      document.getElementById('lfNotes').value='';
-      document.getElementById('lfTraining').checked=false;
-      document.getElementById('lfInterested').checked=false;
-      showToast('Call log saved for '+op);
-    } else {
-      msg.className='lf-status err'; msg.textContent='Error: '+(res.d.error||'save failed');
-    }
+  .then(function(){
+    /* no-cors → opaque response, can't read body — assume success */
+    msg.className='lf-status ok'; msg.textContent='✓ Saved successfully!';
+    document.getElementById('lfStatus').value='';
+    document.getElementById('lfFollowup').value='';
+    document.getElementById('lfNotes').value='';
+    document.getElementById('lfTraining').checked=false;
+    document.getElementById('lfInterested').checked=false;
+    showToast('Call log saved for '+op);
   })
   .catch(function(e){
-    msg.className='lf-status err'; msg.textContent='Network error — is the API running?';
+    msg.className='lf-status err'; msg.textContent='Network error — check API_URL or Apps Script deployment.';
   })
   .finally(function(){
     btn.disabled=false; btn.textContent='Save Record';

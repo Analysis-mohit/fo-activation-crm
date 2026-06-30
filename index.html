@@ -553,7 +553,11 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
         <div class="log-form-wrap">
           <div class="log-form-hdr">
             <div class="call-section-title"><svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Record outcome after each call</div>
-            <span id="lfApiNote" class="lf-api-note" style="display:none">⚠ API not set — saves disabled</span>
+            <button id="openFormBtn" onclick="openCallForm()" style="display:none;height:26px;padding:0 10px;border-radius:6px;border:.5px solid var(--purple-600);background:var(--purple-600);color:#fff;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px">
+              <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Form
+            </button>
+            <span id="lfApiNote" class="lf-api-note" style="display:none">⚠ Set FORM_URL in code to enable</span>
           </div>
           <div class="log-form-body">
             <div class="lf-row">
@@ -613,18 +617,24 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
    Pipeline writes here every run (activation_calling_pipeline.py)
    ─────────────────────────────────────────────────────────────────── */
 var SHEET_KEY  = '1nUhQ5SX0KpE83pYaAmtmXB1HBEFNoBKdc92bWSrhimQ';
-var SHEET_GID  = '351915797';
+var SHEET_GID  = '0';
 var SHEET_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_KEY
                + '/gviz/tq?tqx=out:csv&gid=' + SHEET_GID;
 var REFRESH_MS = 10*60*1000;
 var PAGE_SIZE  = 30;
 
-/* ── CALL LOG API  ──────────────────────────────────────────────────────
-   Set API_URL to your Cloudflare Tunnel URL (from: cloudflared tunnel run).
-   Example: 'https://your-tunnel-name.trycloudflare.com'
-   Leave as '' to disable saving (form visible but Submit will warn).
+/* ── CALL LOG — Google Form ─────────────────────────────────────────────
+   After creating the Google Form and getting the pre-fill entry ID:
+     FORM_URL      → your Google Form's base URL (ends in /viewform)
+     FORM_ENTRY_OP → entry.XXXXXXXXX for the "Operator Code" question
+                     (Form → ⋮ → Get pre-filled link → fill one field → copy entry ID)
+   Leave FORM_URL as '' to hide the Log Call button.
    ─────────────────────────────────────────────────────────────────────── */
-var API_URL = '';   // ← paste your tunnel URL here, no trailing slash
+var FORM_URL      = '';   // ← e.g. 'https://docs.google.com/forms/d/e/XXXX/viewform'
+var FORM_ENTRY_OP = '';   // ← e.g. 'entry.123456789'
+
+/* ── CALL LOG API (legacy Flask — keep if still using) ──────────────── */
+var API_URL = 'https://script.google.com/macros/s/AKfycbwvyBh1NOEn6bq_eZzM-YwbwsPQDnCkQBcwsFiRuSRX0lvd2g3MWlr6HXHUD4UNeTnMkQ/exec';
 
 /* STATE */
 var allData=[],filtered=[],currentCode=null,currentPage=1;
@@ -652,6 +662,14 @@ function minsAgo(tsStr) {
   if(mins < 1)  return 'just now';
   if(mins === 1) return '1 min ago';
   return mins + ' mins ago';
+}
+function fmtTime(tsStr) {
+  /* Extracts HH:MM from "2026-06-30 10:23:45". Returns '' if invalid. */
+  if(!tsStr||tsStr==='nan'||tsStr===''||tsStr==='NaT') return '';
+  var ts=new Date(tsStr.replace(' ','T'));
+  if(isNaN(ts.getTime())) return '';
+  var h=ts.getHours(),m=ts.getMinutes();
+  return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
 }
 function priColor(p){return{P0:'#A32D2D',P1:'var(--purple-600)',P2:'var(--amber-600)',P3:'var(--gray-600)'}[p]||'var(--gray-600)';}
 function stageColor(s){return{'Stage 4':'var(--green-600)','Stage 2':'var(--red-600)','Stage 3':'var(--amber-600)','Stage 5':'var(--gray-600)'}[s]||'var(--gray-600)';}
@@ -737,6 +755,14 @@ function applyFilters(){
     if(called==='not_called'&&row.last_call_date)return false;
     return true;
   });
+  // Sort: latest bid_time first (descending), then activation_score descending
+  filtered.sort(function(a,b){
+    var aT=a.last_bid_time||'',bT=b.last_bid_time||'';
+    if(aT&&bT) return bT.localeCompare(aT);   // both have bid time — latest first
+    if(aT) return -1;                           // only a has bid — a goes first
+    if(bT) return 1;                            // only b has bid — b goes first
+    return parseFloat(b.activation_score||0)-parseFloat(a.activation_score||0);
+  });
   currentPage=1;
   document.getElementById('filteredCount').textContent=filtered.length.toLocaleString('en-IN');
   renderLeadList();
@@ -805,8 +831,10 @@ function renderLeadList(){
     var scB=sc>0?'<span class="lb lb-score" style="color:'+scColor+'">#'+sc+'</span>':'';
     var sheetB=isSheet?'<span class="lb lb-sheet">Sheet</span>':'';
     var hotDot=isHot?'<span class="hot-dot"></span>':'';
-    var bidAge=bidT?minsAgo(row.last_bid_time||''):(accT?minsAgo(row.last_accepted_time||''):'');
-    var bidAgeTag=bidAge?'<span style="font-size:8.5px;font-weight:700;color:#C2500A;background:#FFF0E6;padding:1px 6px;border-radius:8px;margin-left:3px">'+(accT?'accepted ':'bid ')+bidAge+'</span>':'';
+    var _bidTs=bidT?(row.last_bid_time||''):(accT?(row.last_accepted_time||''):'');
+    var bidTime=fmtTime(_bidTs),bidRel=minsAgo(_bidTs);
+    var _bidRelShort=bidRel?(' · '+bidRel.replace(' mins ago','m').replace(' min ago','m').replace('just now','now')):'';
+    var bidAgeTag=bidTime?'<span style="font-size:8.5px;font-weight:700;color:#C2500A;background:#FFF0E6;padding:1px 6px;border-radius:8px;margin-left:3px">'+(accT?'✓ ':'⏱ ')+bidTime+_bidRelShort+'</span>':'';
     var lastCall='';
     if(row.last_call_date){var clr=callDotColor(row.last_call_disposition);lastCall='<div class="last-call-line"><div class="call-dot-sm" style="background:'+clr+'"></div>'+row.last_call_date+' · '+(row.last_call_disposition||'Called')+(row.last_caller?' · '+row.last_caller:'')+'</div>';}
     return '<div class="lead-row'+active+hotCls+'" data-code="'+code+'" onclick="selectOperator(\''+code+'\')">'+
@@ -1171,9 +1199,18 @@ function renderTyres(tyres){
 
 /* CALL LOG FORM */
 function initLogForm(){
-  /* Show API warning banner if URL not set */
+  var btn=document.getElementById('openFormBtn');
   var note=document.getElementById('lfApiNote');
-  if(note) note.style.display=API_URL?'none':'block';
+  if(btn) btn.style.display=FORM_URL?'flex':'none';
+  if(note) note.style.display=FORM_URL?'none':'block';
+}
+
+function openCallForm(){
+  if(!FORM_URL){showToast('Set FORM_URL in the code first.');return;}
+  var url=FORM_URL;
+  /* Pre-fill Operator Code if entry ID is configured */
+  if(FORM_ENTRY_OP&&currentCode) url+='?'+FORM_ENTRY_OP+'='+encodeURIComponent(currentCode);
+  window.open(url,'_blank','noopener');
 }
 
 function submitCallLog(){
@@ -1190,12 +1227,43 @@ function submitCallLog(){
 
   if(!status){showToast('Please select a call status.');return;}
 
+  /* ── SNAPSHOT: grab current CRM state for this operator ── */
+  var row=allData.find(function(r){return(r.operator_code||'').toUpperCase()===op;})||{};
+  var snapshot={
+    stage:                  row.stage||'',
+    activation_score:       row.activation_score||'',
+    calling_rank:           row.calling_rank||'',
+    priority:               row.priority||'',
+    hot_flag:               row.hot_flag||'',
+    dr_supply_type:         row.dr_supply_type||'',
+    red_dr_count:           row.red_dr_count||'',
+    red_odvt_ratio:         row.red_odvt_ratio||'',
+    lifetime_ldps:          row.lifetime_ldps||'',
+    lifetime_tokens:        row.lifetime_tokens||'',
+    appeared_in_drs:        row.appeared_in_drs||'',
+    bid_today:              row.bid_today||'',
+    last_bid_time:          row.last_bid_time||'',
+    accepted_today:         row.accepted_today||'',
+    last_accepted_time:     row.last_accepted_time||'',
+    vehicle_available_today:row.vehicle_available_today||'',
+    vehicle_submitted:      row.vehicle_submitted||'',
+    va_days:                row.va_days||'',
+    ldp_days:               row.ldp_days||'',
+    total_ldp_count:        row.total_ldp_count||'',
+    token_count:            row.token_count||'',
+    num_of_drs_in_opsearch: row.num_of_drs_in_opsearch||'',
+    rm_name:                row.rm_name||'',
+    Cluster:                row.Cluster||'',
+    recency_tier:           row.recency_tier||'',
+    days_since_last_event:  row.days_since_last_event||''
+  };
+
   var btn=document.getElementById('lfSubmitBtn');
   var msg=document.getElementById('lfStatusMsg');
   btn.disabled=true; btn.textContent='Saving…';
   msg.className='lf-status'; msg.textContent='';
 
-  fetch(API_URL+'/call',{
+  fetch(API_URL,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -1205,7 +1273,8 @@ function submitCallLog(){
       interested:interested,
       followup_date:followup||null,
       notes:notes,
-      caller:caller
+      caller:caller,
+      snapshot:snapshot
     })
   })
   .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})

@@ -969,8 +969,10 @@ function renderProfile(row){
 function renderHotToday(row){
   var bidToday=isTrueVal(row.bid_today),vaToday=isTrueVal(row.vehicle_available_today);
   var vehSubmitted=isTrueVal(row.vehicle_submitted),acceptedToday=isTrueVal(row.accepted_today);
+  var tokPdToday=isTrueVal(row.token_paid_today),ldpToday=isTrueVal(row.ldp_today);
+  var tokPdTime=(row.token_paid_time||'').trim(),ldpTime=(row.ldp_view_time||'').trim();
   var wrap=document.getElementById('hotTodayWrap'),grid=document.getElementById('htcGrid');
-  if(!bidToday&&!vaToday&&!vehSubmitted&&!acceptedToday){wrap.style.display='none';return;}
+  if(!bidToday&&!vaToday&&!vehSubmitted&&!acceptedToday&&!tokPdToday&&!ldpToday){wrap.style.display='none';return;}
   wrap.style.display='block';
 
   // Activation score badge next to title
@@ -1073,13 +1075,34 @@ function renderHotToday(row){
       +'</div></div>';
   }
 
+  /* Token Paid Today box (without vehicle submission) */
+  if(tokPdToday&&!vehSubmitted){
+    var tpTimeTag=tokPdTime?'<span style="font-size:9px;font-weight:700;background:#D1FAE5;color:#065F46;padding:1px 7px;border-radius:8px;margin-left:6px">⏱ '+tokPdTime+'</span>':'';
+    html+='<div class="htc-box" style="border-color:#0F6E56;background:#F0FFF6;">'
+      +'<div class="htc-box-hdr"><span class="htc-box-icon">💰</span>'
+      +'<span class="htc-box-ttl" style="color:#0F6E56;">Token Paid Today</span>'+tpTimeTag+'</div>'
+      +'<div class="htc-items"><div style="font-size:11px;color:#0F6E56;font-weight:600;padding:4px 0;">'
+      +'✅ Token paid today — push for vehicle submission and acceptance.</div></div></div>';
+  }
+
   /* Vehicle Submitted Today box */
   if(vehSubmitted){
+    var vsTimeTag=tokPdTime?'<span style="font-size:9px;font-weight:700;background:#D1FAE5;color:#065F46;padding:1px 7px;border-radius:8px;margin-left:6px">⏱ '+tokPdTime+'</span>':'';
     html+='<div class="htc-box" style="border-color:#15803D;background:#F0FFF6;">'
       +'<div class="htc-box-hdr"><span class="htc-box-icon">🚛</span>'
-      +'<span class="htc-box-ttl" style="color:#15803D;">Vehicle Submitted + Token Paid</span></div>'
+      +'<span class="htc-box-ttl" style="color:#15803D;">Vehicle Submitted + Token Paid</span>'+vsTimeTag+'</div>'
       +'<div class="htc-items"><div style="font-size:11px;color:#15803D;font-weight:600;padding:4px 0;">'
       +'✅ Operator has submitted vehicle number with token payment today.</div></div></div>';
+  }
+
+  /* LDP Viewed Today box */
+  if(ldpToday){
+    var ldpTimeTag=ldpTime?'<span style="font-size:9px;font-weight:700;background:#E0E7FF;color:#3730A3;padding:1px 7px;border-radius:8px;margin-left:6px">⏱ '+ldpTime+'</span>':'';
+    html+='<div class="htc-box" style="border-color:#534AB7;background:#F5F4FF;">'
+      +'<div class="htc-box-hdr"><span class="htc-box-icon">👁</span>'
+      +'<span class="htc-box-ttl" style="color:#534AB7;">LDP Viewed Today</span>'+ldpTimeTag+'</div>'
+      +'<div class="htc-items"><div style="font-size:11px;color:#534AB7;font-weight:600;padding:4px 0;">'
+      +'Operator viewed the load detail page today — high intent, push for token payment.</div></div></div>';
   }
 
   grid.innerHTML=html;

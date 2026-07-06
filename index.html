@@ -214,19 +214,6 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .metric-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-lg); padding:.6rem .75rem; }
 .metric-label { font-size:10px; color:var(--text-2); margin-bottom:2px; } .metric-val { font-size:20px; font-weight:700; line-height:1; } .metric-sub { font-size:9px; color:var(--text-3); margin-top:2px; }
 
-/* FUNNEL */
-.funnel-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; margin-bottom:.875rem; }
-.funnel-header { padding:.6rem 1.125rem; display:flex; align-items:center; justify-content:space-between; border-bottom:.5px solid var(--border); }
-.funnel-title { font-size:12px; font-weight:600; display:flex; align-items:center; gap:6px; } .funnel-hint { font-size:10px; color:var(--text-3); }
-.funnel-steps { display:flex; }
-.funnel-step { flex:1; padding:.6rem .875rem; text-align:center; border-right:.5px solid var(--border); }
-.funnel-step:last-child { border-right:none; }
-.funnel-step.clickable { cursor:pointer; transition:background .12s; }
-.funnel-step.clickable:hover { background:var(--purple-50); } .funnel-step.clickable.active { background:var(--purple-50); }
-.fs-label { font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
-.fs-val { font-size:22px; font-weight:700; line-height:1; }
-.fs-val.blue{color:var(--blue-600);} .fs-val.purple{color:var(--purple-600);} .fs-val.green{color:var(--green-600);}
-.fs-hint { font-size:9px; color:var(--text-3); margin-top:3px; } .fs-hint-click { color:var(--purple-600); }
 .dr-drawer { display:none; border-top:.5px solid var(--border); } .dr-drawer.open { display:block; }
 .dr-drawer-header { padding:.5rem 1.125rem; display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border-bottom:.5px solid var(--border); }
 .dr-drawer-title { font-size:11px; font-weight:600; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
@@ -505,22 +492,25 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
           <div class="metric-card"><div class="metric-label">Tokens paid</div><div class="metric-val" id="tokenCount">—</div><div class="metric-sub">paid (15d)</div></div>
         </div>
 
-        <!-- 6. DR FUNNEL -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Live DR Funnel — today <span class="badge badge-green" style="font-size:9px;padding:1px 7px">● LIVE</span></div>
-        <div class="funnel-card">
-          <div class="funnel-header">
-            <div class="funnel-title"><svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Demand request pipeline</div>
-            <div class="funnel-hint">lane details shown below in Lane Visibility</div>
+        <!-- 6. LIVE LOADS -->
+        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Live Loads <span class="badge badge-green" style="font-size:9px;padding:1px 7px">● LIVE</span></div>
+        <div class="info-card" style="margin-bottom:.875rem;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem .35rem;">
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text-1);">
+              <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              Op-search matches
+            </span>
+            <span id="cntLive" style="font-size:11px;font-weight:700;color:var(--purple-600);background:var(--purple-50);padding:1px 8px;border-radius:20px;">0</span>
           </div>
-          <div class="funnel-steps">
-            <div class="funnel-step" id="drStep"><div class="fs-label">In op-search</div><div class="fs-val blue" id="drCountVal">—</div><div class="fs-hint">live lanes below</div></div>
-            <div class="funnel-step" id="tokStep"><div class="fs-label">Tokens paid</div><div class="fs-val purple" id="tokenDRVal">—</div><div class="fs-hint">paid lanes below</div></div>
-            <div class="funnel-step"><div class="fs-label">Conversion</div><div class="fs-val green" id="convRateVal">—</div><div class="fs-hint">token / search</div></div>
+          <div style="display:flex;gap:6px;padding:.3rem .75rem .5rem;border-bottom:.5px solid var(--border);">
+            <input type="text" id="laneOFilter" placeholder="Filter origin…" oninput="filterLiveLanes()" style="flex:1;height:28px;padding:0 8px;border-radius:6px;border:.5px solid var(--border-md);font-size:11px;background:var(--surface-2);color:var(--text-1);outline:none;">
+            <input type="text" id="laneDFilter" placeholder="Filter destination…" oninput="filterLiveLanes()" style="flex:1;height:28px;padding:0 8px;border-radius:6px;border:.5px solid var(--border-md);font-size:11px;background:var(--surface-2);color:var(--text-1);outline:none;">
           </div>
+          <div id="body-live" style="max-height:320px;overflow-y:auto;"></div>
         </div>
 
-        <!-- 7. VEHICLE + LANE VISIBILITY -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle &amp; Lane Visibility</div>
+        <!-- 7. VEHICLE + LANE HISTORY -->
+        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle &amp; Lane History</div>
         <div class="bottom-grid">
           <div class="info-card">
             <div class="info-card-title"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle profile</div>
@@ -539,14 +529,12 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
             </div>
           </div>
           <div class="info-card">
-            <div class="info-card-title"><svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>Lane visibility</div>
+            <div class="info-card-title"><svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>Token &amp; Bid History</div>
             <div class="lane-tabs">
-              <button class="lane-tab active" id="tab-live" onclick="switchTab('live')">Live <span class="lane-cnt" id="cntLive">0</span></button>
-              <button class="lane-tab" id="tab-paid" onclick="switchTab('paid')">Paid Today <span class="lane-cnt" id="cntPaid">0</span></button>
+              <button class="lane-tab active" id="tab-paid" onclick="switchTab('paid')">Paid Today <span class="lane-cnt" id="cntPaid">0</span></button>
               <button class="lane-tab" id="tab-hist" onclick="switchTab('hist')">Bid History <span class="lane-cnt" id="cntHist">0</span></button>
             </div>
-            <div class="lane-body active" id="body-live"></div>
-            <div class="lane-body" id="body-paid"></div>
+            <div class="lane-body active" id="body-paid"></div>
             <div class="lane-body" id="body-hist"></div>
           </div>
         </div>
@@ -958,10 +946,8 @@ function renderProfile(row){
   set('vaDays',row.va_days||'0');set('ldpDays',row.ldp_days||'0');
   set('ldpCount',row.total_ldp_count||'0');set('tokenCount',row.token_count||'0');
 
-  /* Funnel */
+  /* Funnel counts (used by action banner) */
   var drN=parseInt(row.num_of_drs_in_opsearch||'0',10),tokN=parseInt(row.num_of_drs_paid_token||'0',10);
-  var conv=drN>0?Math.round(tokN/drN*100):0;
-  set('drCountVal',drN);set('tokenDRVal',tokN);set('convRateVal',conv+'%');
 
   var lanes=tagLowest(parseLanes(row.lane_vt_details||''));
   var tokenSet={};(row.token_demand_ids||'').split(',').forEach(function(s){s=s.trim();if(s)tokenSet[s]=true;});
@@ -977,7 +963,6 @@ function renderProfile(row){
   renderTyres(parseTyres(row.tyre_breakdown||''));
   renderCallHistory(row);
   initLogForm();
-  switchTab('live');
 }
 
 /* HOT TODAY */
@@ -1017,7 +1002,7 @@ function renderHotToday(row){
       return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),
              bid:rs(p[3]),tokenPaid:(p[4]||'0')==='1'};
     }).filter(Boolean):[];
-    window._btLanes=btLanes;  // stored for live filter
+
 
     var paidCount=btLanes.filter(function(l){return l.tokenPaid;}).length;
     var cntLabel=btLanes.length+(paidCount?' ('+paidCount+' paid)':'');
@@ -1028,15 +1013,11 @@ function renderHotToday(row){
         +'<span style="font-size:11px;font-weight:700;color:#C2500A;">Last bid: <b>'+bidAge+'</b> — push for token payment now!</span>'
         +'</div>'
       : '';
-    var btFilterRow='<div style="display:flex;gap:4px;margin-bottom:6px;">'
-      +'<input type="text" id="btOFilter" placeholder="Filter origin…" oninput="filterBidLanes()" style="flex:1;height:24px;padding:0 8px;border:.5px solid rgba(194,80,10,.35);border-radius:6px;font-size:11px;background:rgba(255,255,255,.85);outline:none;">'
-      +'<input type="text" id="btDFilter" placeholder="Filter dest…" oninput="filterBidLanes()" style="flex:1;height:24px;padding:0 8px;border:.5px solid rgba(194,80,10,.35);border-radius:6px;font-size:11px;background:rgba(255,255,255,.85);outline:none;">'
-      +'</div>';
     html+='<div class="htc-box"><div class="htc-box-hdr"><span class="htc-box-icon">🔴</span>'
       +'<span class="htc-box-ttl">Bid Today (last 3h)</span>'
       +(btLanes.length?'<span class="htc-box-cnt">'+cntLabel+'</span>':'')
-      +'</div><div class="htc-items">'+bidAgeBar+btFilterRow
-      +'<div id="btLaneList">'+renderBidLaneItems(btLanes,'','')+'</div>'
+      +'</div><div class="htc-items">'+bidAgeBar
+      +renderBidLaneItems(btLanes,'','')
       +'</div></div>';
   }
 
@@ -1120,7 +1101,7 @@ function renderActionBanner(drN,tokN,lanes,tokenSet){
     pitch.innerHTML='Pitch → <b>'+(best.route||'Demand '+best.did)+'</b>'+(rate?' · '+lbl+' <b>₹'+Math.round(rate).toLocaleString('en-IN')+'</b>':'')+(best.truck?' · '+best.truck:'')+' &nbsp;<span class="lane-did" onclick="copyText(\''+best.did+'\')">&#35;'+best.did+' ⧉</span>';}
 }
 
-/* BID TODAY LIVE ROUTE FILTER */
+/* BID TODAY LANE ITEMS */
 function renderBidLaneItems(lanes,oF,dF){
   if(!lanes||!lanes.length) return '<div class="htc-empty">Rate entered — demand details unavailable</div>';
   var shown=lanes;
@@ -1144,13 +1125,6 @@ function renderBidLaneItems(lanes,oF,dF){
   if(shown.length<lanes.length) html+='<div style="font-size:10px;color:#A05018;margin-top:3px">Showing '+shown.length+' of '+lanes.length+' demands</div>';
   return html;
 }
-function filterBidLanes(){
-  var oF=((document.getElementById('btOFilter')||{}).value||'').trim();
-  var dF=((document.getElementById('btDFilter')||{}).value||'').trim();
-  var el=document.getElementById('btLaneList');
-  if(el&&window._btLanes) el.innerHTML=renderBidLaneItems(window._btLanes,oF,dF);
-}
-
 /* LANE TABS */
 function liveCardHTML(l,ts){
   var isPaid=!!ts[l.did];var cls='lane-card'+(isPaid?' paid-card':(l.isLow?' best-card':''));
@@ -1199,16 +1173,20 @@ function histCardHTML(h){
 var currentTokenSet={};
 function renderLaneTabs(lanes,ts,tl,hist){
   currentLanes=lanes;currentTokenSet=ts;activeTyre=null;
+  // clear live route filters on new operator load
+  var loF=document.getElementById('laneOFilter');if(loF)loF.value='';
+  var ldF=document.getElementById('laneDFilter');if(ldF)ldF.value='';
   document.getElementById('cntPaid').textContent=tl.length;
   document.getElementById('cntHist').textContent=hist.length;
   renderLiveLoads();
+  switchTab('paid');
   document.getElementById('body-paid').innerHTML=tl.length?tl.map(tokenCardHTML).join(''):'<div class="lane-empty">No tokens paid today</div>';
   if(!hist.length){document.getElementById('body-hist').innerHTML='<div class="lane-empty">No bids in last 15 days</div>';}
   else{var lost=hist.filter(function(h){return h.verdict==='LOST'&&h.bid!=null&&h.placed!=null&&h.bid>h.placed;}).length;
     var head=lost?'<div style="font-size:11px;color:var(--red-800);background:var(--red-50);border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠️ '+lost+' lane'+(lost>1?'s':'')+' lost where bid > placed rate.</div>':'';
     document.getElementById('body-hist').innerHTML=head+hist.map(histCardHTML).join('');}
 }
-function switchTab(n){['live','paid','hist'].forEach(function(t){document.getElementById('tab-'+t).classList.toggle('active',t===n);document.getElementById('body-'+t).classList.toggle('active',t===n);});}
+function switchTab(n){['paid','hist'].forEach(function(t){document.getElementById('tab-'+t).classList.toggle('active',t===n);document.getElementById('body-'+t).classList.toggle('active',t===n);});}
 
 /* VEHICLES */
 function renderAvail(av){
@@ -1230,9 +1208,21 @@ function filterByVehicle(tyre){
 }
 function renderLiveLoads(){
   var bl=document.getElementById('body-live');
+  var oF=((document.getElementById('laneOFilter')||{}).value||'').trim().toUpperCase();
+  var dF=((document.getElementById('laneDFilter')||{}).value||'').trim().toUpperCase();
   var lanes=activeTyre?currentLanes.filter(function(l){return l.tyre_req===activeTyre;}):currentLanes;
+  if(oF||dF){lanes=lanes.filter(function(l){
+    var parts=(l.route||'').replace('→','->').split('->');
+    var orig=(parts[0]||'').trim().toUpperCase();
+    var dest=(parts.length>1?parts[1]:'').trim().toUpperCase();
+    return(!oF||orig.indexOf(oF)>=0)&&(!dF||dest.indexOf(dF)>=0);
+  });}
+  var totalShown=activeTyre?currentLanes.length:lanes.length;
   var cntEl=document.getElementById('cntLive');
-  cntEl.textContent=activeTyre?(lanes.length+'/'+currentLanes.length):currentLanes.length;
+  if(cntEl){
+    var base=activeTyre?currentLanes.length:currentLanes.length;
+    cntEl.textContent=(oF||dF||activeTyre)?(lanes.length+'/'+base):base;
+  }
   var tyreGroups={};currentLanes.forEach(function(l){var t=l.tyre_req||'?';tyreGroups[t]=(tyreGroups[t]||0)+1;});
   var chips='';
   if(Object.keys(tyreGroups).length>1){
@@ -1246,8 +1236,9 @@ function renderLiveLoads(){
     chips+='</div>';
   }
   bl.innerHTML=chips+(lanes.length?lanes.map(function(l){return liveCardHTML(l,currentTokenSet);}).join('')
-    :'<div class="lane-empty">'+(activeTyre?'No loads matching '+activeTyre+'-tyre vehicles':'No live matches today')+'</div>');
+    :'<div class="lane-empty">'+(oF||dF?'No loads match this route filter':(activeTyre?'No loads matching '+activeTyre+'-tyre vehicles':'No live matches today'))+'</div>');
 }
+function filterLiveLanes(){renderLiveLoads();}
 function renderTyres(tyres){
   var el=document.getElementById('tyreBreakdown');
   el.innerHTML=tyres.length?tyres.map(function(t){var pct=t.total>0?Math.round(t.verified/t.total*100):0;

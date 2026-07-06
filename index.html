@@ -364,6 +364,7 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
         <button class="pri-btn" data-pri="LIVE">🔴 Live</button>
         <button class="pri-btn" data-pri="HISTORY">📋 History</button>
         <button class="pri-btn" data-pri="ACCEPTED">🎉 Post Acceptance</button>
+        <button class="pri-btn" data-pri="TOKEN">💰 Token Paid</button>
       </div>
       <div class="filter-row">
         <span class="filter-lbl">Filter</span>
@@ -740,6 +741,8 @@ function applyFilters(){
       if(row.stage!=='Stage H')return false;
     }else if(filterPri==='ACCEPTED'){
       if(row.stage!=='Stage 4')return false;
+    }else if(filterPri==='TOKEN'){
+      if(row.stage!=='Stage 3')return false;
     }
     if(recency&&row.recency_tier!==recency)return false;
     if(dr){
@@ -761,7 +764,7 @@ function applyFilters(){
   document.getElementById('filteredCount').textContent=filtered.length.toLocaleString('en-IN');
   renderLeadList();
 }
-var _stageClass={'ALL':'a-all','LIVE':'a-s2','HISTORY':'a-sh','ACCEPTED':'a-s4'};
+var _stageClass={'ALL':'a-all','LIVE':'a-s2','HISTORY':'a-sh','ACCEPTED':'a-s4','TOKEN':'a-s3'};
 document.querySelectorAll('.pri-btn').forEach(function(btn){
   btn.addEventListener('click',function(){
     document.querySelectorAll('.pri-btn').forEach(function(b){b.className='pri-btn';});

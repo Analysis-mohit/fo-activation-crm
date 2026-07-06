@@ -1,1323 +1,1286 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FO Activation CRM — Wheelseye</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --purple-50:#EEEDFE; --purple-200:#AFA9EC; --purple-600:#534AB7; --purple-800:#3C3489;
-  --teal-50:#E1F5EE;   --teal-600:#0F6E56;   --teal-800:#085041;
-  --blue-50:#E6F1FB;   --blue-600:#185FA5;   --blue-800:#0C447C;
-  --amber-50:#FAEEDA;  --amber-600:#854F0B;  --amber-800:#633806;
-  --red-50:#FCEBEB;    --red-600:#A32D2D;    --red-800:#791F1F;
-  --green-50:#EAF3DE;  --green-600:#3B6D11;  --green-800:#27500A;
-  --gray-50:#F1EFE8;   --gray-200:#B4B2A9;   --gray-600:#5F5E5A;
-  --bg:#F7F6F2; --surface:#FFFFFF; --surface-2:#F1EFE8;
-  --border:rgba(0,0,0,.10); --border-md:rgba(0,0,0,.18);
-  --text-1:#1A1A18; --text-2:#5F5E5A; --text-3:#9A9890;
-  --r-md:8px; --r-lg:12px; --r-xl:16px;
-  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  --mono:'SF Mono','Fira Code','Courier New',monospace;
-  --topbar:52px;
-}
-body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-size:14px; line-height:1.5; height:100vh; overflow:hidden; }
-
-/* TOP BAR */
-.topbar { background:var(--surface); border-bottom:.5px solid var(--border); padding:0 1.25rem; height:var(--topbar); display:flex; align-items:center; gap:14px; position:fixed; top:0; left:0; right:0; z-index:200; }
-.brand  { display:flex; align-items:center; gap:8px; flex-shrink:0; }
-.brand-dot { width:26px; height:26px; border-radius:8px; background:var(--purple-600); display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:700; }
-.brand-name { font-size:13px; font-weight:600; } .brand-sub { font-size:10px; color:var(--text-3); }
-.top-search-wrap { flex:1; max-width:360px; position:relative; }
-.top-search-wrap svg.s-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); width:13px; height:13px; stroke:var(--text-3); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
-.top-search-wrap input { width:100%; height:32px; padding:0 30px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); color:var(--text-1); font-size:12px; outline:none; transition:border-color .15s,box-shadow .15s; }
-.top-search-wrap input:focus { border-color:var(--purple-600); box-shadow:0 0 0 3px var(--purple-50); }
-.top-search-wrap input::placeholder { color:var(--text-3); }
-.top-clear-btn { position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--text-3); display:none; padding:2px; }
-.top-clear-btn svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; }
-.top-suggestions { position:absolute; top:calc(100% + 6px); left:0; right:0; background:var(--surface); border:.5px solid var(--border-md); border-radius:var(--r-lg); box-shadow:0 8px 24px rgba(0,0,0,.10); z-index:300; overflow:hidden; display:none; }
-.sug-item { padding:8px 12px; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:.5px solid var(--border); transition:background .1s; }
-.sug-item:last-child { border-bottom:none; } .sug-item:hover { background:var(--surface-2); }
-.sug-avatar { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; flex-shrink:0; }
-.sug-code { font-size:12px; font-weight:600; font-family:var(--mono); } .sug-rm { font-size:10px; color:var(--text-2); margin-top:1px; }
-.sug-right { margin-left:auto; text-align:right; flex-shrink:0; }
-.sug-pri { font-size:9px; font-weight:700; padding:1px 6px; border-radius:10px; display:inline-block; margin-bottom:2px; }
-.sug-call { font-size:10px; color:var(--text-3); }
-.sug-no-result { padding:10px 12px; font-size:12px; color:var(--text-3); text-align:center; }
-.status-bar { margin-left:auto; display:flex; align-items:center; gap:10px; flex-shrink:0; }
-.status-chip { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-2); }
-.pulse-dot { width:7px; height:7px; border-radius:50%; background:var(--green-600); animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-.status-chip.error .pulse-dot { background:var(--red-600); animation:none; }
-.refresh-btn { height:28px; padding:0 10px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); color:var(--text-2); cursor:pointer; font-size:11px; display:flex; align-items:center; gap:5px; }
-.refresh-btn:hover { background:var(--surface-2); }
-.refresh-btn svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-.refresh-btn.spinning svg { animation:spin .8s linear infinite; }
-@keyframes spin { to{transform:rotate(360deg);} }
-
-/* LAYOUT */
-.app-layout { display:grid; grid-template-columns:320px 1fr; height:calc(100vh - var(--topbar)); margin-top:var(--topbar); overflow:hidden; }
-
-/* LEFT PANEL */
-.lead-panel { display:flex; flex-direction:column; border-right:.5px solid var(--border); background:var(--surface); overflow:hidden; }
-.filter-bar { padding:.5rem .75rem; border-bottom:.5px solid var(--border); display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
-.filter-row { display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
-.filter-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); flex-shrink:0; width:40px; }
-.pri-btn { height:20px; padding:0 7px; border-radius:20px; font-size:9px; font-weight:700; border:.5px solid var(--border-md); background:var(--surface-2); cursor:pointer; color:var(--text-2); transition:all .1s; white-space:nowrap; }
-.pri-btn.a-all  { background:var(--text-1);      color:#fff; border-color:var(--text-1); }
-.pri-btn.a-s4   { background:var(--green-600);   color:#fff; border-color:var(--green-600); }
-.pri-btn.a-s2   { background:var(--red-600);     color:#fff; border-color:var(--red-600); }
-.pri-btn.a-s3   { background:var(--amber-600);   color:#fff; border-color:var(--amber-600); }
-.pri-btn.a-s5   { background:var(--gray-600);    color:#fff; border-color:var(--gray-600); }
-.pri-btn.a-hot  { background:#C2500A; color:#fff; border-color:#C2500A; }
-/* Stage badges in lead cards */
-.lb-s4 { background:var(--green-50);  color:var(--green-800); }
-.lb-s2 { background:var(--red-50);    color:var(--red-800); }
-.lb-s3 { background:var(--amber-50);  color:var(--amber-800); }
-.lb-s5 { background:var(--gray-50);   color:var(--gray-600); }
-.lb-red-dr { background:#FFF0F0; color:#A32D2D; border:.5px solid #F5C0C0; }
-.f-sel { height:22px; padding:0 6px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); color:var(--text-1); font-size:10px; cursor:pointer; outline:none; flex:1; min-width:58px; }
-.lead-search-wrap { padding:.3rem .75rem; border-bottom:.5px solid var(--border); flex-shrink:0; position:relative; }
-.lead-search-wrap svg { position:absolute; left:18px; top:50%; transform:translateY(-50%); width:12px; height:12px; stroke:var(--text-3); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
-.lead-search { width:100%; height:26px; padding:0 8px 0 25px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface-2); font-size:12px; outline:none; }
-.lead-search:focus { background:var(--surface); border-color:var(--purple-600); box-shadow:0 0 0 2px var(--purple-50); }
-.lead-countbar { padding:.2rem .75rem; background:var(--surface-2); border-bottom:.5px solid var(--border); font-size:10px; color:var(--text-2); display:flex; justify-content:space-between; flex-shrink:0; }
-.lead-list { flex:1; overflow-y:auto; }
-.lead-list::-webkit-scrollbar { width:3px; }
-.lead-list::-webkit-scrollbar-thumb { background:var(--gray-200); border-radius:3px; }
-
-/* LEAD ROW */
-.lead-row { padding:.4rem .75rem; border-bottom:.5px solid var(--border); cursor:pointer; display:flex; align-items:flex-start; gap:7px; transition:background .1s; border-left:3px solid transparent; }
-.lead-row:hover  { background:var(--surface-2); }
-.lead-row.active { background:var(--purple-50); border-left-color:var(--purple-600); }
-.lead-row.is-hot { border-left-color:#C2500A; }
-.lead-row.is-hot.active { border-left-color:var(--purple-600); }
-.lead-rank { font-size:9px; color:var(--text-3); font-family:var(--mono); width:20px; text-align:right; flex-shrink:0; padding-top:3px; }
-.lead-body { flex:1; min-width:0; }
-.lead-top-row { display:flex; align-items:center; gap:4px; }
-.lead-code { font-size:12px; font-weight:700; font-family:var(--mono); letter-spacing:.3px; }
-.hot-dot { width:5px; height:5px; border-radius:50%; background:#C2500A; flex-shrink:0; display:inline-block; margin-bottom:1px; animation:pulse 1.5s infinite; }
-.lead-badges { display:flex; gap:3px; flex-wrap:wrap; margin-top:2px; }
-.lb { display:inline-block; padding:1px 5px; border-radius:10px; font-size:8px; font-weight:700; }
-.lb-p0{background:var(--red-50);color:var(--red-800);} .lb-p1{background:var(--purple-50);color:var(--purple-800);}
-.lb-p2{background:var(--amber-50);color:var(--amber-800);} .lb-p3{background:var(--gray-50);color:var(--gray-600);}
-.lb-rec-7{background:var(--green-50);color:var(--green-800);} .lb-rec-30{background:var(--amber-50);color:var(--amber-800);}
-.lb-rec-old{background:var(--gray-50);color:var(--gray-600);}
-.lb-dr-h{background:var(--blue-50);color:var(--blue-800);} .lb-dr-m{background:var(--teal-50);color:var(--teal-800);}
-.lb-dr-l{background:var(--gray-50);color:var(--gray-600);}
-.lb-hot{background:#FFF0E6;color:#C2500A;} .lb-sheet{background:var(--teal-50);color:var(--teal-800);}
-.lb-reddr{background:#FCEBEB;color:#7A1010;} .lb-lsb{background:#E6F1FB;color:#0C447C;} .lb-score{background:#EEEDFE;color:#3C3489;}
-.last-call-line { font-size:9px; color:var(--text-3); margin-top:2px; display:flex; align-items:center; gap:3px; }
-.call-dot-sm { width:4px; height:4px; border-radius:50%; flex-shrink:0; }
-.pagination { padding:.35rem .75rem; border-top:.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-.pg-btn { height:22px; padding:0 8px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); font-size:10px; cursor:pointer; color:var(--text-2); }
-.pg-btn:hover:not(:disabled) { background:var(--surface-2); } .pg-btn:disabled { opacity:.4; cursor:default; }
-.pg-info { font-size:10px; color:var(--text-2); }
-
-/* RIGHT PANEL */
-.detail-panel { overflow-y:auto; background:var(--bg); }
-.detail-panel::-webkit-scrollbar { width:4px; }
-.detail-panel::-webkit-scrollbar-thumb { background:var(--gray-200); border-radius:4px; }
-.detail-inner { max-width:780px; margin:0 auto; padding:1rem 1.25rem 3rem; }
-.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:300px; padding:2rem; text-align:center; }
-.empty-state svg { width:36px; height:36px; stroke:var(--text-3); fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; margin-bottom:12px; }
-.empty-state h2 { font-size:14px; font-weight:600; margin-bottom:5px; } .empty-state p { font-size:12px; color:var(--text-2); }
-
-.section-lbl { font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text-3); margin-bottom:7px; display:flex; align-items:center; gap:5px; }
-
-/* STAGE CONTEXT (profile card) */
-.pcc { border-radius:var(--r-xl); padding:.75rem 1.125rem; margin-bottom:.875rem; border:.5px solid; display:flex; align-items:center; gap:12px; }
-.pcc.stage-4{background:var(--green-50);border-color:#B0D98E;} .pcc.stage-2{background:var(--red-50);border-color:#E8BEBE;}
-.pcc.stage-3{background:var(--amber-50);border-color:#EFD4A0;} .pcc.stage-5{background:var(--gray-50);border-color:var(--gray-200);}
-.pcc-badge { padding:3px 12px; border-radius:20px; font-size:13px; font-weight:800; flex-shrink:0; }
-.stage-4 .pcc-badge{background:var(--green-600);color:#fff;} .stage-2 .pcc-badge{background:var(--red-600);color:#fff;}
-.stage-3 .pcc-badge{background:var(--amber-600);color:#fff;} .stage-5 .pcc-badge{background:var(--gray-600);color:#fff;}
-.pcc-body { flex:1; min-width:0; }
-.pcc-def { font-size:11px; font-weight:700; margin-bottom:5px; }
-.stage-4 .pcc-def{color:var(--green-800);} .stage-2 .pcc-def{color:var(--red-800);}
-.stage-3 .pcc-def{color:var(--amber-800);} .stage-5 .pcc-def{color:var(--gray-600);}
-.pcc-stats { display:flex; gap:12px; flex-wrap:wrap; }
-.pcc-stat { text-align:center; } .pcc-val { font-size:16px; font-weight:700; line-height:1; } .pcc-lbl { font-size:9px; color:var(--text-3); margin-top:2px; }
-.pcc-right { text-align:right; flex-shrink:0; }
-.pcc-rank { font-size:10px; color:var(--text-3); font-family:var(--mono); }
-.pcc-recency { font-size:10px; font-weight:600; margin-top:3px; }
-.rec-7{color:var(--green-600);} .rec-30{color:var(--amber-600);} .rec-old{color:var(--gray-600);}
-
-/* ══ HOT TODAY CARD (NEW) ══ */
-.hot-today-wrap { margin-bottom:.875rem; }
-.hot-today-card {
-  border-radius:var(--r-xl);
-  border:1.5px solid #D46B0A;
-  background:linear-gradient(135deg,#FFFAF4 0%,#FFF3E5 100%);
-  padding:.875rem 1.125rem;
-  overflow:hidden;
-}
-.htc-header { display:flex; align-items:center; gap:8px; margin-bottom:.75rem; }
-.htc-pulse { width:8px; height:8px; border-radius:50%; background:#C2500A; animation:pulse 1.4s infinite; flex-shrink:0; }
-.htc-title { font-size:11px; font-weight:800; color:#7A3006; letter-spacing:.5px; text-transform:uppercase; }
-.htc-time  { font-size:10px; color:#B06030; margin-left:auto; }
-.htc-grid  { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
-.htc-grid.single { grid-template-columns:1fr; }
-.htc-box { background:rgba(255,255,255,.8); border:.5px solid rgba(194,80,10,.2); border-radius:var(--r-lg); padding:.625rem .875rem; }
-.htc-box-hdr { display:flex; align-items:center; gap:6px; margin-bottom:.5rem; }
-.htc-box-icon { font-size:14px; line-height:1; }
-.htc-box-ttl  { font-size:11px; font-weight:700; color:#6B3808; flex:1; }
-.htc-box-cnt  { font-size:9px; font-weight:700; background:#C2500A; color:#fff; padding:1px 6px; border-radius:10px; flex-shrink:0; }
-.htc-items { display:flex; flex-direction:column; gap:4px; }
-.htc-item { display:flex; gap:5px; align-items:flex-start; }
-.htc-item-dot { width:4px; height:4px; border-radius:50%; background:#C2500A; flex-shrink:0; margin-top:5px; }
-.htc-item-txt { font-size:11px; color:var(--text-2); line-height:1.4; flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-.htc-item-txt b { color:var(--text-1); font-weight:600; }
-.htc-item-txt .amt { color:var(--green-600); font-weight:700; }
-.htc-empty { font-size:11px; color:#A07050; font-style:italic; }
-.htc-veh-list { display:flex; flex-wrap:wrap; gap:3px; }
-.htc-veh-pill { display:inline-flex; align-items:center; gap:3px; background:rgba(255,255,255,.9); border:.5px solid rgba(194,80,10,.2); border-radius:6px; padding:2px 6px; }
-.htc-veh-pill .vn { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--green-800); }
-.htc-veh-pill .vt { font-size:9px; color:var(--text-2); }
-
-/* PROFILE CARD */
-.profile-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); padding:.875rem 1.125rem; margin-bottom:.875rem; display:flex; align-items:center; gap:12px; }
-.profile-avatar { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; }
-.profile-body { flex:1; min-width:0; }
-.profile-code { font-size:17px; font-weight:700; font-family:var(--mono); cursor:pointer; letter-spacing:.4px; }
-.profile-code:hover { text-decoration:underline; }
-.profile-rm { font-size:12px; color:var(--text-2); margin-top:1px; }
-.profile-meta { display:flex; gap:5px; margin-top:5px; flex-wrap:wrap; }
-.badge { display:inline-flex; align-items:center; gap:3px; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:500; }
-.badge-teal{background:var(--teal-50);color:var(--teal-800);} .badge-purple{background:var(--purple-50);color:var(--purple-800);}
-.badge-amber{background:var(--amber-50);color:var(--amber-800);} .badge-red{background:var(--red-50);color:var(--red-800);}
-.badge-blue{background:var(--blue-50);color:var(--blue-800);} .badge-green{background:var(--green-50);color:var(--green-800);}
-.badge-gray{background:var(--gray-50);color:var(--gray-600);} .badge-sheet{background:var(--teal-50);color:var(--teal-800);}
-.score-block { text-align:center; flex-shrink:0; padding-left:12px; border-left:.5px solid var(--border); }
-.score-val { font-size:22px; font-weight:700; color:var(--purple-600); line-height:1; }
-.score-label { font-size:9px; color:var(--text-3); margin-top:3px; text-transform:uppercase; letter-spacing:.4px; }
-
-/* ACTION BANNER */
-.action-banner { border-radius:var(--r-xl); padding:.75rem 1.125rem; margin-bottom:.875rem; display:flex; align-items:center; gap:10px; background:var(--purple-50); border:.5px solid var(--purple-200); }
-.action-banner.warm{background:var(--amber-50);border-color:#EF9F27;} .action-banner.cold{background:var(--surface-2);border-color:var(--border-md);}
-.action-icon { width:30px; height:30px; border-radius:50%; flex-shrink:0; background:var(--purple-600); color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px; }
-.action-banner.warm .action-icon{background:var(--amber-600);} .action-banner.cold .action-icon{background:var(--gray-600);}
-.action-text { flex:1; min-width:0; }
-.action-title { font-size:12px; font-weight:700; } .action-sub { font-size:11px; color:var(--text-2); margin-top:2px; }
-.action-pitch { font-size:11px; margin-top:5px; background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-md); padding:4px 8px; }
-.action-pitch b { color:var(--purple-800); }
-
-/* METRICS */
-.metrics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:.875rem; }
-.metric-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-lg); padding:.6rem .75rem; }
-.metric-label { font-size:10px; color:var(--text-2); margin-bottom:2px; } .metric-val { font-size:20px; font-weight:700; line-height:1; } .metric-sub { font-size:9px; color:var(--text-3); margin-top:2px; }
-
-/* FUNNEL */
-.funnel-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; margin-bottom:.875rem; }
-.funnel-header { padding:.6rem 1.125rem; display:flex; align-items:center; justify-content:space-between; border-bottom:.5px solid var(--border); }
-.funnel-title { font-size:12px; font-weight:600; display:flex; align-items:center; gap:6px; } .funnel-hint { font-size:10px; color:var(--text-3); }
-.funnel-steps { display:flex; }
-.funnel-step { flex:1; padding:.6rem .875rem; text-align:center; border-right:.5px solid var(--border); }
-.funnel-step:last-child { border-right:none; }
-.funnel-step.clickable { cursor:pointer; transition:background .12s; }
-.funnel-step.clickable:hover { background:var(--purple-50); } .funnel-step.clickable.active { background:var(--purple-50); }
-.fs-label { font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
-.fs-val { font-size:22px; font-weight:700; line-height:1; }
-.fs-val.blue{color:var(--blue-600);} .fs-val.purple{color:var(--purple-600);} .fs-val.green{color:var(--green-600);}
-.fs-hint { font-size:9px; color:var(--text-3); margin-top:3px; } .fs-hint-click { color:var(--purple-600); }
-.dr-drawer { display:none; border-top:.5px solid var(--border); } .dr-drawer.open { display:block; }
-.dr-drawer-header { padding:.5rem 1.125rem; display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border-bottom:.5px solid var(--border); }
-.dr-drawer-title { font-size:11px; font-weight:600; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-.dr-close-btn { background:none; border:.5px solid var(--border-md); border-radius:var(--r-md); cursor:pointer; color:var(--text-2); width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; }
-.dr-close-btn:hover { background:var(--surface); }
-.dr-table-wrap { overflow-x:auto; } .dr-table { width:100%; border-collapse:collapse; font-size:12px; }
-.dr-table th { text-align:left; padding:6px 1.125rem; font-size:9px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--text-3); background:var(--surface-2); border-bottom:.5px solid var(--border); white-space:nowrap; }
-.dr-table td { padding:8px 1.125rem; border-bottom:.5px solid var(--border); vertical-align:middle; }
-.dr-table tr:last-child td { border-bottom:none; } .dr-table tr:hover td { background:var(--bg); }
-.did-txt { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--blue-600); cursor:pointer; } .did-txt:hover { text-decoration:underline; }
-.route-txt { font-size:11px; max-width:180px; line-height:1.4; } .meta-txt { font-size:10px; color:var(--text-2); white-space:nowrap; }
-.bid-in-row { font-size:12px; font-weight:700; color:var(--green-600); white-space:nowrap; } .bid-in-row.top3 { color:var(--amber-600); } .bid-none { font-size:10px; color:var(--text-3); }
-.tok-badge { padding:2px 6px; border-radius:20px; font-size:9px; font-weight:600; display:inline-block; white-space:nowrap; }
-.tok-paid{background:var(--green-50);color:var(--green-800);} .tok-open{background:var(--surface-2);color:var(--text-3);}
-.dr-empty { padding:1rem; text-align:center; color:var(--text-3); font-size:12px; }
-
-/* BOTTOM GRID */
-.bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:.875rem; margin-bottom:.875rem; }
-.info-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; }
-.info-card-title { font-size:11px; font-weight:600; display:flex; align-items:center; gap:5px; padding:.6rem 1.125rem; border-bottom:.5px solid var(--border); }
-.veh-stats { display:flex; padding:.6rem 1.125rem; border-bottom:.5px solid var(--border); }
-.veh-stat { flex:1; text-align:center; border-right:.5px solid var(--border); } .veh-stat:last-child { border-right:none; }
-.veh-val { font-size:18px; font-weight:700; } .veh-val.red{color:var(--red-600);} .veh-val.green{color:var(--green-600);}
-.veh-label { font-size:9px; color:var(--text-3); margin-top:2px; }
-.avail-section { padding:.5rem 1.125rem; border-bottom:.5px solid var(--border); }
-.avail-lbl { font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--text-3); margin-bottom:5px; display:flex; align-items:center; gap:4px; }
-.avail-lbl .dot { width:6px; height:6px; border-radius:50%; background:var(--green-600); animation:pulse 2s infinite; }
-.avail-list { display:flex; flex-wrap:wrap; gap:4px; max-height:80px; overflow-y:auto; }
-.veh-pill { display:inline-flex; align-items:center; gap:4px; background:var(--green-50); border:.5px solid #BFE08F; border-radius:7px; padding:2px 7px; cursor:pointer; }
-.veh-pill .vn { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--green-800); } .veh-pill .vt { font-size:9px; color:var(--text-2); }
-.avail-empty { font-size:11px; color:var(--text-3); }
-.tyre-section { padding:.625rem 1.125rem; }
-.tyre-section-lbl { font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--text-3); margin-bottom:7px; }
-.tyre-row { margin-bottom:7px; } .tyre-row:last-child { margin-bottom:0; }
-.tyre-row-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; }
-.tyre-name { font-size:11px; font-weight:600; } .tyre-counts { font-size:10px; color:var(--text-2); } .tyre-counts span { font-weight:700; color:var(--green-600); }
-.bar-track { height:4px; background:var(--surface-2); border-radius:4px; overflow:hidden; }
-.bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--green-600),var(--teal-600)); }
-
-/* LANE TABS */
-.lane-tabs { display:flex; border-bottom:.5px solid var(--border); }
-.lane-tab { flex:1; padding:.45rem .625rem; font-size:10px; font-weight:600; color:var(--text-3); background:none; border:none; cursor:pointer; border-bottom:2px solid transparent; transition:color .12s,border-color .12s; white-space:nowrap; font-family:var(--font); }
-.lane-tab:hover { color:var(--text-2); } .lane-tab.active { color:var(--purple-600); border-bottom-color:var(--purple-600); }
-.lane-cnt { display:inline-flex; align-items:center; justify-content:center; background:var(--purple-50); color:var(--purple-800); min-width:15px; height:15px; padding:0 3px; border-radius:8px; font-size:8px; font-weight:700; margin-left:3px; vertical-align:middle; }
-.lane-tab.active .lane-cnt { background:var(--purple-600); color:#fff; }
-.lane-body { display:none; padding:.625rem 1.125rem; max-height:260px; overflow-y:auto; } .lane-body.active { display:block; }
-.lane-card { border:.5px solid var(--border); border-radius:var(--r-md); padding:.45rem .75rem; margin-bottom:5px; background:var(--bg); } .lane-card:last-child { margin-bottom:0; }
-.lane-card.paid-card{border-color:var(--green-600);background:var(--green-50);} .lane-card.best-card{border-color:var(--amber-600);box-shadow:inset 3px 0 0 var(--amber-600);} .lane-card.lost-card{border-color:#E0B4B4;}
-.lane-card-top { display:flex; align-items:center; gap:6px; margin-bottom:2px; flex-wrap:wrap; }
-.lane-did { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--blue-600); cursor:pointer; } .lane-did:hover { text-decoration:underline; }
-.lane-route { font-size:12px; font-weight:600; line-height:1.3; }
-.lane-meta { display:flex; gap:7px; flex-wrap:wrap; margin-top:3px; align-items:center; } .lane-meta-item { font-size:10px; color:var(--text-2); }
-.lane-bid { font-size:12px; font-weight:700; color:var(--green-600); margin-left:auto; white-space:nowrap; } .lane-bid.none { color:var(--text-3); font-weight:500; }
-.lane-placed { font-size:11px; font-weight:700; color:var(--purple-800); white-space:nowrap; }
-.lane-offered { font-size:10px; color:var(--blue-600); font-weight:600; }
-.lane-empty { font-size:11px; color:var(--text-3); text-align:center; padding:1rem 0; }
-.pill { font-size:8px; font-weight:700; padding:1px 5px; border-radius:10px; }
-.pill-amber{background:var(--amber-50);color:var(--amber-800);} .pill-green{background:var(--green-50);color:var(--green-800);}
-.pill-red{background:var(--red-50);color:var(--red-800);} .pill-gray{background:var(--surface-2);color:var(--text-2);}
-.method-chip { padding:2px 6px; border-radius:20px; font-size:9px; font-weight:600; display:inline-block; }
-.method-chip.bidding{background:var(--blue-50);color:var(--blue-800);} .method-chip.matching{background:var(--green-50);color:var(--green-800);}
-.verdict-note { font-size:10px; margin-top:4px; font-weight:600; border-radius:5px; padding:3px 7px; }
-.verdict-note.bad { background:var(--red-50); color:var(--red-800); }
-.hist-card { cursor:pointer; } .hist-card .chev { font-size:10px; color:var(--text-3); transition:transform .15s; display:inline-block; }
-.hist-card.open .chev { transform:rotate(90deg); } .hist-card .hist-details { display:none; margin-top:5px; } .hist-card.open .hist-details { display:block; }
-.hist-cmp { margin-left:auto; font-size:10px; font-weight:700; color:var(--text-2); white-space:nowrap; }
-
-/* CALL HISTORY */
-.call-section { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; margin-bottom:.875rem; }
-.call-section-hdr { padding:.625rem 1.125rem; border-bottom:.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-.call-section-title { font-size:11px; font-weight:600; display:flex; align-items:center; gap:5px; }
-.ch-table { width:100%; border-collapse:collapse; font-size:12px; }
-.ch-table th { text-align:left; padding:6px 1.125rem; font-size:9px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--text-3); background:var(--surface-2); border-bottom:.5px solid var(--border); white-space:nowrap; }
-.ch-table td { padding:8px 1.125rem; border-bottom:.5px solid var(--border); vertical-align:middle; }
-.ch-table tr:last-child td { border-bottom:none; } .ch-table tr:hover td { background:var(--bg); }
-.disp-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:600; white-space:nowrap; }
-.disp-conn{background:var(--green-50);color:var(--green-800);} .disp-notreach{background:var(--red-50);color:var(--red-800);}
-.disp-callback{background:var(--amber-50);color:var(--amber-800);} .disp-default{background:var(--surface-2);color:var(--text-2);}
-.call-empty { padding:1rem; text-align:center; color:var(--text-3); font-size:11px; }
-
-/* CALL LOG FORM */
-.log-form-wrap { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; margin-bottom:.875rem; }
-.log-form-hdr  { padding:.625rem 1.125rem; border-bottom:.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-.log-form-body { padding:1rem 1.125rem; display:flex; flex-direction:column; gap:.75rem; }
-.lf-row   { display:flex; gap:.75rem; flex-wrap:wrap; }
-.lf-field { display:flex; flex-direction:column; gap:4px; flex:1; min-width:140px; }
-.lf-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; color:var(--text-3); }
-.lf-select,.lf-input,.lf-textarea {
-  width:100%; font-family:var(--font); font-size:13px;
-  background:var(--surface-2); border:.5px solid var(--border-md);
-  border-radius:var(--r-md); padding:7px 10px; color:var(--text-1);
-  outline:none; transition:border-color .15s;
-}
-.lf-select:focus,.lf-input:focus,.lf-textarea:focus { border-color:var(--purple-600); }
-.lf-textarea { resize:vertical; min-height:68px; }
-.lf-checks  { display:flex; gap:1.25rem; align-items:center; flex-wrap:wrap; }
-.lf-check   { display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; }
-.lf-check input { width:16px; height:16px; accent-color:var(--purple-600); cursor:pointer; }
-.lf-submit  { align-self:flex-start; background:var(--purple-600); color:#fff; border:none; border-radius:var(--r-md); padding:9px 22px; font-size:13px; font-weight:600; cursor:pointer; transition:background .15s; }
-.lf-submit:hover { background:var(--purple-800); }
-.lf-submit:disabled { background:var(--gray-200); cursor:not-allowed; }
-.lf-status  { font-size:11px; margin-top:2px; min-height:16px; }
-.lf-status.ok  { color:var(--green-600); }
-.lf-status.err { color:var(--red-600); }
-.lf-api-note { font-size:10px; color:var(--amber-600); background:var(--amber-50); border-radius:6px; padding:4px 10px; }
-
-.toast { position:fixed; bottom:20px; right:20px; background:var(--text-1); color:#fff; border-radius:var(--r-md); padding:8px 14px; font-size:12px; z-index:9999; display:none; max-width:280px; box-shadow:0 4px 12px rgba(0,0,0,.18); }
-.toast.show { display:block; }
-.notice-bar { background:var(--amber-50); border-bottom:.5px solid #EF9F27; padding:7px 1.25rem; font-size:11px; color:var(--amber-800); display:none; }
-.notice-bar a { color:var(--amber-600); font-weight:600; cursor:pointer; }
-svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-2px; }
-</style>
-</head>
-<body>
-
-<header class="topbar">
-  <div class="brand">
-    <div class="brand-dot">FO</div>
-    <div><div class="brand-name">FO Activation CRM</div><div class="brand-sub">Wheelseye · FO Growth</div></div>
-  </div>
-  <div class="top-search-wrap">
-    <svg class="s-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="topSearch" placeholder="Jump to operator code…" autocomplete="off" spellcheck="false"/>
-    <button class="top-clear-btn" id="topClearBtn"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-    <div class="top-suggestions" id="topSuggestions"></div>
-  </div>
-  <div class="status-bar">
-    <div class="status-chip" id="statusChip"><div class="pulse-dot" id="pulseDot"></div><span id="statusText">Loading…</span></div>
-    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
-      <svg id="refreshIcon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      Refresh
-    </button>
-  </div>
-</header>
-
-<div class="notice-bar" id="noticeBanner">
-  ⚠️ Could not load data from Google Sheets. Make sure the sheet is shared as <b>"Anyone with the link can view"</b>. &nbsp;<a onclick="loadData()">Retry</a>
-</div>
-
-<div class="app-layout" id="appLayout" style="margin-top:var(--topbar)">
-
-  <!-- LEFT: LEAD LIST -->
-  <aside class="lead-panel">
-    <div class="filter-bar">
-      <div class="filter-row">
-        <span class="filter-lbl">Stage</span>
-        <button class="pri-btn a-all" data-pri="ALL">All</button>
-        <button class="pri-btn" data-pri="Stage 4" title="Post acceptance/rejection — call immediately">🎉 P0 - Post Acceptance</button>
-        <button class="pri-btn" data-pri="Stage 2" title="Bid submitted, token not paid — highest outbound priority">🔴 P1 - Bid Submitted</button>
-        <button class="pri-btn" data-pri="Stage 3" title="Token paid, vehicle submitted — needs to win bid">🟡 P3 - Token Paid</button>
-        <button class="pri-btn" data-pri="Stage 5" title="Non-active FO qualifying on DRs">P4 - Non Active FO</button>
-        <button class="pri-btn" id="hotFilterBtn" data-pri="HOT" title="Any today activity">🔴 Hot</button>
-      </div>
-      <div class="filter-row">
-        <span class="filter-lbl">Filter</span>
-        <select class="f-sel" id="fRecency">
-          <option value="">All recency</option>
-          <option value="Last 7 days">Last 7d</option>
-          <option value="8-30 days">8–30d</option>
-          <option value="30+ days">30+ days</option>
-        </select>
-        <select class="f-sel" id="fDR">
-          <option value="">All DR types</option>
-          <option value="Red DR">🔴 Red DR (&lt;300 FOs)</option>
-          <option value="Normal DR">Normal DR</option>
-          <option value="High DR">High DR</option>
-          <option value="Mid DR">Mid DR</option>
-          <option value="Low DR">Low DR</option>
-        </select>
-      </div>
-      <div class="filter-row">
-        <span class="filter-lbl">RM</span>
-        <select class="f-sel" id="fRM"><option value="">All RMs</option></select>
-        <select class="f-sel" id="fCalled">
-          <option value="">All statuses</option>
-          <option value="called">Called</option>
-          <option value="not_called">Not Called</option>
-        </select>
-      </div>
-    </div>
-    <div class="lead-search-wrap">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input class="lead-search" id="leadSearch" placeholder="Filter by code or RM…" autocomplete="off">
-    </div>
-    <div class="lead-countbar">
-      <strong id="filteredCount">0</strong>&nbsp;leads
-      <span id="pageRangeInfo" style="color:var(--text-3)"></span>
-    </div>
-    <div class="lead-list" id="leadList">
-      <div style="padding:1.5rem;text-align:center;color:var(--text-3);font-size:12px" id="listPlaceholder">Loading leads…</div>
-    </div>
-    <div class="pagination">
-      <button class="pg-btn" id="prevBtn" onclick="changePage(-1)" disabled>← Prev</button>
-      <span class="pg-info" id="pageLabel">—</span>
-      <button class="pg-btn" id="nextBtn" onclick="changePage(1)" disabled>Next →</button>
-    </div>
-  </aside>
-
-  <!-- RIGHT: DETAIL -->
-  <main class="detail-panel" id="detailPanel">
-    <div class="detail-inner">
-
-      <div class="empty-state" id="emptyState">
-        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-        <h2>Select a lead to view profile</h2>
-        <p>Click any operator from the list, or use the search bar to jump to one.</p>
-      </div>
-
-      <div id="profileSection" style="display:none">
-
-        <!-- 1. PRIORITY CONTEXT -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Activation Stage</div>
-        <div class="pcc" id="pccCard">
-          <div class="pcc-badge" id="pccBadge">S5</div>
-          <div class="pcc-body">
-            <div class="pcc-def" id="pccDef">—</div>
-            <div class="pcc-stats">
-              <div class="pcc-stat"><div class="pcc-val" id="pccLDPs">—</div><div class="pcc-lbl">Lifetime LDPs</div></div>
-              <div class="pcc-stat"><div class="pcc-val" id="pccToks">—</div><div class="pcc-lbl">Lifetime Tokens</div></div>
-              <div class="pcc-stat"><div class="pcc-val" id="pccDRs">—</div><div class="pcc-lbl">DR Appearances</div></div>
-              <div class="pcc-stat"><div class="pcc-val" id="pccTrips">—</div><div class="pcc-lbl">Lifetime Trips</div></div>
-            </div>
-          </div>
-          <div class="pcc-right">
-            <div class="pcc-rank" id="pccRank">Rank #—</div>
-            <div class="pcc-recency" id="pccRecency">—</div>
-          </div>
-        </div>
-
-        <!-- 2. HOT TODAY (new — shown only when bid_today or vehicle_available_today) -->
-        <div id="hotTodayWrap" style="display:none">
-          <div class="section-lbl" style="color:#8B4010">
-            <span style="font-size:12px;line-height:1">🔥</span>Active Today
-          </div>
-          <div class="hot-today-card">
-            <div class="htc-header">
-              <div class="htc-pulse"></div>
-              <div class="htc-title" id="htcTitle">—</div>
-              <div class="htc-time"  id="htcTime"></div>
-            </div>
-            <div class="htc-grid" id="htcGrid"><!-- populated by renderHotToday() --></div>
-          </div>
-        </div>
-
-        <!-- 3. OPERATOR PROFILE -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Operator</div>
-        <div class="profile-card">
-          <div class="profile-avatar" id="profileAvatar">OP</div>
-          <div class="profile-body">
-            <div class="profile-code" id="profileCode" title="Click to copy">—</div>
-            <div class="profile-rm"   id="profileRM">—</div>
-            <div class="profile-meta" id="profileMeta">
-              <span class="badge badge-teal" id="clusterBadge">—</span>
-            </div>
-          </div>
-          <div class="score-block">
-            <div class="score-val" id="scoreVal">—</div>
-            <div class="score-label">Activity Score<br><span style="color:var(--text-3)">last 15d</span></div>
-          </div>
-        </div>
-
-        <!-- 4. ACTION BANNER -->
-        <div class="action-banner" id="actionBanner">
-          <div class="action-icon" id="actionIcon">📞</div>
-          <div class="action-text">
-            <div class="action-title" id="actionTitle">—</div>
-            <div class="action-sub"   id="actionSub">—</div>
-            <div class="action-pitch" id="actionPitch" style="display:none"></div>
-          </div>
-        </div>
-
-        <!-- 5. ACTIVITY METRICS -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Activity — last 15 days</div>
-        <div class="metrics-grid">
-          <div class="metric-card"><div class="metric-label">VA days</div><div class="metric-val" id="vaDays">—</div><div class="metric-sub">vehicle available</div></div>
-          <div class="metric-card"><div class="metric-label">LDP days</div><div class="metric-val" id="ldpDays">—</div><div class="metric-sub">browsed loads</div></div>
-          <div class="metric-card"><div class="metric-label">Total LDPs</div><div class="metric-val" id="ldpCount">—</div><div class="metric-sub">load detail views</div></div>
-          <div class="metric-card"><div class="metric-label">Tokens paid</div><div class="metric-val" id="tokenCount">—</div><div class="metric-sub">paid (15d)</div></div>
-        </div>
-
-        <!-- 6. DR FUNNEL -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Live DR Funnel — today <span class="badge badge-green" style="font-size:9px;padding:1px 7px">● LIVE</span></div>
-        <div class="funnel-card">
-          <div class="funnel-header">
-            <div class="funnel-title"><svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Demand request pipeline</div>
-            <div class="funnel-hint">lane details shown below in Lane Visibility</div>
-          </div>
-          <div class="funnel-steps">
-            <div class="funnel-step" id="drStep"><div class="fs-label">In op-search</div><div class="fs-val blue" id="drCountVal">—</div><div class="fs-hint">live lanes below</div></div>
-            <div class="funnel-step" id="tokStep"><div class="fs-label">Tokens paid</div><div class="fs-val purple" id="tokenDRVal">—</div><div class="fs-hint">paid lanes below</div></div>
-            <div class="funnel-step"><div class="fs-label">Conversion</div><div class="fs-val green" id="convRateVal">—</div><div class="fs-hint">token / search</div></div>
-          </div>
-        </div>
-
-        <!-- 7. VEHICLE + LANE VISIBILITY -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle &amp; Lane Visibility</div>
-        <div class="bottom-grid">
-          <div class="info-card">
-            <div class="info-card-title"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle profile</div>
-            <div class="veh-stats">
-              <div class="veh-stat"><div class="veh-val" id="totalVeh">—</div><div class="veh-label">total trucks</div></div>
-              <div class="veh-stat"><div class="veh-val green" id="corrVeh">—</div><div class="veh-label">verified</div></div>
-              <div class="veh-stat"><div class="veh-val red" id="unverVeh">—</div><div class="veh-label">unverified</div></div>
-            </div>
-            <div class="avail-section">
-              <div class="avail-lbl"><span class="dot"></span>Available today <span id="availCnt" style="color:var(--text-3)"></span></div>
-              <div class="avail-list" id="availList"></div>
-            </div>
-            <div class="tyre-section">
-              <div class="tyre-section-lbl">Tyre-wise breakdown</div>
-              <div id="tyreBreakdown"></div>
-            </div>
-          </div>
-          <div class="info-card">
-            <div class="info-card-title"><svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>Lane visibility</div>
-            <div class="lane-tabs">
-              <button class="lane-tab active" id="tab-live" onclick="switchTab('live')">Live <span class="lane-cnt" id="cntLive">0</span></button>
-              <button class="lane-tab" id="tab-paid" onclick="switchTab('paid')">Paid Today <span class="lane-cnt" id="cntPaid">0</span></button>
-              <button class="lane-tab" id="tab-hist" onclick="switchTab('hist')">Bid History <span class="lane-cnt" id="cntHist">0</span></button>
-            </div>
-            <div class="lane-body active" id="body-live"></div>
-            <div class="lane-body" id="body-paid"></div>
-            <div class="lane-body" id="body-hist"></div>
-          </div>
-        </div>
-
-        <!-- 8. LOG A CALL -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Log a Call</div>
-        <div class="log-form-wrap">
-          <div class="log-form-hdr">
-            <div class="call-section-title"><svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Record outcome after each call</div>
-            <button id="openFormBtn" onclick="openCallForm()" style="display:none;height:26px;padding:0 10px;border-radius:6px;border:.5px solid var(--purple-600);background:var(--purple-600);color:#fff;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px">
-              <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              Open Form
-            </button>
-            <span id="lfApiNote" class="lf-api-note" style="display:none">⚠ Set FORM_URL in code to enable</span>
-          </div>
-          <div class="log-form-body">
-            <div class="lf-row">
-              <div class="lf-field">
-                <label class="lf-label" for="lfStatus">Call Status</label>
-                <select class="lf-select" id="lfStatus">
-                  <option value="">— select —</option>
-                  <option value="Connected">✅ Connected</option>
-                  <option value="Not Reachable">📵 Not Reachable</option>
-                  <option value="Callback">🔁 Callback</option>
-                </select>
-              </div>
-              <div class="lf-field">
-                <label class="lf-label" for="lfFollowup">Followup Date</label>
-                <input class="lf-input" type="date" id="lfFollowup">
-              </div>
-              <div class="lf-field">
-                <label class="lf-label" for="lfCaller">Your Name</label>
-                <input class="lf-input" type="text" id="lfCaller" placeholder="Enter your name">
-              </div>
-            </div>
-            <div class="lf-checks">
-              <label class="lf-check"><input type="checkbox" id="lfTraining"> Training Done</label>
-              <label class="lf-check"><input type="checkbox" id="lfInterested"> Operator Interested</label>
-            </div>
-            <div class="lf-field">
-              <label class="lf-label" for="lfNotes">Notes</label>
-              <textarea class="lf-textarea" id="lfNotes" placeholder="e.g. Operator said will pay token tomorrow, wants rate on NCR→HYD route…"></textarea>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-              <button class="lf-submit" id="lfSubmitBtn" onclick="submitCallLog()">Save Record</button>
-              <span class="lf-status" id="lfStatusMsg"></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 9. CALL HISTORY -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Call History — MP Load Support</div>
-        <div class="call-section">
-          <div class="call-section-hdr">
-            <div class="call-section-title"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Calling records</div>
-            <span style="font-size:10px;color:var(--text-3)" id="callBadge"></span>
-          </div>
-          <div id="callHistoryBody"><div class="call-empty">Select an operator to view call history.</div></div>
-        </div>
-
-      </div><!-- /profileSection -->
-    </div>
-  </main>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-/* ── DATA SOURCE: Google Sheets CSV ─────────────────────────────────
-   Sheet must be shared as "Anyone with the link can view"
-   Pipeline writes here every run (activation_calling_pipeline.py)
-   ─────────────────────────────────────────────────────────────────── */
-var SHEET_KEY  = '1nUhQ5SX0KpE83pYaAmtmXB1HBEFNoBKdc92bWSrhimQ';
-var SHEET_GID  = '0';
-var SHEET_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_KEY
-               + '/gviz/tq?tqx=out:csv&gid=' + SHEET_GID;
-var REFRESH_MS = 10*60*1000;
-var PAGE_SIZE  = 30;
-
-/* ── CALL LOG — Google Form ─────────────────────────────────────────────
-   After creating the Google Form and getting the pre-fill entry ID:
-     FORM_URL      → your Google Form's base URL (ends in /viewform)
-     FORM_ENTRY_OP → entry.XXXXXXXXX for the "Operator Code" question
-                     (Form → ⋮ → Get pre-filled link → fill one field → copy entry ID)
-   Leave FORM_URL as '' to hide the Log Call button.
-   ─────────────────────────────────────────────────────────────────────── */
-var FORM_URL      = '';   // ← e.g. 'https://docs.google.com/forms/d/e/XXXX/viewform'
-var FORM_ENTRY_OP = '';   // ← e.g. 'entry.123456789'
-
-/* ── CALL LOG API (legacy Flask — keep if still using) ──────────────── */
-var API_URL = 'https://script.google.com/macros/s/AKfycbwvyBh1NOEn6bq_eZzM-YwbwsPQDnCkQBcwsFiRuSRX0lvd2g3MWlr6HXHUD4UNeTnMkQ/exec';
-
-/* STATE */
-var allData=[],filtered=[],currentCode=null,currentPage=1;
-// Default: P0P1 = show only P0 + P1 + hot operators (fast load)
-// Change to 'ALL' to see everything including P2/P3
-var filterPri='ALL',filterHot=false,drawerOpen=null;
-var activeTyre=null,currentLanes=[],currentTokenSet={};
-
-/* HELPERS */
-function rs(v){var n=parseFloat((v||'').toString().replace(/[^0-9.]/g,''));return(isNaN(n)||n<=0)?null:n;}
-function frs(n){if(n==null||isNaN(n)||n<=0)return'—';return'&#8377;'+Math.round(n).toLocaleString('en-IN');}
-function isTrueVal(v){return v===true||v==='TRUE'||v==='true'||v==='True'||v==='1'||v==='Yes';}
-
-function minsAgo(tsStr) {
-  /* Returns "X mins ago" string from an IST timestamp string like "2026-06-23 10:32:45".
-     Returns '' if unparseable or > 180 mins (outside 3-hr window). */
-  if(!tsStr||tsStr==='nan'||tsStr===''||tsStr==='NaT') return '';
-  var ts = new Date(tsStr.replace(' ','T'));
-  if(isNaN(ts)) return '';
-  // server returns IST; browser Date() treats as local — offset correction:
-  // add IST offset (+5:30 = +330 min) then subtract local offset
-  var diffMs = Date.now() - ts.getTime();
-  var mins = Math.round(diffMs / 60000);
-  if(mins < 0 || mins > 200) return '';
-  if(mins < 1)  return 'just now';
-  if(mins === 1) return '1 min ago';
-  return mins + ' mins ago';
-}
-function fmtTime(tsStr) {
-  /* Extracts HH:MM from "2026-06-30 10:23:45". Returns '' if invalid. */
-  if(!tsStr||tsStr==='nan'||tsStr===''||tsStr==='NaT') return '';
-  var ts=new Date(tsStr.replace(' ','T'));
-  if(isNaN(ts.getTime())) return '';
-  var h=ts.getHours(),m=ts.getMinutes();
-  return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
-}
-function priColor(p){return{P0:'#A32D2D',P1:'var(--purple-600)',P2:'var(--amber-600)',P3:'var(--gray-600)'}[p]||'var(--gray-600)';}
-function stageColor(s){return{'Stage 4':'var(--green-600)','Stage 2':'var(--red-600)','Stage 3':'var(--amber-600)','Stage 5':'var(--gray-600)'}[s]||'var(--gray-600)';}
-function copyText(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){showToast('Copied: '+t);});}else showToast(t);}
-function set(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
-function fmtN(n){var v=Number(n||0);return isNaN(v)?'0':v.toLocaleString();}
-
-/* PARSERS */
-function parseLanes(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;var lows=(p[4]||'').split(';').map(rs).filter(function(x){return x!=null;});return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),loading:(p[3]||'').trim(),lows:lows,bid:lows.length?lows[0]:null,offered:rs(p[5]),own:rs(p[6]),tyre_req:(p[7]||'').trim()};}).filter(Boolean);}
-function parseTokenLanes(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),bid:rs(p[3]),placed:rs(p[4]),method:(p[5]||'').trim().toUpperCase()};}).filter(Boolean);}
-function parseHist(raw){if(!raw)return[];var out=raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),bid:rs(p[3]),placed:rs(p[4]),verdict:(p[5]||'').trim().toUpperCase(),date:(p[6]||'').trim()};}).filter(Boolean);out.sort(function(a,b){return b.date.localeCompare(a.date);});return out;}
-function parseTyres(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');return{tyres:(p[0]||'?').trim(),total:parseInt(p[1]||'0',10),verified:parseInt(p[2]||'0',10)};}).filter(Boolean).sort(function(a,b){return(parseInt(a.tyres)||9999)-(parseInt(b.tyres)||9999);});}
-function parseAvail(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var vn=(p[0]||'').trim();if(!vn)return null;return{vn:vn,tyre:(p[1]||'').trim(),body:(p[2]||'').trim(),size:(p[3]||'').trim()};}).filter(Boolean);}
-function parseCallHistory(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');return{date:(p[0]||'').trim(),disposition:(p[1]||'').trim(),caller:(p[2]||'').trim(),disp_code:(p[3]||'').trim()};}).filter(Boolean);}
-function bidsTitle(l){return l.lows.length?'Lowest bids: '+l.lows.map(function(x){return'₹'+Math.round(x).toLocaleString('en-IN');}).join(' · '):'';}
-function tagLowest(lanes){lanes.forEach(function(l){l.isLow=(l.own!=null&&l.lows.length&&l.own<=l.lows[0]);});return lanes;}
-
-/* DATA LOAD — PapaParse reads CSV directly from Google Sheets CDN (~2-3s) */
-var _loadTimer = null;
-function loadData(){
-  setLoading(true);
-  Papa.parse(SHEET_URL + '&t=' + Date.now(), {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    complete: function(results){
-      document.getElementById('noticeBanner').style.display='none';
-      allData=(results.data||[]).map(function(row){
-        var c={};
-        Object.keys(row).forEach(function(k){
-          c[k.trim()]=(row[k]===null||row[k]===undefined)?'':String(row[k]).trim();
-        });
-        return c;
-      });
-      populateRMFilter();applyFilters();
-      setStatus('ok', allData.length);
-      if(currentCode){var r=findRow(currentCode);if(r)renderProfile(r);}
-      setLoading(false);
-      if(_loadTimer) clearTimeout(_loadTimer);
-      _loadTimer = setTimeout(loadData, REFRESH_MS);
-    },
-    error: function(){
-      setStatus('error');
-      document.getElementById('noticeBanner').style.display='block';
-      setLoading(false);
-      if(_loadTimer) clearTimeout(_loadTimer);
-      _loadTimer = setTimeout(loadData, REFRESH_MS);
-    }
-  });
-}
-function findRow(code){code=code.toUpperCase();for(var i=0;i<allData.length;i++){if((allData[i].operator_code||'').toUpperCase()===code)return allData[i];}return null;}
-function setStatus(state,count,updated){
-  var chip=document.getElementById('statusChip'),dot=document.getElementById('pulseDot');
-  chip.classList.toggle('error',state==='error');
-  dot.style.background=state==='error'?'var(--red-600)':'var(--green-600)';
-  dot.style.animation=state==='error'?'none':'pulse 2s infinite';
-  var txt = state==='error' ? 'Data load failed — check Apps Script URL' :
-    (count||allData.length).toLocaleString('en-IN')+' leads'+(updated?' · '+updated:'');
-  document.getElementById('statusText').textContent=txt;
-}
-function setLoading(on){var btn=document.getElementById('refreshBtn');btn.classList.toggle('spinning',on);btn.disabled=on;}
-
-/* FILTERS */
-function applyFilters(){
-  var recency=document.getElementById('fRecency').value,dr=document.getElementById('fDR').value;
-  var rm=document.getElementById('fRM').value,called=document.getElementById('fCalled').value;
-  var search=document.getElementById('leadSearch').value.trim().toUpperCase();
-  filtered=allData.filter(function(row){
-    var rowIsHot=isTrueVal(row.bid_today)||isTrueVal(row.vehicle_available_today)||isTrueVal(row.accepted_today)||(row.hot_flag||'')!=='';
-    if(filterHot&&!rowIsHot)return false;
-    if(!filterHot&&filterPri!=='ALL'){
-      if(row.stage!==filterPri)return false;
-    }
-    if(recency&&row.recency_tier!==recency)return false;
-    // DR filter: Red DR / Normal DR use dr_supply_type; High/Mid/Low use dr_tier
-    if(dr){
-      if(dr==='Red DR'||dr==='Normal DR'){if(row.dr_supply_type!==dr)return false;}
-      else{if(row.dr_tier!==dr)return false;}
-    }
-    if(rm&&(row.rm_name||'').toUpperCase()!==rm.toUpperCase())return false;
-    if(search&&!(row.operator_code||'').toUpperCase().includes(search)&&!(row.rm_name||'').toUpperCase().includes(search))return false;
-    if(called==='called'&&!row.last_call_date)return false;
-    if(called==='not_called'&&row.last_call_date)return false;
-    return true;
-  });
-  // Sort: latest bid_time first (descending), then activation_score descending
-  filtered.sort(function(a,b){
-    var aT=a.last_bid_time||'',bT=b.last_bid_time||'';
-    if(aT&&bT) return bT.localeCompare(aT);   // both have bid time — latest first
-    if(aT) return -1;                           // only a has bid — a goes first
-    if(bT) return 1;                            // only b has bid — b goes first
-    return parseFloat(b.activation_score||0)-parseFloat(a.activation_score||0);
-  });
-  currentPage=1;
-  document.getElementById('filteredCount').textContent=filtered.length.toLocaleString('en-IN');
-  renderLeadList();
-}
-var _stageClass={'Stage 4':'a-s4','Stage 2':'a-s2','Stage 3':'a-s3','Stage 5':'a-s5','ALL':'a-all'};
-document.querySelectorAll('.pri-btn').forEach(function(btn){
-  btn.addEventListener('click',function(){
-    if(btn.dataset.pri==='HOT'){
-      filterHot=!filterHot;filterPri='ALL';
-      document.querySelectorAll('.pri-btn:not([data-pri="HOT"])').forEach(function(b){b.className='pri-btn';});
-      document.querySelector('.pri-btn[data-pri="ALL"]').classList.add('a-all');
-      btn.className='pri-btn'+(filterHot?' a-hot':'');
-    }else{
-      filterHot=false;document.getElementById('hotFilterBtn').className='pri-btn';
-      document.querySelectorAll('.pri-btn:not([data-pri="HOT"])').forEach(function(b){b.className='pri-btn';});
-      filterPri=btn.dataset.pri;
-      btn.classList.add(_stageClass[filterPri]||'a-all');
-    }
-    applyFilters();
-  });
-});
-['fRecency','fDR','fRM','fCalled'].forEach(function(id){document.getElementById(id).addEventListener('change',applyFilters);});
-document.getElementById('leadSearch').addEventListener('input',applyFilters);
-function populateRMFilter(){
-  var rms=[...new Set(allData.map(function(r){return(r.rm_name||'').toUpperCase();}).filter(Boolean))].sort();
-  var sel=document.getElementById('fRM'),cur=sel.value;sel.innerHTML='<option value="">All RMs</option>';
-  rms.forEach(function(rm){var o=document.createElement('option');o.value=rm;o.textContent=rm;if(rm===cur)o.selected=true;sel.appendChild(o);});
-}
-
-/* LEAD LIST */
-function callDotColor(d){var v=(d||'').toLowerCase();if(v.includes('connect'))return'var(--green-600)';if(v.includes('callback')||v.includes('call back'))return'var(--amber-600)';if(v.includes('not reach')||v.includes('no answer')||v.includes('busy')||v.includes('switch'))return'var(--red-600)';return'var(--gray-200)';}
-function renderLeadList(){
-  var start=(currentPage-1)*PAGE_SIZE,page=filtered.slice(start,start+PAGE_SIZE);
-  var total=Math.ceil(filtered.length/PAGE_SIZE)||1;
-  document.getElementById('pageLabel').textContent=currentPage+' / '+total;
-  document.getElementById('pageRangeInfo').textContent=(start+1)+'–'+Math.min(start+PAGE_SIZE,filtered.length);
-  document.getElementById('prevBtn').disabled=currentPage<=1;document.getElementById('nextBtn').disabled=currentPage>=total;
-  var lp=document.getElementById('listPlaceholder');if(lp)lp.style.display='none';
-  if(!page.length){document.getElementById('leadList').innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--text-3);font-size:12px">No leads match.</div>';return;}
-  var recCls={'Last 7 days':'lb-rec-7','8-30 days':'lb-rec-30','30+ days':'lb-rec-old'};
-  var drCls={'High DR':'lb-dr-h','Mid DR':'lb-dr-m','Low DR':'lb-dr-l'};
-  var stageCls={'Stage 4':'lb-s4','Stage 2':'lb-s2','Stage 3':'lb-s3','Stage 5':'lb-s5'};
-  var stageLbl={'Stage 4':'P0 - Post Acceptance','Stage 2':'P1 - Bid Submitted','Stage 3':'P3 - Token Paid','Stage 5':'P4 - Non Active FO'};
-  document.getElementById('leadList').innerHTML=page.map(function(row){
-    var code=(row.operator_code||'').toUpperCase();
-    var stage=row.stage||'Stage 5';
-    var bidT=isTrueVal(row.bid_today), vaT=isTrueVal(row.vehicle_available_today), accT=isTrueVal(row.accepted_today);
-    var isHot=bidT||vaT||accT||(row.hot_flag||'')!=='';
-    var isSheet=(row.source||'')==='Sheet';
-    var isRedDR=(row.dr_supply_type||'')==='Red DR';
-    var active=code===currentCode?' active':'',hotCls=isHot?' is-hot':'';
-    var pB='<span class="lb '+(stageCls[stage]||'lb-s5')+'">'+(stageLbl[stage]||stage)+'</span>';
-    var rB=row.recency_tier?'<span class="lb '+(recCls[row.recency_tier]||'lb-rec-old')+'">'+row.recency_tier+'</span>':'';
-    var dB=row.dr_tier?'<span class="lb '+(drCls[row.dr_tier]||'lb-dr-l')+'">'+row.dr_tier+'</span>':'';
-    var redDrB=isRedDR?'<span class="lb lb-red-dr">🔴 Red DR</span>':'';
-    // Hot badges: time-window aware labels
-    var hotB='';
-    if(accT)      hotB='<span class="lb lb-s4">🎉 Accepted</span>';
-    else if(bidT&&vaT) hotB='<span class="lb lb-hot">BID+VA</span>';
-    else if(bidT) hotB='<span class="lb lb-hot">BID (3h)</span>';
-    else if(vaT)  hotB='<span class="lb" style="background:#EAF3DE;color:#27500A">VA (4h)</span>';
-
-    // Activation score badge
-    var sc=parseFloat(row.activation_score||'0');
-    var scColor=sc>=50?'#C2500A':sc>=20?'#534AB7':'#9A9890';
-    var scB=sc>0?'<span class="lb lb-score" style="color:'+scColor+'">#'+sc+'</span>':'';
-    var sheetB=isSheet?'<span class="lb lb-sheet">Sheet</span>':'';
-    var hotDot=isHot?'<span class="hot-dot"></span>':'';
-    var _bidTs=bidT?(row.last_bid_time||''):(accT?(row.last_accepted_time||''):'');
-    var bidTime=fmtTime(_bidTs),bidRel=minsAgo(_bidTs);
-    var _bidRelShort=bidRel?(' · '+bidRel.replace(' mins ago','m').replace(' min ago','m').replace('just now','now')):'';
-    var bidAgeTag=bidTime?'<span style="font-size:8.5px;font-weight:700;color:#C2500A;background:#FFF0E6;padding:1px 6px;border-radius:8px;margin-left:3px">'+(accT?'✓ ':'⏱ ')+bidTime+_bidRelShort+'</span>':'';
-    var lastCall='';
-    if(row.last_call_date){var clr=callDotColor(row.last_call_disposition);lastCall='<div class="last-call-line"><div class="call-dot-sm" style="background:'+clr+'"></div>'+row.last_call_date+' · '+(row.last_call_disposition||'Called')+(row.last_caller?' · '+row.last_caller:'')+'</div>';}
-    return '<div class="lead-row'+active+hotCls+'" data-code="'+code+'" onclick="selectOperator(\''+code+'\')">'+
-      '<div class="lead-rank">'+(row.calling_rank||'—')+'</div>'+
-      '<div class="lead-body">'+
-        '<div class="lead-top-row"><span class="lead-code">'+code+'</span>'+hotDot+bidAgeTag+'</div>'+
-        '<div class="lead-badges">'+scB+pB+hotB+redDrB+rB+dB+sheetB+'<span style="font-size:9px;color:var(--text-3)">'+(row.rm_name||'').toUpperCase()+'</span></div>'+
-        lastCall+
-      '</div></div>';
-  }).join('');
-}
-function changePage(dir){currentPage=Math.max(1,Math.min(Math.ceil(filtered.length/PAGE_SIZE)||1,currentPage+dir));renderLeadList();document.getElementById('leadList').scrollTop=0;}
-
-/* TOP SEARCH */
-var topSearch=document.getElementById('topSearch'),topSugg=document.getElementById('topSuggestions'),topClear=document.getElementById('topClearBtn');
-topSearch.addEventListener('input',function(){
-  var q=this.value.trim().toUpperCase();topClear.style.display=q?'block':'none';
-  if(q.length<2){topSugg.style.display='none';return;}
-  var matches=allData.filter(function(r){return(r.operator_code||'').toUpperCase().includes(q);}).slice(0,8);
-  if(!matches.length){topSugg.innerHTML='<div class="sug-no-result">No operators found</div>';topSugg.style.display='block';return;}
-  topSugg.innerHTML=matches.map(function(r){
-    var code=(r.operator_code||'').toUpperCase(),ini=code.replace(/[^A-Z0-9]/g,'').substring(0,2);
-    var st=r.stage||'Stage 5';
-    var stBg={'Stage 4':'#EAF3DE','Stage 2':'#FCEBEB','Stage 3':'#FAEEDA','Stage 5':'#F1EFE8'}[st]||'#F1EFE8';
-    var stShort={'Stage 4':'P0','Stage 2':'P1','Stage 3':'P3','Stage 5':'P4'}[st]||'P4';
-    var isHot=isTrueVal(r.bid_today)||isTrueVal(r.vehicle_available_today)||isTrueVal(r.accepted_today);
-    var hotTag=isHot?'<span style="font-size:9px;color:#C2500A;font-weight:700">● Hot</span> ':'';
-    var lastCall=r.last_call_date?'📞 '+r.last_call_date+' · '+(r.last_call_disposition||'Called'):'Not called';
-    return '<div class="sug-item" data-code="'+code+'">'+
-      '<div class="sug-avatar" style="background:'+stBg+';color:'+stageColor(st)+'">'+ini+'</div>'+
-      '<div><div class="sug-code">'+hotTag+code+'</div><div class="sug-rm">'+(r.rm_name||'—').toUpperCase()+'</div></div>'+
-      '<div class="sug-right"><div class="sug-pri" style="background:'+stageColor(st)+';color:#fff">'+stShort+'</div><div class="sug-call">'+lastCall+'</div></div>'+
-    '</div>';
-  }).join('');
-  topSugg.querySelectorAll('.sug-item').forEach(function(el){el.addEventListener('click',function(){topSearch.value=el.dataset.code;topClear.style.display='block';topSugg.style.display='none';selectOperator(el.dataset.code);});});
-  topSugg.style.display='block';
-});
-topSearch.addEventListener('keydown',function(e){
-  if(e.key==='Escape')topSugg.style.display='none';
-  if(e.key==='Enter'){var q=topSearch.value.trim().toUpperCase();var r=findRow(q);if(r){topSugg.style.display='none';selectOperator(q);}}
-});
-topClear.addEventListener('click',function(){topSearch.value='';topClear.style.display='none';topSugg.style.display='none';});
-document.addEventListener('click',function(e){if(!e.target.closest('.top-search-wrap'))topSugg.style.display='none';});
-
-/* SELECT & RENDER */
-function selectOperator(code){
-  var row=findRow(code);if(!row){showToast('Operator '+code+' not found.');return;}
-  currentCode=code.toUpperCase();
-  document.getElementById('emptyState').style.display='none';
-  document.getElementById('profileSection').style.display='block';
-  document.getElementById('detailPanel').scrollTop=0;
-  try{renderLeadList();}catch(e){console.warn('renderLeadList:',e);}
-  try{renderProfile(row);}catch(e){console.error('renderProfile:',e);showToast('Profile error: '+e.message);}
-}
-function renderProfile(row){
-  var code=(row.operator_code||'').toUpperCase(),ini=code.replace(/[^A-Z0-9]/g,'').substring(0,2);
-  var pri=row.priority||'P3';
-  var stage=row.stage||'Stage 5';
-  var stageCssMap={'Stage 4':'stage-4','Stage 2':'stage-2','Stage 3':'stage-3','Stage 5':'stage-5'};
-  var stageBadgeMap={'Stage 4':'P0 - Post Acceptance','Stage 2':'P1 - Bid Submitted','Stage 3':'P3 - Token Paid','Stage 5':'P4 - Non Active FO'};
-  var stageDefMap={
-    'Stage 4':'Accepted a load today — highest priority',
-    'Stage 2':'Placed bid today — token not yet paid',
-    'Stage 3':'Token/vehicle submitted — awaiting acceptance',
-    'Stage 5':'No activity today — qualify on DR supply'
-  };
-  var avatarBg={'Stage 4':'#EAF3DE','Stage 2':'#FCEBEB','Stage 3':'#FAEEDA','Stage 5':'#F1EFE8'}[stage]||'#F1EFE8';
-
-  /* Stage context */
-  var card=document.getElementById('pccCard');if(card)card.className='pcc '+(stageCssMap[stage]||'stage-5');
-  set('pccBadge',stageBadgeMap[stage]||stage);set('pccDef',stageDefMap[stage]||'');
-  set('pccLDPs',fmtN(row.lifetime_ldps));set('pccToks',fmtN(row.lifetime_tokens));
-  set('pccDRs',fmtN(row.appeared_in_drs));set('pccTrips',fmtN(row.life_time_trips));
-  set('pccRank','Rank #'+(row.calling_rank||'—'));
-  var recEl=document.getElementById('pccRecency');
-  if(recEl){recEl.textContent=row.recency_tier||'';recEl.className='pcc-recency '+({'Last 7 days':'rec-7','8-30 days':'rec-30','30+ days':'rec-old'}[row.recency_tier]||'');}
-
-  /* Hot Today */
-  renderHotToday(row);
-
-  /* Profile */
-  var av=document.getElementById('profileAvatar');if(av){av.textContent=ini;av.style.background=avatarBg;av.style.color=stageColor(stage);}
-  var pc=document.getElementById('profileCode');if(pc){pc.textContent=code;pc.onclick=function(){copyText(code);};}
-  set('profileRM','RM: '+(row.rm_name?row.rm_name.toUpperCase():'—'));
-  set('scoreVal',fmtN(row.fo_activity_score));
-  var metaEl=document.getElementById('profileMeta');
-  if(metaEl){
-    var cluster=row.Cluster||row.cluster||'—';
-    var src=row.source||'Cohort';
-    metaEl.innerHTML='<span class="badge badge-teal">'+cluster+'</span>'+(src==='Sheet'?'<span class="badge badge-sheet">Sheet</span>':'');
-  }
-
-  /* Activity */
-  set('vaDays',row.va_days||'0');set('ldpDays',row.ldp_days||'0');
-  set('ldpCount',row.total_ldp_count||'0');set('tokenCount',row.token_count||'0');
-
-  /* Funnel */
-  var drN=parseInt(row.num_of_drs_in_opsearch||'0',10),tokN=parseInt(row.num_of_drs_paid_token||'0',10);
-  var conv=drN>0?Math.round(tokN/drN*100):0;
-  set('drCountVal',drN);set('tokenDRVal',tokN);set('convRateVal',conv+'%');
-
-  var lanes=tagLowest(parseLanes(row.lane_vt_details||''));
-  var tokenSet={};(row.token_demand_ids||'').split(',').forEach(function(s){s=s.trim();if(s)tokenSet[s]=true;});
-  var tokenLanes=parseTokenLanes(row.token_lane_details||'');
-  var hist=parseHist(row.hist_token_details||'');
-
-  renderLaneTabs(lanes,tokenSet,tokenLanes,hist);renderActionBanner(drN,tokN,lanes,tokenSet);
-
-  /* Vehicles */
-  var tot=parseInt(row.total_vehicles||'0',10),ver=parseInt(row.corrected_vehicles||'0',10);
-  set('totalVeh',tot);set('corrVeh',ver);set('unverVeh',Math.max(0,tot-ver));
-  renderAvail(parseAvail(row.avail_vehicles||''));
-  renderTyres(parseTyres(row.tyre_breakdown||''));
-  renderCallHistory(row);
-  initLogForm();
-  switchTab('live');
-}
-
-/* HOT TODAY */
-function renderHotToday(row){
-  var bidToday=isTrueVal(row.bid_today),vaToday=isTrueVal(row.vehicle_available_today);
-  var vehSubmitted=isTrueVal(row.vehicle_submitted),acceptedToday=isTrueVal(row.accepted_today);
-  var wrap=document.getElementById('hotTodayWrap'),grid=document.getElementById('htcGrid');
-  if(!bidToday&&!vaToday&&!vehSubmitted&&!acceptedToday){wrap.style.display='none';return;}
-  wrap.style.display='block';
-
-  // Activation score badge next to title
-  var sc=parseFloat(row.activation_score||'0');
-  var scStr=sc>0?' <span style="font-size:10px;font-weight:800;background:#534AB7;color:#fff;padding:1px 7px;border-radius:10px;">Score: '+sc+'</span>':'';
-  document.getElementById('htcTime').innerHTML=scStr;
-
-  var parts=[];
-  if(acceptedToday) parts.push('Accepted ✓ (Stage 4)');
-  if(bidToday)      parts.push('Bid (last 3h)');
-  if(vaToday)       parts.push('VA (last 4h)');
-  if(vehSubmitted)  parts.push('Vehicle Submitted ✓');
-  set('htcTitle',parts.join(' + '));
-
-  // grid: if 3+ signals, single column; if 2, side-by-side; if 1, single
-  grid.className='htc-grid'+(bidToday&&vaToday?'':' single');
-  var html='';
-
-  /* Bid Today box — uses bid_today_lane_details (all bids incl. INITIATED/EXPIRED)
-     Falls back to token_lane_details (paid tokens) if that column is empty.       */
-  if(bidToday){
-    // parse bid_today_lane_details: did####route####truck####amount
-    // bid_today_lane_details: did####route####truck####opfreight####token_paid(0/1)
-    // opFreight > 0 = bid submitted; token_paid=1 = also token paid
-    var btRaw=row.bid_today_lane_details||'';
-    var btLanes=btRaw?btRaw.split('||||').map(function(seg){
-      seg=seg.trim();if(!seg)return null;
-      var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;
-      return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),
-             bid:rs(p[3]),tokenPaid:(p[4]||'0')==='1'};
-    }).filter(Boolean):[];
-
-    var paidCount=btLanes.filter(function(l){return l.tokenPaid;}).length;
-    var items=btLanes.length?btLanes.slice(0,3).map(function(l){
-      var route=l.route||(l.did?'Demand #'+l.did:'');
-      var truck=l.truck?'<span style="color:var(--text-3)"> · '+l.truck+'</span>':'';
-      var amt=l.bid!=null?'<span class="amt">₹'+Math.round(l.bid).toLocaleString('en-IN')+'</span>':'';
-      var paid=l.tokenPaid?'<span style="font-size:9px;font-weight:700;background:var(--green-50);color:var(--green-800);padding:1px 5px;border-radius:8px;margin-left:3px">✓ Paid</span>':'';
-      var didTag=l.did?'<span style="font-size:9px;color:var(--text-3);font-family:var(--mono);margin-left:3px">#'+l.did+'</span>':'';
-      return '<div class="htc-item"><div class="htc-item-dot"></div><div class="htc-item-txt"><b>'+route+'</b>'+truck+(amt?' · '+amt:'')+paid+didTag+'</div></div>';
-    }).join('')+(btLanes.length>3?'<div style="font-size:10px;color:#A05018;margin-top:3px">+'+(btLanes.length-3)+' more demands…</div>':'')
-    :'<div class="htc-empty">Rate entered — demand details unavailable</div>';
-    var cntLabel=btLanes.length+(paidCount?' ('+paidCount+' paid)':'');
-    // Bid recency — shown prominently so caller can say "you bid X mins ago, please pay token"
-    var bidAge=minsAgo(row.last_bid_time||'');
-    var bidAgeBar=bidAge
-      ? '<div style="background:#FFF3E5;border-radius:6px;padding:5px 8px;margin-bottom:5px;display:flex;align-items:center;gap:6px;">'
-        +'<span style="font-size:16px;line-height:1">⏱</span>'
-        +'<span style="font-size:11px;font-weight:700;color:#C2500A;">Last bid: <b>'+bidAge+'</b> — push for token payment now!</span>'
-        +'</div>'
-      : '';
-    html+='<div class="htc-box"><div class="htc-box-hdr"><span class="htc-box-icon">🔴</span><span class="htc-box-ttl">Bid Today (last 3h)</span>'+(btLanes.length?'<span class="htc-box-cnt">'+cntLabel+'</span>':'')+'</div><div class="htc-items">'+bidAgeBar+items+'</div></div>';
-  }
-
-  /* Vehicle Available Today box */
-  if(vaToday){
-    var avail=parseAvail(row.avail_vehicles||'');
-    var vehHtml=avail.length?'<div class="htc-veh-list">'+avail.slice(0,6).map(function(v){
-      var spec=[v.tyre?v.tyre+'T':'',v.body,v.size?v.size+'ft':''].filter(Boolean).join(' ');
-      return '<span class="htc-veh-pill"><span class="vn">'+v.vn+'</span>'+(spec?'<span class="vt">'+spec+'</span>':'')+'</span>';
-    }).join('')+(avail.length>6?'<span style="font-size:10px;color:#A05018;align-self:center">+'+(avail.length-6)+' more</span>':'')+'</div>'
-    :'<div class="htc-empty">Vehicle details loading…</div>';
-    html+='<div class="htc-box"><div class="htc-box-hdr"><span class="htc-box-icon">🟡</span><span class="htc-box-ttl">Vehicle Available (last 4h)</span>'+(avail.length?'<span class="htc-box-cnt">'+avail.length+'</span>':'')+'</div><div class="htc-items">'+vehHtml+'</div></div>';
-  }
-
-  /* Accepted Today box — GOING_TO_LOAD (Stage 4 — highest priority) */
-  if(acceptedToday){
-    var accAge=minsAgo(row.last_accepted_time||'');
-    var accAgeBar=accAge
-      ? '<div style="background:#EAF3DE;border-radius:6px;padding:5px 8px;margin-bottom:5px;display:flex;align-items:center;gap:6px;">'
-        +'<span style="font-size:16px;line-height:1">⏱</span>'
-        +'<span style="font-size:11px;font-weight:700;color:#15803D;">Accepted: <b>'+accAge+'</b> — call now for handholding!</span>'
-        +'</div>'
-      : '';
-    // Parse accepted_lane_details: did####route####truck####opfreight####placed####method####consignment_code####accepted_time
-    var accRaw=row.accepted_lane_details||'';
-    var accItems=accRaw?accRaw.split('||||').map(function(seg){
-      seg=seg.trim();if(!seg)return null;
-      var p=seg.split('####');
-      return{did:(p[0]||'').trim(),route:(p[1]||'').trim(),truck:(p[2]||'').trim(),
-             cc:(p[6]||'').trim(),ts:(p[7]||'').trim(),state:(p[8]||'').trim()};
-    }).filter(Boolean):[];
-    // state colour map
-    var _stateClr={GOING_TO_LOAD:'#15803D',LOADING:'#0F6E56',LOADED:'#0C447C',
-                   IN_TRANSIT:'#534AB7',DELIVERED:'#3B6D11',CANCELLED:'#A32D2D',
-                   REJECTED:'#A32D2D'};
-    var accDetails=accItems.length?accItems.map(function(a){
-      var route=a.route||(a.did?'Demand #'+a.did:'Unknown demand');
-      var ccTag=a.cc?'<span style="font-size:9px;font-family:var(--mono);color:#0F6E56;background:#E1F5EE;padding:1px 6px;border-radius:6px;margin-left:4px">'+a.cc+'</span>':'';
-      var didTag=a.did?'<span style="font-size:9px;color:var(--text-3);font-family:var(--mono);margin-left:3px">#'+a.did+'</span>':'';
-      var timeTag=a.ts?'<span style="font-size:9px;color:#15803D;margin-left:4px">@ '+a.ts.slice(11,16)+'</span>':'';
-      var stClr=(_stateClr[a.state]||'#5F5E5A');
-      var stateTag=a.state?'<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:4px;background:rgba(0,0,0,.05);color:'+stClr+'">'+a.state.replace(/_/g,' ')+'</span>':'';
-      return '<div class="htc-item"><div class="htc-item-dot" style="background:#15803D"></div>'
-        +'<div class="htc-item-txt"><b>'+route+'</b>'+ccTag+didTag+timeTag+stateTag+'</div></div>';
-    }).join(''):'';
-    html+='<div class="htc-box" style="border-color:#15803D;background:#F0FFF6;border-width:2px;">'
-      +'<div class="htc-box-hdr"><span class="htc-box-icon">🎉</span>'
-      +'<span class="htc-box-ttl" style="color:#15803D;font-weight:800;">Bid Accepted / GOING_TO_LOAD</span>'
-      +'<span class="htc-box-cnt" style="background:#15803D;color:#fff;">Stage 4</span></div>'
-      +'<div class="htc-items">'+accAgeBar+accDetails
-      +'<div style="font-size:11px;color:#15803D;font-weight:600;padding:4px 0;">'
-      +'Call immediately — handhold loading address, POC number, vehicle readiness &amp; advance policy.</div>'
-      +'</div></div>';
-  }
-
-  /* Vehicle Submitted Today box */
-  if(vehSubmitted){
-    html+='<div class="htc-box" style="border-color:#15803D;background:#F0FFF6;">'
-      +'<div class="htc-box-hdr"><span class="htc-box-icon">🚛</span>'
-      +'<span class="htc-box-ttl" style="color:#15803D;">Vehicle Submitted + Token Paid</span></div>'
-      +'<div class="htc-items"><div style="font-size:11px;color:#15803D;font-weight:600;padding:4px 0;">'
-      +'✅ Operator has submitted vehicle number with token payment today.</div></div></div>';
-  }
-
-  grid.innerHTML=html;
-}
-
-/* ACTION BANNER */
-function renderActionBanner(drN,tokN,lanes,tokenSet){
-  var banner=document.getElementById('actionBanner'),icon=document.getElementById('actionIcon'),
-      title=document.getElementById('actionTitle'),sub=document.getElementById('actionSub'),
-      pitch=document.getElementById('actionPitch');
-  banner.className='action-banner';pitch.style.display='none';
-  var open=lanes.filter(function(l){return!tokenSet[l.did];});
-  var best=open.filter(function(l){return l.bid!=null;}).sort(function(a,b){return a.bid-b.bid;})[0]||
-           open.filter(function(l){return l.offered!=null;}).sort(function(a,b){return a.offered-b.offered;})[0]||open[0];
-  if(drN===0){banner.classList.add('cold');icon.textContent='🔍';title.textContent='No live lanes in op-search right now';sub.textContent='Ask the operator to mark a vehicle available & set preferred lanes, then refresh.';}
-  else if(tokN===0){banner.classList.add('warm');icon.textContent='🎯';title.textContent=drN+' live lane'+(drN>1?'s':'')+' · 0 tokens paid today';sub.textContent='Push the operator to pay a token now. Lead with the lowest-bid lane.';}
-  else{icon.textContent='✅';title.textContent=tokN+' token'+(tokN>1?'s':'')+' paid · '+open.length+' lane'+(open.length!==1?'s':'')+' still open';sub.textContent=open.length?'Keep pushing — close the remaining open lanes.':'All live lanes converted today!';}
-  if(best){var rate=best.bid!=null?best.bid:best.offered;var lbl=best.bid!=null?'lowest bid':'~rate';pitch.style.display='block';
-    pitch.innerHTML='Pitch → <b>'+(best.route||'Demand '+best.did)+'</b>'+(rate?' · '+lbl+' <b>₹'+Math.round(rate).toLocaleString('en-IN')+'</b>':'')+(best.truck?' · '+best.truck:'')+' &nbsp;<span class="lane-did" onclick="copyText(\''+best.did+'\')">&#35;'+best.did+' ⧉</span>';}
-}
-
-/* LANE TABS */
-function liveCardHTML(l,ts){
-  var isPaid=!!ts[l.did];var cls='lane-card'+(isPaid?' paid-card':(l.isLow?' best-card':''));
-  var pills='';if(isPaid)pills+='<span class="pill pill-green">✓ Paid</span>';else if(l.isLow)pills+='<span class="pill pill-amber">★ You lead (L1)</span>';
-  var rate;if(l.lows.length)rate='<span class="lane-bid" title="'+bidsTitle(l)+'">L1 ₹'+Math.round(l.lows[0]).toLocaleString('en-IN')+'</span>';
-  else if(l.offered!=null)rate='<span class="lane-offered" style="margin-left:auto">~₹'+Math.round(l.offered).toLocaleString('en-IN')+' offered</span>';
-  else rate='<span class="lane-bid none">no bid yet</span>';
-  var lows2=l.lows.length>1?'<span class="lane-meta-item">bids: '+l.lows.map(function(x){return'₹'+Math.round(x).toLocaleString('en-IN');}).join(' · ')+'</span>':'';
-  var own=l.own!=null?'<span class="lane-meta-item">your bid <b>₹'+Math.round(l.own).toLocaleString('en-IN')+'</b></span>':'';
-  return '<div class="'+cls+'"><div class="lane-card-top"><span class="lane-did" onclick="copyText(\''+l.did+'\')">&#35;'+l.did+'</span>'+pills+rate+'</div>'+
-    '<div class="lane-route">'+(l.route||'—')+'</div>'+
-    '<div class="lane-meta">'+
-      (l.truck?'<span class="lane-meta-item">🚛 '+l.truck+'</span>':'')+
-      (l.loading?'<span class="lane-meta-item">🕐 '+l.loading+'</span>':'')+
-      lows2+own+
-    '</div></div>';
-}
-function tokenCardHTML(l){
-  return '<div class="lane-card paid-card"><div class="lane-card-top"><span class="lane-did" onclick="copyText(\''+l.did+'\')">&#35;'+l.did+'</span>'+
-    '<span class="pill pill-green">✓ Paid</span>'+(l.bid!=null?'<span class="lane-bid">₹'+Math.round(l.bid).toLocaleString('en-IN')+'</span>':'')+'</div>'+
-    '<div class="lane-route">'+(l.route||'—')+'</div>'+
-    '<div class="lane-meta">'+
-      (l.truck?'<span class="lane-meta-item">🚛 '+l.truck+'</span>':'')+
-      (l.placed!=null?'<span class="lane-placed">placed ₹'+Math.round(l.placed).toLocaleString('en-IN')+'</span>':'')+
-    '</div></div>';
-}
-function histCardHTML(h){
-  var mc=h.method==='BIDDING'?'bidding':'matching';var chip='',cls='lane-card hist-card',note='';
-  if(h.verdict==='WON'){chip='<span class="pill pill-green">✓ Placed</span>';}
-  else if(h.verdict==='LOST'){chip='<span class="pill pill-red">✗ Lost</span>';cls+=' lost-card';
-    if(h.bid&&h.placed&&h.bid>h.placed){var diff=Math.round(h.bid-h.placed);note='<div class="verdict-note bad">⚠ Bid was ₹'+diff.toLocaleString('en-IN')+' higher than placed rate.</div>';}}
-  else{chip='<span class="pill pill-gray">Not placed</span>';}
-  var cmp=(h.bid?'bid ₹'+Math.round(h.bid).toLocaleString('en-IN'):'')+(h.placed?' → placed ₹'+Math.round(h.placed).toLocaleString('en-IN'):(h.bid?' → not placed':''));
-  return '<div class="'+cls+'" onclick="this.classList.toggle(\'open\')">'+
-    '<div class="lane-card-top"><span class="chev">▸</span><span class="lane-did" onclick="event.stopPropagation();copyText(\''+h.did+'\')">&#35;'+h.did+'</span>'+chip+
-    '<span class="hist-cmp">'+cmp+'</span></div>'+
-    '<div class="hist-details"><div class="lane-route">'+(h.route||'—')+'</div>'+
-    '<div class="lane-meta">'+
-      (h.truck?'<span class="lane-meta-item">🚛 '+h.truck+'</span>':'')+
-      (h.method?'<span class="method-chip '+mc+'">'+h.method+'</span>':'')+
-      (h.bid?'<span class="lane-meta-item">your bid <b>₹'+Math.round(h.bid).toLocaleString('en-IN')+'</b></span>':'')+
-      (h.placed?'<span class="lane-placed">placed ₹'+Math.round(h.placed).toLocaleString('en-IN')+'</span>':'')+
-      (h.date?'<span class="lane-meta-item" style="margin-left:auto;color:var(--text-3)">'+h.date+'</span>':'')+
-    '</div>'+note+'</div></div>';
-}
-var currentTokenSet={};
-function renderLaneTabs(lanes,ts,tl,hist){
-  currentLanes=lanes;currentTokenSet=ts;activeTyre=null;
-  document.getElementById('cntPaid').textContent=tl.length;
-  document.getElementById('cntHist').textContent=hist.length;
-  renderLiveLoads();
-  document.getElementById('body-paid').innerHTML=tl.length?tl.map(tokenCardHTML).join(''):'<div class="lane-empty">No tokens paid today</div>';
-  if(!hist.length){document.getElementById('body-hist').innerHTML='<div class="lane-empty">No bids in last 15 days</div>';}
-  else{var lost=hist.filter(function(h){return h.verdict==='LOST'&&h.bid!=null&&h.placed!=null&&h.bid>h.placed;}).length;
-    var head=lost?'<div style="font-size:11px;color:var(--red-800);background:var(--red-50);border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠️ '+lost+' lane'+(lost>1?'s':'')+' lost where bid > placed rate.</div>':'';
-    document.getElementById('body-hist').innerHTML=head+hist.map(histCardHTML).join('');}
-}
-function switchTab(n){['live','paid','hist'].forEach(function(t){document.getElementById('tab-'+t).classList.toggle('active',t===n);document.getElementById('body-'+t).classList.toggle('active',t===n);});}
-
-/* VEHICLES */
-function renderAvail(av){
-  var el=document.getElementById('availList'),cnt=document.getElementById('availCnt');
-  cnt.textContent=av.length?'· '+av.length+' truck'+(av.length>1?'s':''):'';
-  if(!av.length){el.innerHTML='<div class="avail-empty">No vehicle available right now</div>';return;}
-  el.innerHTML=av.map(function(v){
-    var spec=[v.tyre?v.tyre+'T':'',v.body,v.size?v.size+'ft':''].filter(Boolean).join(' · ');
-    var isActive=activeTyre&&activeTyre===v.tyre;
-    var style=isActive?'background:var(--purple-50);border-color:var(--purple-600)':'';
-    return '<span class="veh-pill" style="'+style+'" onclick="filterByVehicle(\''+v.tyre+'\')" title="Click to see matching loads">'+
-      '<span class="vn">'+v.vn+'</span>'+(spec?'<span class="vt">'+spec+' ▾</span>':'')+'</span>';
-  }).join('');
-}
-function filterByVehicle(tyre){
-  activeTyre=(activeTyre===tyre)?null:tyre;renderLiveLoads();
-  var row=allData.find(function(r){return(r.operator_code||'').toUpperCase()===currentCode;});
-  if(row)renderAvail(parseAvail(row.avail_vehicles||''));
-}
-function renderLiveLoads(){
-  var bl=document.getElementById('body-live');
-  var lanes=activeTyre?currentLanes.filter(function(l){return l.tyre_req===activeTyre;}):currentLanes;
-  var cntEl=document.getElementById('cntLive');
-  cntEl.textContent=activeTyre?(lanes.length+'/'+currentLanes.length):currentLanes.length;
-  var tyreGroups={};currentLanes.forEach(function(l){var t=l.tyre_req||'?';tyreGroups[t]=(tyreGroups[t]||0)+1;});
-  var chips='';
-  if(Object.keys(tyreGroups).length>1){
-    chips='<div style="display:flex;gap:4px;flex-wrap:wrap;padding:.4rem .75rem .25rem;border-bottom:.5px solid var(--border)">';
-    chips+='<button onclick="filterByVehicle(null)" style="height:20px;padding:0 8px;border-radius:20px;font-size:9px;font-weight:700;border:.5px solid var(--border-md);cursor:pointer;'+(activeTyre?'background:var(--surface-2);color:var(--text-2)':'background:var(--text-1);color:#fff')+'">All ('+currentLanes.length+')</button>';
-    Object.keys(tyreGroups).sort(function(a,b){return(parseInt(a)||0)-(parseInt(b)||0);}).forEach(function(t){
-      var isA=activeTyre===t;
-      chips+='<button onclick="filterByVehicle(\''+t+'\')" style="height:20px;padding:0 8px;border-radius:20px;font-size:9px;font-weight:700;border:.5px solid var(--border-md);cursor:pointer;'+(isA?'background:var(--purple-600);color:#fff':'background:var(--surface-2);color:var(--text-2)')+'">'
-        +t+' Tyre ('+tyreGroups[t]+')</button>';
-    });
-    chips+='</div>';
-  }
-  bl.innerHTML=chips+(lanes.length?lanes.map(function(l){return liveCardHTML(l,currentTokenSet);}).join('')
-    :'<div class="lane-empty">'+(activeTyre?'No loads matching '+activeTyre+'-tyre vehicles':'No live matches today')+'</div>');
-}
-function renderTyres(tyres){
-  var el=document.getElementById('tyreBreakdown');
-  el.innerHTML=tyres.length?tyres.map(function(t){var pct=t.total>0?Math.round(t.verified/t.total*100):0;
-    return '<div class="tyre-row"><div class="tyre-row-top"><span class="tyre-name">'+(t.tyres==='Unknown'?'Unknown':t.tyres+' Tyres')+'</span><span class="tyre-counts"><span>'+t.verified+'</span> / '+t.total+' verified</span></div><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%"></div></div></div>';}).join('')
-    :'<div style="font-size:11px;color:var(--text-3)">No tyre data</div>';
-}
-
-/* CALL LOG FORM */
-function initLogForm(){
-  var btn=document.getElementById('openFormBtn');
-  var note=document.getElementById('lfApiNote');
-  if(btn) btn.style.display=FORM_URL?'flex':'none';
-  if(note) note.style.display=FORM_URL?'none':'block';
-}
-
-function openCallForm(){
-  if(!FORM_URL){showToast('Set FORM_URL in the code first.');return;}
-  var url=FORM_URL;
-  /* Pre-fill Operator Code if entry ID is configured */
-  if(FORM_ENTRY_OP&&currentCode) url+='?'+FORM_ENTRY_OP+'='+encodeURIComponent(currentCode);
-  window.open(url,'_blank','noopener');
-}
-
-function submitCallLog(){
-  var op=currentCode;
-  if(!op){showToast('Select an operator first.');return;}
-  if(!API_URL){showToast('API URL not configured — set API_URL in the code.');return;}
-
-  var status  = document.getElementById('lfStatus').value;
-  var followup= document.getElementById('lfFollowup').value;
-  var caller  = document.getElementById('lfCaller').value.trim();
-  var training= document.getElementById('lfTraining').checked;
-  var interested=document.getElementById('lfInterested').checked;
-  var notes   = document.getElementById('lfNotes').value.trim();
-
-  if(!status){showToast('Please select a call status.');return;}
-
-  /* ── SNAPSHOT: grab current CRM state for this operator ── */
-  var row=allData.find(function(r){return(r.operator_code||'').toUpperCase()===op;})||{};
-  var snapshot={
-    stage:                  row.stage||'',
-    activation_score:       row.activation_score||'',
-    calling_rank:           row.calling_rank||'',
-    priority:               row.priority||'',
-    hot_flag:               row.hot_flag||'',
-    dr_supply_type:         row.dr_supply_type||'',
-    red_dr_count:           row.red_dr_count||'',
-    red_odvt_ratio:         row.red_odvt_ratio||'',
-    lifetime_ldps:          row.lifetime_ldps||'',
-    lifetime_tokens:        row.lifetime_tokens||'',
-    appeared_in_drs:        row.appeared_in_drs||'',
-    bid_today:              row.bid_today||'',
-    last_bid_time:          row.last_bid_time||'',
-    accepted_today:         row.accepted_today||'',
-    last_accepted_time:     row.last_accepted_time||'',
-    vehicle_available_today:row.vehicle_available_today||'',
-    vehicle_submitted:      row.vehicle_submitted||'',
-    va_days:                row.va_days||'',
-    ldp_days:               row.ldp_days||'',
-    total_ldp_count:        row.total_ldp_count||'',
-    token_count:            row.token_count||'',
-    num_of_drs_in_opsearch: row.num_of_drs_in_opsearch||'',
-    rm_name:                row.rm_name||'',
-    Cluster:                row.Cluster||'',
-    recency_tier:           row.recency_tier||'',
-    days_since_last_event:  row.days_since_last_event||''
-  };
-
-  var btn=document.getElementById('lfSubmitBtn');
-  var msg=document.getElementById('lfStatusMsg');
-  btn.disabled=true; btn.textContent='Saving…';
-  msg.className='lf-status'; msg.textContent='';
-
-  var _payload=encodeURIComponent(JSON.stringify({
-    operator_code:op,call_status:status,training_done:training,
-    interested:interested,followup_date:followup||null,
-    notes:notes,caller:caller,snapshot:snapshot
-  }));
-  fetch(API_URL+'?payload='+_payload)
-  .then(function(r){return r.json();})
-  .then(function(d){
-    if(d.status==='ok'){
-      msg.className='lf-status ok'; msg.textContent='✓ Saved successfully!';
-      document.getElementById('lfStatus').value='';
-      document.getElementById('lfFollowup').value='';
-      document.getElementById('lfNotes').value='';
-      document.getElementById('lfTraining').checked=false;
-      document.getElementById('lfInterested').checked=false;
-      showToast('Call log saved for '+op);
-    } else {
-      msg.className='lf-status err'; msg.textContent='Error: '+(d.msg||'save failed');
-    }
-  })
-  .catch(function(e){
-    msg.className='lf-status err'; msg.textContent='Network error — check API_URL or Apps Script deployment.';
-  })
-  .finally(function(){
-    btn.disabled=false; btn.textContent='Save Record';
-  });
-}
-
-/* CALL HISTORY */
-function dispClass(d){var v=(d||'').toLowerCase();if(v.includes('connect'))return'disp-conn';if(v.includes('callback')||v.includes('call back'))return'disp-callback';if(v.includes('not reach')||v.includes('no answer')||v.includes('busy'))return'disp-notreach';return'disp-default';}
-function renderCallHistory(row){
-  var body=document.getElementById('callHistoryBody'),badge=document.getElementById('callBadge');
-  var calls=parseCallHistory(row.call_history||''),total=parseInt(row.total_calls||'0',10);
-  badge.textContent=total?total+' call'+(total>1?'s':'')+' total':'';
-  if(!calls.length){body.innerHTML='<div class="call-empty">No calls made to this operator in the MP Load Support campaign.</div>';return;}
-  body.innerHTML='<div style="overflow-x:auto"><table class="ch-table"><thead><tr><th>#</th><th>Date</th><th>Disposition</th><th>Code</th><th>Caller (RM)</th></tr></thead><tbody>'+
-    calls.map(function(c,i){
-      return '<tr><td style="color:var(--text-3);font-size:11px;width:24px">'+(i+1)+'</td>'+
-        '<td style="font-size:12px;white-space:nowrap">'+c.date+'</td>'+
-        '<td><span class="disp-badge '+dispClass(c.disposition)+'">'+(c.disposition||'—')+'</span></td>'+
-        '<td style="font-size:11px;color:var(--text-2)">'+(c.disp_code||'—')+'</td>'+
-        '<td style="font-size:12px">'+(c.caller||'—')+'</td></tr>';}).join('')+
-    '</tbody></table></div>';
-}
-
-/* TOAST */
-var toastTimer;
-function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},4000);}
-
-/* INIT */
-document.getElementById('noticeBanner').addEventListener('DOMSubtreeModified',function(){
-  var shown=this.style.display!=='none';
-  document.getElementById('appLayout').style.marginTop=shown?'calc(var(--topbar) + 30px)':'var(--topbar)';
-});
-loadData();
-</script>
-</body>
-</html>
+#!/usr/bin/env python
+# coding: utf-8
+"""
+Operator Activation Calling — Lead Management Pipeline  v4
+Wheelseye · FO Growth Cx POD
+────────────────────────────────────────────────────────────
+v4 optimizations vs v3:
+  1. tmp_ops created SERVER-SIDE via CREATE TABLE AS SELECT  → saves ~3.5 min
+  2. All independent Redshift sections run in PARALLEL       → saves ~2 min
+  3. Chunked ws.update() write replaces gspread_dataframe   → fixes GSheets timeout
+  4. Permanent work table (accessible to parallel sessions)
+
+Priority Framework:
+  P0 → Lifetime LDPs ≥ 7 AND Lifetime Tokens ≥ 1
+  P1 → Lifetime LDPs ≥ 7 AND Lifetime Tokens = 0
+  P2 → Lifetime LDPs < 7 AND Lifetime Tokens ≥ 1
+  P3 → Lifetime LDPs < 7 AND Lifetime Tokens = 0
+"""
+import datetime as dt
+import json
+import time
+import warnings
+from concurrent.futures import ThreadPoolExecutor, wait as fw_wait
+
+import numpy as np
+import pandas as pd
+import requests
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import redshift_connector
+
+warnings.filterwarnings('ignore')
+
+# ─────────────────────────────────────────────
+# 0. CONFIG
+# ─────────────────────────────────────────────
+OUT_SHEET_KEY   = '1nUhQ5SX0KpE83pYaAmtmXB1HBEFNoBKdc92bWSrhimQ'
+OUT_TAB_NAME    = 'Activation_List'
+
+LDP_HIGH_THRESH = 7
+DR_HIGH_THRESH  = 347
+DR_MID_THRESH   = 110
+
+BID_LIVE_DAYS       = 3
+HIST_DAYS     = 15
+MAP_DAYS      = 10
+MAX_HIST      = 50
+MAX_AVAIL     = 40
+TESS_LIMIT    = 2000
+SHEET_CHUNK   = 5000        # rows per Google Sheets API call
+MAX_LEADS     = 10000       # cap final output (top by activation_score)
+DELIM_FIELD   = '####'
+DELIM_REC     = '||||'
+MAX_CELL      = 45_000
+
+# Work table in analytics schema — visible to all parallel connections, dropped at end
+# Include seconds (%S) so concurrent runs or rapid restarts never collide
+WORK_TABLE = f"analytics.wk_fo_activation_{dt.datetime.now():%Y%m%d_%H%M%S}"
+
+REDSHIFT_PARAMS = dict(
+    host='redshift-cluster-2.ct9kqx1dcuaa.ap-south-1.redshift.amazonaws.com',
+    port=5439, database='datalake', user='pnkj', password='10Pnkj29'
+)
+
+# ─────────────────────────────────────────────
+# 1. CONNECTIONS
+# ─────────────────────────────────────────────
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+credentials = ServiceAccountCredentials.from_json_keyfile_name("mohit_bq.json", scope)
+gc   = gspread.authorize(credentials)
+conn = redshift_connector.connect(**REDSHIFT_PARAMS)
+conn.autocommit = True   # DDL auto-commits; prevents hanging on lock waits
+cur  = conn.cursor()
+print(f"[{dt.datetime.now():%H:%M:%S}] Connections established.")
+
+def _rs(sql):
+    """Run SQL on a fresh connection — used for parallel queries."""
+    c = redshift_connector.connect(**REDSHIFT_PARAMS)
+    try:
+        return pd.read_sql(sql, c)
+    finally:
+        c.close()
+
+# Clean up stale work tables from previous runs
+print(f"[{dt.datetime.now():%H:%M:%S}] Checking for stale work tables...")
+try:
+    # information_schema.tables avoids the broken-OID issue in pg_tables
+    cur.execute("""
+        SELECT table_name FROM information_schema.tables
+        WHERE table_schema = 'analytics' AND table_name LIKE 'wk_fo_activation_%%'
+    """)
+    stale = [t for (t,) in cur.fetchall() if t != WORK_TABLE.split('.')[1]]
+    dropped = 0
+    for t in stale:
+        try:
+            cur.execute(f"DROP TABLE IF EXISTS analytics.{t};")
+            print(f"[{dt.datetime.now():%H:%M:%S}]   Dropped stale: analytics.{t}")
+            dropped += 1
+        except Exception as drop_err:
+            print(f"[{dt.datetime.now():%H:%M:%S}]   [SKIP] analytics.{t}: {drop_err}")
+    print(f"[{dt.datetime.now():%H:%M:%S}] Stale cleanup done — {dropped} dropped, {len(stale)-dropped} skipped.")
+except Exception as e:
+    print(f"[{dt.datetime.now():%H:%M:%S}] [WARN] Stale cleanup skipped: {e}")
+
+# ─────────────────────────────────────────────
+# 2. BUILD WORK TABLE — SERVER-SIDE
+# ─────────────────────────────────────────────
+print(f"[{dt.datetime.now():%H:%M:%S}] Dropping old work table (if exists)...")
+cur.execute(f"DROP TABLE IF EXISTS {WORK_TABLE};")
+print(f"[{dt.datetime.now():%H:%M:%S}] Building work table server-side (this takes ~1-2 min)...")
+cur.execute(f"""
+CREATE TABLE {WORK_TABLE} AS
+WITH
+-- Eligible demand IDs: ROI region, last 7 days, actual DR flag
+dr_demand_ids AS (
+    SELECT demand_id
+    FROM fact_consigner_demands_lead_source
+    WHERE demand_region = 'ROI'
+      AND demand_date::date >= CURRENT_DATE - 7
+      AND dr_flag = 1
+),
+-- Red DRs: demands with < 300 distinct opsearch operators (supply deficit)
+red_drs AS (
+    SELECT demand_id
+    FROM (
+        SELECT demandid AS demand_id, COUNT(DISTINCT opcode) AS fo_count
+        FROM fact_demand_fo_opsearch
+        WHERE demandid IN (SELECT demand_id FROM dr_demand_ids)
+        GROUP BY 1
+    ) WHERE fo_count < 300
+),
+-- Base operators: all FOs who appeared in any DR (Red DR operators prioritized via scoring)
+base_ops AS (
+    SELECT DISTINCT opcode AS operator_code
+    FROM fact_demand_fo_opsearch
+    WHERE demandid IN (SELECT demand_id FROM dr_demand_ids)
+),
+-- Operators who have at least 1 non-cancelled consignment (have trips)
+operators_with_trips AS (
+    SELECT DISTINCT operator_code
+    FROM wfms_consignments
+    WHERE state != 'CANCELLED'
+      AND operator_code IN (SELECT operator_code FROM base_ops)
+),
+-- Filter to 0-trip FOs: not present in any non-cancelled consignment
+filtered_ops AS (
+    SELECT operator_code FROM base_ops
+    WHERE operator_code NOT IN (SELECT operator_code FROM operators_with_trips)
+),
+-- DR Appearances: count of ALL eligible DRs each operator appeared in
+dr_appearances AS (
+    SELECT opcode AS operator_code, COUNT(DISTINCT demandid) AS appeared_in_drs
+    FROM fact_demand_fo_opsearch
+    WHERE opcode IN (SELECT operator_code FROM filtered_ops)
+      AND demandid IN (SELECT demand_id FROM dr_demand_ids)
+    GROUP BY 1
+),
+-- Count of Red DRs per operator (0 for normal DR operators, used in activation scoring)
+red_dr_appearances AS (
+    SELECT opcode AS operator_code, COUNT(DISTINCT demandid) AS red_dr_count
+    FROM fact_demand_fo_opsearch
+    WHERE opcode IN (SELECT operator_code FROM filtered_ops)
+      AND demandid IN (SELECT demand_id FROM red_drs)
+    GROUP BY 1
+),
+-- Lifetime LDPs: all-time load detail page views
+lifetime_ldps AS (
+    SELECT operator_code, COUNT(DISTINCT demand_id) AS ldps
+    FROM fact_operators_demand_mp_events
+    WHERE operator_code IN (SELECT operator_code FROM filtered_ops)
+    GROUP BY 1
+),
+-- Lifetime tokens paid
+lifetime_tokens AS (
+    SELECT operator_code, COUNT(DISTINCT demand_id) AS tokens
+    FROM wfms_operator_demand_token
+    WHERE status NOT IN ('INITIATED','EXPIRED')
+      AND operator_code IN (SELECT operator_code FROM filtered_ops)
+    GROUP BY 1
+),
+-- Last activity date (LDP or token)
+last_event AS (
+    SELECT operator_code, MAX(last_event_date) AS last_event_date FROM (
+        SELECT operator_code, MAX(event_date::date) AS last_event_date
+        FROM fact_operators_demand_mp_events
+        WHERE operator_code IN (SELECT operator_code FROM filtered_ops)
+        GROUP BY 1
+        UNION ALL
+        SELECT operator_code, MAX(created::date) AS last_event_date
+        FROM wfms_operator_demand_token
+        WHERE status NOT IN ('INITIATED','EXPIRED')
+          AND operator_code IN (SELECT operator_code FROM filtered_ops)
+        GROUP BY 1
+    ) GROUP BY 1
+)
+SELECT
+    b.operator_code,
+    COALESCE(ll.ldps, 0)                                  AS lifetime_ldps,
+    COALESCE(lt.tokens, 0)                                AS lifetime_tokens,
+    0                                                      AS life_time_trips,
+    COALESCE(dr.appeared_in_drs, 0)                       AS appeared_in_drs,
+    le.last_event_date,
+    DATEDIFF('day', le.last_event_date, CURRENT_DATE)     AS days_since_last_event,
+    CASE WHEN COALESCE(ll.ldps,0) >= {LDP_HIGH_THRESH} THEN 'High' ELSE 'Low' END AS ldp_bucket,
+    CASE WHEN COALESCE(lt.tokens,0) >= 1 THEN 'High' ELSE 'Low' END               AS token_bucket,
+    CASE
+        WHEN COALESCE(ll.ldps,0) >= {LDP_HIGH_THRESH} AND COALESCE(lt.tokens,0) >= 1 THEN 'P0'
+        WHEN COALESCE(ll.ldps,0) >= {LDP_HIGH_THRESH} AND COALESCE(lt.tokens,0) =  0 THEN 'P1'
+        WHEN COALESCE(ll.ldps,0) <  {LDP_HIGH_THRESH} AND COALESCE(lt.tokens,0) >= 1 THEN 'P2'
+        ELSE 'P3'
+    END AS priority,
+    CASE
+        WHEN COALESCE(dr.appeared_in_drs,0) >= {DR_HIGH_THRESH} THEN 'High DR'
+        WHEN COALESCE(dr.appeared_in_drs,0) >= {DR_MID_THRESH}  THEN 'Mid DR'
+        ELSE 'Low DR'
+    END AS dr_tier,
+    COALESCE(rd.red_dr_count, 0) AS red_dr_count,
+    CASE WHEN COALESCE(rd.red_dr_count, 0) > 0 THEN 'Red DR' ELSE 'Normal DR' END AS dr_supply_type,
+    CASE
+        WHEN DATEDIFF('day', le.last_event_date, CURRENT_DATE) <= 7  THEN 'Last 7 days'
+        WHEN DATEDIFF('day', le.last_event_date, CURRENT_DATE) <= 30 THEN '8-30 days'
+        ELSE '30+ days'
+    END AS recency_tier
+FROM filtered_ops b
+LEFT JOIN lifetime_ldps      ll  ON ll.operator_code  = b.operator_code
+LEFT JOIN lifetime_tokens    lt  ON lt.operator_code  = b.operator_code
+LEFT JOIN dr_appearances     dr  ON dr.operator_code  = b.operator_code
+LEFT JOIN last_event         le  ON le.operator_code  = b.operator_code
+LEFT JOIN red_dr_appearances rd  ON rd.operator_code  = b.operator_code
+WHERE COALESCE(ll.ldps, 0) >= 1
+""")
+# autocommit=True — no explicit commit needed
+print(f"[{dt.datetime.now():%H:%M:%S}] Work table created.")
+
+priority_df = pd.read_sql(f"SELECT * FROM {WORK_TABLE}", conn)
+print(f"[{dt.datetime.now():%H:%M:%S}] Priority cohort: {len(priority_df)} operators.")
+
+# ─────────────────────────────────────────────
+# 2b. CALLING RANK
+# ─────────────────────────────────────────────
+priority_order = {'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3}   # P3 kept for legacy work-table rows
+recency_order  = {'Last 7 days': 0, '8-30 days': 1, '30+ days': 2}
+priority_df['_p_rank'] = priority_df['priority'].map(priority_order).fillna(4)
+priority_df['_r_rank'] = priority_df['recency_tier'].map(recency_order).fillna(3)
+priority_df = (priority_df
+               .sort_values(['_p_rank', '_r_rank', 'appeared_in_drs'],
+                            ascending=[True, True, False])
+               .reset_index(drop=True))
+priority_df['calling_rank'] = range(1, len(priority_df) + 1)
+priority_df.drop(columns=['_p_rank', '_r_rank'], inplace=True)
+codes = priority_df['operator_code'].tolist()
+print(f"[{dt.datetime.now():%H:%M:%S}] Ranks: "
+      f"P0:{(priority_df.priority=='P0').sum()} | P1:{(priority_df.priority=='P1').sum()} | "
+      f"P2:{(priority_df.priority=='P2').sum()} | P3:{(priority_df.priority=='P3').sum()}")
+
+# ─────────────────────────────────────────────
+# 3–11. PARALLEL REDSHIFT QUERIES
+#    WORK_TABLE is a permanent table → accessible from all fresh connections.
+#    All 15 queries launch simultaneously; Tesseract starts once its
+#    dependencies (demand_map, tyre_map, bid_lookup) are ready.
+# ─────────────────────────────────────────────
+print(f"[{dt.datetime.now():%H:%M:%S}] Launching parallel queries...")
+
+WT = WORK_TABLE   # short alias for SQL strings below
+
+# ── SQL DEFINITIONS ──────────────────────────────────────────────────────────
+
+# RM assignment — hard-coded callers, distributed round-robin by activation_score rank
+RM_LIST = ['AMIT', 'KARAN', 'ROHIT', 'VIVEK']
+
+activity_sql = f'''
+WITH va_metrics AS (
+    SELECT s.op_code AS operator_code,
+           COUNT(DISTINCT (timestamp 'epoch' + ((s.available_from + 19800) * interval '1 second'))::date) AS va_days
+    FROM apollo_vehicle_availability s
+    JOIN {WT} t ON t.operator_code = s.op_code
+    WHERE s.remark = 'AVAILABLE'
+      AND (timestamp 'epoch' + ((s.available_from + 19800) * interval '1 second'))::date >= CURRENT_DATE - 15
+    GROUP BY 1
+),
+ldp_metrics AS (
+    SELECT e.operator_code,
+           COUNT(DISTINCT e.demand_id)        AS ldp_count,
+           COUNT(DISTINCT e.event_date::date) AS ldp_days
+    FROM fact_operators_demand_mp_events e
+    JOIN {WT} t ON t.operator_code = e.operator_code
+    WHERE e.event_date::date >= CURRENT_DATE - 15
+    GROUP BY 1
+),
+token_metrics AS (
+    SELECT w.operator_code, COUNT(DISTINCT w.demand_id) AS token_count
+    FROM wfms_operator_demand_token w
+    JOIN {WT} t ON t.operator_code = w.operator_code
+    WHERE w.created::date >= (GETDATE() + interval '5 hours 30 minutes')::date - 15
+      AND w.status NOT IN ('INITIATED','EXPIRED')
+    GROUP BY 1
+)
+SELECT COALESCE(v.operator_code, l.operator_code, t.operator_code) AS operator_code,
+       COALESCE(v.va_days,0) AS va_days, COALESCE(l.ldp_days,0) AS ldp_days,
+       COALESCE(l.ldp_count,0) AS total_ldp_count, COALESCE(t.token_count,0) AS token_count,
+       (COALESCE(v.va_days,0)*50 + COALESCE(l.ldp_days,0)*30 +
+        COALESCE(l.ldp_count,0)*5 + COALESCE(t.token_count,0)*200) AS fo_activity_score
+FROM va_metrics v
+FULL OUTER JOIN ldp_metrics   l ON v.operator_code = l.operator_code
+FULL OUTER JOIN token_metrics t ON COALESCE(v.operator_code, l.operator_code) = t.operator_code
+'''
+
+dmd_sql = f"""
+    SELECT d.id::bigint AS demand_id,
+           json_extract_path_text(d.metadata,'laneName') AS lanename,
+           vt.size_in_ft, vt.tonnage, vt.tyre_count, vt.body_type
+    FROM wfms_demands d
+    LEFT JOIN wfms_vehicle_types vt ON vt.id = d.vehicle_type_id
+    WHERE d.created >= CURRENT_DATE - {MAP_DAYS}
+"""
+
+dbid_sql = f"""
+    WITH r AS (
+        SELECT demand_id::bigint AS demand_id,
+               json_extract_path_text(metadata,'opFreight')::integer AS opfreight,
+               ROW_NUMBER() OVER (PARTITION BY demand_id
+                                  ORDER BY json_extract_path_text(metadata,'opFreight')::integer ASC) AS rn
+        FROM wfms_operator_demand_token
+        WHERE created::date >= (GETDATE() + interval '5 hours 30 minutes')::date - {BID_LIVE_DAYS}
+          AND json_extract_path_text(metadata,'opFreight') <> ''
+          AND json_extract_path_text(metadata,'opFreight')::integer > 0
+    )
+    SELECT demand_id,
+           MAX(CASE WHEN rn=1 THEN opfreight END) AS b1,
+           MAX(CASE WHEN rn=2 THEN opfreight END) AS b2,
+           MAX(CASE WHEN rn=3 THEN opfreight END) AS b3
+    FROM r WHERE rn <= 3 GROUP BY demand_id
+"""
+
+bid_now_sql = f"""
+    SELECT operator_code, demand_id, opfreight, method FROM (
+        SELECT w.operator_code, w.demand_id::bigint AS demand_id,
+               json_extract_path_text(w.metadata,'opFreight')::integer AS opfreight,
+               'MATCHING' AS method
+        FROM wfms_operator_demand_token w
+        JOIN {WT} t ON t.operator_code = w.operator_code
+        WHERE w.created::date >= (GETDATE() + interval '5 hours 30 minutes')::date - {BID_LIVE_DAYS}
+          AND json_extract_path_text(w.metadata,'opFreight') <> ''
+        UNION ALL
+        SELECT a.operator_code, a.demand_id::bigint AS demand_id, a.opfreight,
+               CASE WHEN a.bidding_type LIKE '%%B%%' OR a.flow='BIDDING' THEN 'BIDDING' ELSE 'MATCHING' END
+        FROM analytics.wfms_operator_demand_token_archive a
+        JOIN {WT} t ON t.operator_code = a.operator_code
+        WHERE date(a.created) >= CURRENT_DATE - {BID_LIVE_DAYS} AND a.opfreight > 0
+    )
+"""
+
+op_tyre_sql = f'''
+    SELECT ff.operator_code, CAST(NULLIF(ff.tyre_count,0) AS VARCHAR) AS tyre_count
+    FROM fact_vehicle_info ff
+    JOIN {WT} t ON t.operator_code = ff.operator_code
+    WHERE ff.vehicle_class = 'TRUCK' AND ff.deboarding_date IS NULL
+      AND ff.tyre_count IS NOT NULL AND ff.tyre_count > 0
+    GROUP BY 1, 2
+'''
+
+token_dr_sql = f'''
+    SELECT DISTINCT w.operator_code, w.demand_id
+    FROM wfms_operator_demand_token w
+    JOIN {WT} t ON t.operator_code = w.operator_code
+    WHERE w.created::date = (GETDATE() + interval '5 hours 30 minutes')::date
+      AND w.status NOT IN ('INITIATED','EXPIRED')
+'''
+
+profile_sql = f'''
+    SELECT ff.operator_code,
+           COUNT(DISTINCT ff.vehicle_id)  AS total_vehicles,
+           COUNT(DISTINCT mpv.vehicle_id) AS corrected_vehicles
+    FROM fact_vehicle_info ff
+    JOIN {WT} t ON t.operator_code = ff.operator_code
+    LEFT JOIN (SELECT vehicle_id, attribute_verified_by FROM apollo_operator_vehicle
+               WHERE LEN(attribute_verified_by) > 3) mpv ON mpv.vehicle_id = ff.vehicle_id
+    WHERE ff.vehicle_class = 'TRUCK' AND ff.deboarding_date IS NULL
+    GROUP BY 1
+'''
+
+tyre_data_sql = f'''
+    SELECT ff.operator_code,
+           COALESCE(CAST(NULLIF(ff.tyre_count,0) AS VARCHAR),'Unknown') AS tyre_count,
+           COUNT(DISTINCT ff.vehicle_id) AS total,
+           COUNT(DISTINCT CASE WHEN LEN(mpv.attribute_verified_by) > 3 THEN ff.vehicle_id END) AS verified
+    FROM fact_vehicle_info ff
+    JOIN {WT} t ON t.operator_code = ff.operator_code
+    LEFT JOIN apollo_operator_vehicle mpv ON mpv.vehicle_id = ff.vehicle_id
+    WHERE ff.vehicle_class = 'TRUCK' AND ff.deboarding_date IS NULL
+    GROUP BY 1, 2
+'''
+
+avail_sql = f'''
+    SELECT DISTINCT av.op_code as operator_code, fv.vehicle_number,
+           COALESCE(CAST(NULLIF(fv.tyre_count,0) AS VARCHAR),'') AS tyre_count,
+           COALESCE(fv.body_type,'') AS body_type,
+           COALESCE(CAST(NULLIF(fv.size_in_ft,0) AS VARCHAR),'') AS size_in_ft
+    FROM apollo_vehicle_availability av
+    JOIN {WT} t ON t.operator_code = av.op_code
+    JOIN fact_vehicle_info fv ON fv.vehicle_id = av.vehicle_id
+    WHERE DATE(av.updated_at + interval '5h30m') = CURRENT_DATE
+      AND fv.vehicle_class = 'TRUCK'
+      AND fv.deboarding_date IS NULL
+      AND fv.vehicle_number IS NOT NULL
+'''
+
+bid_today_set_sql = f"""
+    SELECT operator_code,
+           MAX(bid_ist) AS last_bid_time
+    FROM (
+        SELECT t.operator_code,
+               t.created AS bid_ist
+        FROM wfms_operator_demand_token t
+        JOIN wfms_demands wd ON wd.id = t.demand_id::bigint
+        WHERE t.created >= GETDATE() + interval '2 hours 30 minutes'
+          AND json_extract_path_text(t.metadata,'opFreight') <> ''
+          AND json_extract_path_text(t.metadata,'opFreight')::integer > 0
+          AND t.operator_code IN (SELECT operator_code FROM {WT})
+          AND wd.status NOT IN ('EXPIRED', 'FULFILLED')
+        UNION ALL
+        SELECT operator_code,
+               (created + interval '5h30m') AS bid_ist
+        FROM analytics.wfms_operator_demand_token_archive
+        WHERE (created + interval '5h30m') >= GETDATE() + interval '2 hours 30 minutes'
+          AND opfreight > 0
+          AND operator_code IN (SELECT operator_code FROM {WT})
+    )
+    GROUP BY 1
+"""
+
+bid_today_raw_sql = f"""
+    SELECT w.operator_code, w.demand_id::bigint AS demand_id,
+           MIN(json_extract_path_text(w.metadata,'opFreight')::integer) AS opfreight,
+           MAX(CASE WHEN w.status NOT IN ('INITIATED','EXPIRED') THEN 1 ELSE 0 END) AS token_paid
+    FROM wfms_operator_demand_token w
+    JOIN {WT} t ON t.operator_code = w.operator_code
+    JOIN wfms_demands wd ON wd.id = w.demand_id::bigint
+    WHERE w.created >= GETDATE() + interval '2 hours 30 minutes'
+      AND json_extract_path_text(w.metadata,'opFreight') <> ''
+      AND json_extract_path_text(w.metadata,'opFreight')::integer > 0
+      AND wd.status NOT IN ('EXPIRED', 'FULFILLED')
+    GROUP BY 1, 2
+"""
+
+va_today_sql = f"""
+SELECT
+    s.op_code as operator_code,
+    MAX(
+        TIMESTAMP 'epoch'
+        + ((s.available_from + 19800) * INTERVAL '1 second')
+    ) AS last_va_time
+FROM apollo_vehicle_availability s
+WHERE s.op_code IN (
+    SELECT wt.operator_code
+    FROM {WT} wt
+)
+AND (
+    TIMESTAMP 'epoch'
+    + ((s.available_from + 19800) * INTERVAL '1 second')
+) >= GETDATE() - INTERVAL '4 hours'
+GROUP BY s.op_code;
+"""
+
+# Acceptance today — consignment reached GOING_TO_LOAD state (Stage 4 — highest priority)
+# wcsi.time is a unix epoch integer → convert via TIMESTAMP 'epoch' + (seconds * INTERVAL)
+acceptance_sql = f"""
+WITH accepted AS (
+    SELECT c.operator_code,
+           wcsi.consignment_code,
+           c.demand_id::bigint AS demand_id,
+           TIMESTAMP 'epoch' + ((wcsi.time + 19800) * INTERVAL '1 second') AS accepted_time
+    FROM wfms_consignment_state_info wcsi
+    LEFT JOIN wfms_consignments c ON c.code = wcsi.consignment_code
+    WHERE wcsi.state = 'GOING_TO_LOAD'
+      AND DATE(TIMESTAMP 'epoch' + ((wcsi.time + 19800) * INTERVAL '1 second')) = CURRENT_DATE
+      AND c.operator_code IN (SELECT operator_code FROM {WT})
+),
+latest_state AS (
+    SELECT s.consignment_code,
+           s.state AS current_state,
+           ROW_NUMBER() OVER (PARTITION BY s.consignment_code ORDER BY s.time DESC) AS rn
+    FROM wfms_consignment_state_info s
+    WHERE s.consignment_code IN (SELECT consignment_code FROM accepted)
+)
+SELECT a.operator_code, a.consignment_code, a.demand_id, a.accepted_time,
+       ls.current_state
+FROM accepted a
+LEFT JOIN latest_state ls ON ls.consignment_code = a.consignment_code AND ls.rn = 1
+ORDER BY a.accepted_time DESC
+"""
+
+# Vehicle submitted today — token paid + vehicle number present in metadata
+vehicle_submit_sql = f"""
+    SELECT DISTINCT operator_code
+    FROM wfms_operator_demand_token
+    WHERE created::date = (GETDATE() + interval '5 hours 30 minutes')::date
+      AND status NOT IN ('INITIATED', 'EXPIRED')
+      AND json_extract_path_text(metadata, 'vehicleNumber') IS NOT NULL
+      AND json_extract_path_text(metadata, 'vehicleNumber') <> ''
+      AND operator_code IN (SELECT operator_code FROM {WT})
+"""
+
+# Token paid today — any status beyond INITIATED/EXPIRED today
+# (wfms_operator_demand_token.created is already IST)
+token_paid_today_sql = f"""
+    SELECT DISTINCT operator_code
+    FROM wfms_operator_demand_token
+    WHERE created::date = (GETDATE() + interval '5 hours 30 minutes')::date
+      AND status NOT IN ('INITIATED', 'EXPIRED')
+      AND operator_code IN (SELECT operator_code FROM {WT})
+"""
+
+# LDP page views today (tesseract_token_page_view.created is UTC → +5h30m for IST)
+ldp_today_sql = f"""
+    SELECT DISTINCT opcode AS operator_code
+    FROM tesseract_token_page_view
+    WHERE (created + interval '5h30m')::date = (GETDATE() + interval '5 hours 30 minutes')::date
+      AND opcode IN (SELECT operator_code FROM {WT})
+"""
+
+# LDP page views last 7 days
+ldp_7d_sql = f"""
+    SELECT DISTINCT opcode AS operator_code
+    FROM tesseract_token_page_view
+    WHERE (created + interval '5h30m')::date >= (GETDATE() + interval '5 hours 30 minutes')::date - 7
+      AND opcode IN (SELECT operator_code FROM {WT})
+"""
+
+# Bid submitted last 7 days (live table IST, archive table UTC)
+bid_7d_sql = f"""
+    SELECT DISTINCT operator_code FROM (
+        SELECT operator_code
+        FROM wfms_operator_demand_token
+        WHERE created::date >= (GETDATE() + interval '5 hours 30 minutes')::date - 7
+          AND json_extract_path_text(metadata,'opFreight') <> ''
+          AND json_extract_path_text(metadata,'opFreight')::integer > 0
+          AND operator_code IN (SELECT operator_code FROM {WT})
+        UNION ALL
+        SELECT operator_code
+        FROM analytics.wfms_operator_demand_token_archive
+        WHERE date(created) >= CURRENT_DATE - 7
+          AND opfreight > 0
+          AND operator_code IN (SELECT operator_code FROM {WT})
+    )
+"""
+
+# Red ODVT ratio — (red DR LDP opens ÷ total eligible DR LDP opens) × 100
+# Red DR = demand with < 300 distinct opsearch FOs (supply deficit)
+# Used as the 20% DR component in activation_score (replaces binary DR tier)
+red_odvt_sql = f"""
+WITH eligible_drs AS (
+    SELECT demand_id
+    FROM fact_consigner_demands_lead_source
+    WHERE demand_region != 'NCR'
+      AND demand_date::date >= CURRENT_DATE - 7
+      AND dr_flag = 1
+),
+dr_fo_counts AS (
+    SELECT demandid AS demand_id, COUNT(DISTINCT opcode) AS fo_count
+    FROM fact_demand_fo_opsearch
+    WHERE demandid IN (SELECT demand_id FROM eligible_drs)
+    GROUP BY 1
+),
+red_drs AS (
+    SELECT demand_id FROM dr_fo_counts WHERE fo_count < 300
+),
+ldp_counts AS (
+    SELECT e.operator_code,
+           COUNT(*) AS total_ldp_opens,
+           SUM(CASE WHEN e.demand_id IN (SELECT demand_id FROM red_drs) THEN 1 ELSE 0 END) AS red_ldp_opens
+    FROM fact_operators_demand_mp_events e
+    WHERE e.operator_code IN (SELECT operator_code FROM {WT})
+      AND e.demand_id IN (SELECT demand_id FROM eligible_drs)
+    GROUP BY 1
+)
+SELECT operator_code,
+       total_ldp_opens,
+       red_ldp_opens,
+       CASE WHEN total_ldp_opens > 0
+            THEN ROUND((red_ldp_opens::float / total_ldp_opens) * 100, 1)
+            ELSE 0.0
+       END AS red_odvt_ratio
+FROM ldp_counts
+"""
+
+# Low supply bid: operator bid (in last BID_LIVE_DAYS) on a demand with
+hist_sql = f"""
+WITH ob AS (
+    SELECT a.operator_code, a.demand_id::bigint AS demand_id, MIN(a.opfreight) AS opfreight,
+           MAX(date(a.created)) AS bid_date,
+           MAX(CASE WHEN a.bidding_type LIKE '%%B%%' OR a.flow='BIDDING' THEN 'BIDDING' ELSE 'MATCHING' END) AS method
+    FROM analytics.wfms_operator_demand_token_archive a
+    JOIN {WT} t ON t.operator_code = a.operator_code
+    WHERE date(a.created) >= CURRENT_DATE - {HIST_DAYS} AND a.opfreight > 0
+    GROUP BY 1, 2
+),
+lb AS (
+    SELECT w.operator_code, w.demand_id::bigint AS demand_id,
+           MIN(json_extract_path_text(w.metadata,'opFreight')::integer) AS opfreight,
+           MAX(w.created::date) AS bid_date, 'MATCHING' AS method
+    FROM wfms_operator_demand_token w
+    JOIN {WT} t ON t.operator_code = w.operator_code
+    WHERE w.created::date >= (GETDATE() + interval '5 hours 30 minutes')::date - {BID_LIVE_DAYS}
+      AND json_extract_path_text(w.metadata,'opFreight') <> ''
+    GROUP BY 1, 2
+),
+allb AS (
+    SELECT operator_code, demand_id,
+           MIN(opfreight) AS opfreight, MAX(bid_date) AS bid_date, MAX(method) AS method
+    FROM (SELECT * FROM ob UNION ALL SELECT * FROM lb) GROUP BY 1, 2
+),
+joined AS (
+    SELECT b.operator_code, b.demand_id, b.opfreight, b.bid_date, b.method,
+           d.origin, d.destination, d.tyre_count, d.body_type, d.size_in_ft,
+           d.supplyfare AS placed_rate, d.operator_code AS placed_op,
+           NULLIF(d.consignment_code,'') AS cc,
+           ROW_NUMBER() OVER (PARTITION BY b.operator_code
+                              ORDER BY b.bid_date DESC, b.demand_id DESC) AS rn
+    FROM allb b
+    LEFT JOIN mp_demand_details d
+           ON d.demand_id = b.demand_id AND d.demand_date >= CURRENT_DATE - {HIST_DAYS + 5}
+)
+SELECT * FROM joined WHERE rn <= {MAX_HIST}
+"""
+
+call_sql = f"""
+    WITH all_calls AS (
+        SELECT code AS operator_code,
+               CAST(TO_TIMESTAMP(call_time,'DD/MM/YYYY HH:MI:SS AM') AS DATE) AS call_date,
+               COALESCE(system_disposition,'') AS disposition,
+               COALESCE(user_name,'')          AS caller,
+               COALESCE(disposition_code,'')   AS disp_code,
+               ROW_NUMBER() OVER (
+                   PARTITION BY UPPER(code)
+                   ORDER BY TO_TIMESTAMP(call_time,'DD/MM/YYYY HH:MI:SS AM') DESC
+               ) AS rn,
+               COUNT(*) OVER (PARTITION BY UPPER(code)) AS total_calls
+        FROM mp_rm_call_details_raw
+        WHERE campaign_name ILIKE '%%MP_Load_Support%%'
+          AND LEN(disposition_code) > 2
+          AND UPPER(code) IN (SELECT operator_code FROM {WT})
+    )
+    SELECT operator_code, call_date, disposition, caller, disp_code, rn, total_calls
+    FROM all_calls WHERE rn <= 10
+"""
+
+# ── LAUNCH ALL PARALLEL QUERIES ───────────────────────────────────────────────
+with ThreadPoolExecutor(max_workers=22) as pool:
+    f_act   = pool.submit(_rs, activity_sql)
+    f_dmd   = pool.submit(_rs, dmd_sql)          # needed before Tesseract
+    f_dbid  = pool.submit(_rs, dbid_sql)          # needed before Tesseract
+    f_bid   = pool.submit(_rs, bid_now_sql)       # needed before Tesseract
+    f_tyre  = pool.submit(_rs, op_tyre_sql)       # needed before Tesseract
+    f_tok   = pool.submit(_rs, token_dr_sql)
+    f_prof  = pool.submit(_rs, profile_sql)
+    f_tyrD  = pool.submit(_rs, tyre_data_sql)
+    f_avail = pool.submit(_rs, avail_sql)
+    f_btds  = pool.submit(_rs, bid_today_set_sql)
+    f_btr   = pool.submit(_rs, bid_today_raw_sql)
+    f_vat   = pool.submit(_rs, va_today_sql)
+    f_hist  = pool.submit(_rs, hist_sql)
+    f_call  = pool.submit(_rs, call_sql)
+    f_vsub  = pool.submit(_rs, vehicle_submit_sql)
+    f_acc   = pool.submit(_rs, acceptance_sql)
+    f_odvt  = pool.submit(_rs, red_odvt_sql)
+    f_hclus = pool.submit(_rs, f"SELECT * FROM analytics.fo_home_district WHERE operator_code IN (SELECT operator_code FROM {WORK_TABLE})")
+    f_tokpd = pool.submit(_rs, token_paid_today_sql)
+    f_ldpt  = pool.submit(_rs, ldp_today_sql)
+    f_ldp7d = pool.submit(_rs, ldp_7d_sql)
+    f_bid7d = pool.submit(_rs, bid_7d_sql)
+
+    # ── Wait for Tesseract dependencies first ─────────────────────────────────
+    fw_wait([f_dmd, f_dbid, f_bid, f_tyre])
+
+    # ── Process demand map ────────────────────────────────────────────────────
+    dmd_raw = f_dmd.result()
+    dmd_raw['demand_id'] = pd.to_numeric(dmd_raw['demand_id'], errors='coerce').astype('Int64')
+    dmd_raw = dmd_raw.dropna(subset=['demand_id']).drop_duplicates('demand_id')
+    demand_map = dmd_raw.set_index('demand_id').to_dict('index')
+    print(f"[{dt.datetime.now():%H:%M:%S}] Demand map: {len(demand_map)} demands.")
+
+    # ── Demand-level lowest bids ──────────────────────────────────────────────
+    dbid_raw = f_dbid.result()
+    dbid_raw['demand_id'] = pd.to_numeric(dbid_raw['demand_id'], errors='coerce').astype('Int64')
+    dbid_raw = dbid_raw.dropna(subset=['demand_id'])
+    demand_bid_map = {}
+    for did, b1, b2, b3 in dbid_raw[['demand_id','b1','b2','b3']].itertuples(index=False):
+        lows = [int(b) for b in (b1, b2, b3) if pd.notna(b) and b and float(b) > 0]
+        if lows: demand_bid_map[int(did)] = lows
+    print(f"[{dt.datetime.now():%H:%M:%S}] Demand-level lowest bids: {len(demand_bid_map)}.")
+
+    # ── Live bid lookup ───────────────────────────────────────────────────────
+    bn = f_bid.result()
+    bn['demand_id'] = pd.to_numeric(bn['demand_id'], errors='coerce').astype('Int64')
+    bn['opfreight'] = pd.to_numeric(bn['opfreight'], errors='coerce')
+    bn = bn.dropna(subset=['demand_id','opfreight'])
+    bn = (bn[bn['opfreight'] > 0]
+          .sort_values('opfreight')
+          .drop_duplicates(['operator_code','demand_id'], keep='first'))
+    bid_lookup = {(op, int(did)): (float(fr), mth)
+                  for op, did, fr, mth in bn[['operator_code','demand_id','opfreight','method']].itertuples(index=False)}
+    print(f"[{dt.datetime.now():%H:%M:%S}] Live bid lookup: {len(bid_lookup)} bids.")
+
+    # ── Operator tyre map ─────────────────────────────────────────────────────
+    otr = f_tyre.result()
+    op_tyre_map = (otr[otr['tyre_count'].notna()]
+                   .groupby('operator_code')['tyre_count'].apply(set).to_dict())
+    print(f"[{dt.datetime.now():%H:%M:%S}] Operator tyre map: {len(op_tyre_map)} operators.")
+
+    # ── Helper functions (depend on demand_map / bid_lookup / op_tyre_map) ────
+    def _clean_loc(s):
+        if not isinstance(s, str) or not s.strip(): return ''
+        return s.split('_')[0].strip().title()
+
+    def _truck_text(body, tyre, size, ton=None):
+        bits = []
+        if isinstance(body, str) and body.strip(): bits.append(body.strip().title())
+        if size is not None and str(size) not in ('','None','nan') and float(size or 0) > 0:
+            bits.append(f"{float(size):g}ft")
+        if tyre is not None and str(tyre).strip() not in ('','0','None','nan','<NA>'):
+            try: bits.append(f"{int(float(tyre))} Tyre")
+            except: pass
+        if ton is not None and pd.notna(ton) and float(ton or 0) > 0:
+            bits.append(f"{float(ton):g}MT")
+        return ' · '.join(bits)
+
+    def _dmd_route_truck(did):
+        d = demand_map.get(int(did)) if did is not None else None
+        if not d: return '', '', None
+        # lanename comes from json_extract_path_text(metadata,'laneName') in wfms_demands
+        route  = (d.get('lanename') or d.get('laneName') or '').strip()
+        truck  = _truck_text(d.get('body_type'), d.get('tyre_count'), d.get('size_in_ft'), d.get('tonnage'))
+        return route, truck, None   # placed_rate not available from wfms_demands
+
+    def _get_tyre_req(did):
+        d = demand_map.get(int(did)) if did is not None else None
+        if not d: return ''
+        tc = d.get('tyre_count')
+        if tc is None or str(tc).strip() in ('','0','None','nan','<NA>'): return ''
+        try: return str(int(float(tc)))
+        except: return ''
+
+    def _low_bids(did):
+        try: return demand_bid_map.get(int(did), [])
+        except: return []
+
+    def _bid_for(op_code, did):
+        try: return bid_lookup.get((op_code, int(did)), (None, ''))
+        except: return (None, '')
+
+    # ── TESSERACT — top 1500 operators ───────────────────────────────────────
+    TESSERACT_URL = 'http://tesseract.prod-we.com/tesseract/load/v3/browse'
+    tess_codes = codes[:TESS_LIMIT]
+    print(f"[{dt.datetime.now():%H:%M:%S}] Fetching Tesseract IDs for top {len(tess_codes)} operators...")
+
+    def _tess_fetch(op_code):
+        headers = {'user': json.dumps({"code": op_code}), 'Content-Type': 'application/json'}
+        try:
+            r = requests.post(TESSERACT_URL,
+                              headers=headers,
+                              json={"vehicleId": None, "pageSize": 20,
+                                    "cursorOpSearch": None, "cursorCatalog": None, "pageNo": 0},
+                              timeout=5)
+            if r.status_code == 200:
+                return op_code, [{'operator_code': op_code, 'demand_id': l.get('bookingId')}
+                                  for l in r.json().get('loads', []) if l.get('bookingId')]
+        except: pass
+        return op_code, []
+
+    all_tess = []
+    with ThreadPoolExecutor(max_workers=50) as tex:
+        for oc, recs in tex.map(_tess_fetch, tess_codes):
+            all_tess.extend(recs)
+
+    df_loads = pd.DataFrame(all_tess) if all_tess else pd.DataFrame(columns=['operator_code','demand_id'])
+    df_loads['demand_id'] = pd.to_numeric(df_loads['demand_id'], errors='coerce').astype('Int64')
+    df_loads = df_loads.dropna(subset=['demand_id']).drop_duplicates(['operator_code','demand_id'])
+    print(f"[{dt.datetime.now():%H:%M:%S}] Load IDs fetched: {len(df_loads)} rows.")
+
+    def _live_str(row):
+        did, op_code = row['demand_id'], row['operator_code']
+        tyre_req = _get_tyre_req(did)
+        if tyre_req and op_code in op_tyre_map and tyre_req not in op_tyre_map[op_code]:
+            return None
+        lows    = _low_bids(did)
+        lowbids = ';'.join(str(int(b)) for b in lows)
+        route, truck, placed = _dmd_route_truck(did)
+        offered = '' if placed is None else f"{placed:.0f}"
+        own_fr, _ = _bid_for(op_code, did)
+        own     = '' if own_fr is None else f"{own_fr:.0f}"
+        return DELIM_FIELD.join([str(int(did)), route, truck, '', lowbids, offered, own, tyre_req])
+
+    if len(df_loads):
+        df_loads['load_str'] = df_loads.apply(_live_str, axis=1)
+        df_loads = df_loads[df_loads['load_str'].notna()]
+        dr_funnel = (df_loads.groupby('operator_code')
+                     .agg(num_of_drs_in_opsearch=('demand_id','nunique'),
+                          lane_vt_details=('load_str', lambda x: DELIM_REC.join(x.dropna().unique())))
+                     .reset_index())
+        print(f"[{dt.datetime.now():%H:%M:%S}] After tyre filter: {len(df_loads)} loads "
+              f"across {dr_funnel['operator_code'].nunique()} operators.")
+    else:
+        dr_funnel = pd.DataFrame(columns=['operator_code','num_of_drs_in_opsearch','lane_vt_details'])
+
+    # ── Collect remaining parallel results ────────────────────────────────────
+
+    # Activity
+    activity = f_act.result()
+    print(f"[{dt.datetime.now():%H:%M:%S}] Activity: {len(activity)} rows.")
+
+    # Token DR
+    token_dr = f_tok.result()
+    token_dr['demand_id'] = pd.to_numeric(token_dr['demand_id'], errors='coerce').astype('Int64')
+    token_dr = token_dr.dropna(subset=['demand_id'])
+    token_dr_count   = (token_dr.groupby('operator_code')
+                        .agg(num_of_drs_paid_token=('demand_id','nunique')).reset_index())
+    token_demand_ids = (token_dr.groupby('operator_code')
+                        .agg(token_demand_ids=('demand_id', lambda x: ','.join(x.astype(str).unique())))
+                        .reset_index())
+
+    def _token_str(r):
+        did = r['demand_id']
+        fr, mth = _bid_for(r['operator_code'], did)
+        route, truck, placed = _dmd_route_truck(did)
+        return DELIM_FIELD.join([str(int(did)), route, truck,
+                                  '' if fr is None else f"{fr:.0f}",
+                                  '' if placed is None else f"{placed:.0f}",
+                                  mth or ''])
+
+    if len(token_dr):
+        token_dr['tok_str'] = token_dr.apply(_token_str, axis=1)
+        token_lane = (token_dr.groupby('operator_code')['tok_str']
+                      .apply(lambda x: DELIM_REC.join(x)).reset_index(name='token_lane_details'))
+    else:
+        token_lane = pd.DataFrame(columns=['operator_code','token_lane_details'])
+    print(f"[{dt.datetime.now():%H:%M:%S}] Token-paid lanes: {len(token_lane)} operators.")
+
+    # Vehicle profile
+    profile = f_prof.result()
+
+    # Tyre breakdown
+    tyre_data = f_tyrD.result()
+    tyre_agg = (tyre_data.assign(
+            tyre_str=lambda df: df['tyre_count'].astype(str) + DELIM_FIELD +
+                                df['total'].astype(str) + DELIM_FIELD + df['verified'].astype(str))
+        .groupby('operator_code')['tyre_str']
+        .apply(lambda x: DELIM_REC.join(x)).reset_index(name='tyre_breakdown'))
+
+    # Available vehicles
+    avail_raw = f_avail.result().drop_duplicates(['operator_code','vehicle_number'])
+    if len(avail_raw):
+        avail_raw['av_str'] = (avail_raw['vehicle_number'].fillna('') + DELIM_FIELD +
+                               avail_raw['tyre_count'].fillna('') + DELIM_FIELD +
+                               avail_raw['body_type'].fillna('') + DELIM_FIELD +
+                               avail_raw['size_in_ft'].fillna(''))
+        avail_agg = (avail_raw.groupby('operator_code')['av_str']
+                     .apply(lambda x: DELIM_REC.join(list(x)[:MAX_AVAIL]))
+                     .reset_index(name='avail_vehicles'))
+    else:
+        avail_agg = pd.DataFrame(columns=['operator_code','avail_vehicles'])
+    print(f"[{dt.datetime.now():%H:%M:%S}] Profile:{len(profile)} | tyre:{len(tyre_agg)} | avail:{len(avail_agg)}.")
+
+    # Hot today — bid today (last 3 hrs) with recency timestamp
+    btds_df = f_btds.result()
+    bid_today_set = set(btds_df['operator_code'].tolist()) if len(btds_df) else set()
+    bid_last_time = dict(zip(btds_df['operator_code'], btds_df['last_bid_time'])) if len(btds_df) else {}
+
+    # Bid today lane details
+    btr = f_btr.result()
+    btr['demand_id'] = pd.to_numeric(btr['demand_id'], errors='coerce').astype('Int64')
+    btr = btr.dropna(subset=['demand_id'])
+
+    def _bid_today_str(r):
+        did = r['demand_id']
+        route, truck, _ = _dmd_route_truck(did)
+        fr   = r['opfreight']
+        paid = '1' if r.get('token_paid', 0) == 1 else '0'
+        return DELIM_FIELD.join([str(int(did)), route, truck,
+                                  str(int(fr)) if pd.notna(fr) and fr else '', paid])
+
+    if len(btr):
+        btr['bts'] = btr.apply(_bid_today_str, axis=1)
+        bid_today_lane_agg = (btr.groupby('operator_code')['bts']
+                              .apply(lambda x: DELIM_REC.join(x))
+                              .reset_index(name='bid_today_lane_details'))
+    else:
+        bid_today_lane_agg = pd.DataFrame(columns=['operator_code','bid_today_lane_details'])
+    print(f"[{dt.datetime.now():%H:%M:%S}] Bid today lanes: {len(bid_today_lane_agg)} operators.")
+
+    # Vehicle available today (last 4 hrs) with recency timestamp
+    vat_df = f_vat.result()
+    va_today_set = set(vat_df['operator_code'].tolist()) if len(vat_df) else set()
+    va_last_time = dict(zip(vat_df['operator_code'], vat_df['last_va_time'])) if len(vat_df) else {}
+
+    # Vehicle submitted today (token paid + vehicle number in metadata)
+    vsub_df = f_vsub.result()
+    vehicle_submit_set = set(vsub_df['operator_code'].tolist()) if len(vsub_df) else set()
+
+    # Acceptance today (GOING_TO_LOAD) — Stage 4, highest priority signal
+    acc_df = f_acc.result()
+    if len(acc_df):
+        acc_df['demand_id'] = pd.to_numeric(acc_df['demand_id'], errors='coerce').astype('Int64')
+        acc_df = acc_df.dropna(subset=['demand_id', 'operator_code'])
+        accepted_today_set = set(acc_df['operator_code'].tolist())
+        last_accepted_time = acc_df.groupby('operator_code')['accepted_time'].max().to_dict()
+
+        def _acc_str(r):
+            did = r['demand_id']
+            fr, mth = _bid_for(r['operator_code'], did)
+            route, truck, placed = _dmd_route_truck(did)
+            cc    = str(r.get('consignment_code') or '')
+            ts    = str(r.get('accepted_time') or '')[:19]
+            state = str(r.get('current_state') or '')
+            return DELIM_FIELD.join([str(int(did)), route, truck,
+                                      '' if fr is None else f"{fr:.0f}",
+                                      '' if placed is None else f"{placed:.0f}",
+                                      mth or '', cc, ts, state])
+
+        acc_df = acc_df.sort_values(['operator_code', 'accepted_time'], ascending=[True, False])
+        acc_df['acc_str'] = acc_df.apply(_acc_str, axis=1)
+        # groupby preserves row order within each group — sort above guarantees desc order
+        accepted_lane_agg = (acc_df.groupby('operator_code', sort=False)['acc_str']
+                             .apply(lambda x: DELIM_REC.join(list(x))).reset_index(name='accepted_lane_details'))
+    else:
+        accepted_today_set = set()
+        last_accepted_time = {}
+        accepted_lane_agg  = pd.DataFrame(columns=['operator_code', 'accepted_lane_details'])
+
+    print(f"[{dt.datetime.now():%H:%M:%S}] Bid today: {len(bid_today_set)} | "
+          f"VA today: {len(va_today_set)} | "
+          f"Vehicle submitted: {len(vehicle_submit_set)} | "
+          f"Accepted today: {len(accepted_today_set)}")
+
+    # New signals
+    tokpd_df = f_tokpd.result()
+    token_paid_today_set = set(tokpd_df['operator_code'].tolist()) if len(tokpd_df) else set()
+
+    ldpt_df = f_ldpt.result()
+    ldp_today_set = set(ldpt_df['operator_code'].tolist()) if len(ldpt_df) else set()
+
+    ldp7d_df = f_ldp7d.result()
+    ldp_7d_set = set(ldp7d_df['operator_code'].tolist()) if len(ldp7d_df) else set()
+
+    bid7d_df = f_bid7d.result()
+    bid_7d_set = set(bid7d_df['operator_code'].tolist()) if len(bid7d_df) else set()
+
+    print(f"[{dt.datetime.now():%H:%M:%S}] Token paid today: {len(token_paid_today_set)} | "
+          f"LDP today: {len(ldp_today_set)} | LDP 7d: {len(ldp_7d_set)} | Bid 7d: {len(bid_7d_set)}")
+
+    # Red ODVT ratio (red DR LDP opens ÷ total DR LDP opens) — used in activation_score
+    odvt_df = f_odvt.result()
+    odvt_df['red_odvt_ratio'] = pd.to_numeric(odvt_df['red_odvt_ratio'], errors='coerce').fillna(0.0).round(1)
+    odvt_df = odvt_df[['operator_code', 'red_odvt_ratio']]
+    print(f"[{dt.datetime.now():%H:%M:%S}] Red ODVT ratio: {len(odvt_df)} operators.")
+
+    # Bid history
+    hist_raw = f_hist.result()
+    print(f"[{dt.datetime.now():%H:%M:%S}] History rows: {len(hist_raw)}.")
+
+    def _hist_str(r):
+        did    = int(r['demand_id'])
+        route  = (_clean_loc(r['origin']) + ' -> ' + _clean_loc(r['destination'])).strip(' ->')
+        truck  = _truck_text(r['body_type'], r['tyre_count'], r['size_in_ft'])
+        his    = '' if pd.isna(r['opfreight']) else f"{float(r['opfreight']):.0f}"
+        pr     = r['placed_rate']
+        placed = None if (pr is None or pd.isna(pr) or float(pr) <= 0) else float(pr)
+        pl     = '' if placed is None else f"{placed:.0f}"
+        verdict = ('WON' if placed is not None and r.get('cc') and r['placed_op'] == r['operator_code']
+                   else 'LOST' if placed is not None else 'OPEN')
+        return DELIM_FIELD.join([str(did), route, truck, his, pl, verdict, str(r['bid_date'])])
+
+    if len(hist_raw):
+        hist_raw['hist_str'] = hist_raw.apply(_hist_str, axis=1)
+        hist_agg = (hist_raw.groupby('operator_code')['hist_str']
+                    .apply(lambda x: DELIM_REC.join(x)).reset_index(name='hist_token_details'))
+    else:
+        hist_agg = pd.DataFrame(columns=['operator_code','hist_token_details'])
+    print(f"[{dt.datetime.now():%H:%M:%S}] History: {len(hist_agg)} operators.")
+
+    # Call history
+    call_raw = f_call.result()
+    print(f"[{dt.datetime.now():%H:%M:%S}] Call history: {len(call_raw)} records, "
+          f"{call_raw['operator_code'].nunique() if len(call_raw) else 0} operators.")
+
+    if len(call_raw):
+        call_raw['call_date'] = call_raw['call_date'].astype(str)
+        call_raw['ch_str'] = (call_raw['call_date'].fillna('') + DELIM_FIELD +
+                               call_raw['disposition'].fillna('') + DELIM_FIELD +
+                               call_raw['caller'].fillna('') + DELIM_FIELD +
+                               call_raw['disp_code'].fillna(''))
+        call_hist_agg = (call_raw.groupby('operator_code')['ch_str']
+                         .apply(lambda x: DELIM_REC.join(x)).reset_index(name='call_history'))
+        latest = (call_raw[call_raw['rn'] == 1]
+                  [['operator_code','call_date','disposition','caller','total_calls']]
+                  .rename(columns={'call_date':'last_call_date',
+                                   'disposition':'last_call_disposition',
+                                   'caller':'last_caller'}))
+        call_hist_agg = call_hist_agg.merge(latest, on='operator_code', how='left')
+    else:
+        call_hist_agg = pd.DataFrame(columns=[
+            'operator_code','call_history',
+            'last_call_date','last_call_disposition','last_caller','total_calls'])
+
+# ─────────────────────────────────────────────
+# 12. FINAL MERGE
+# ─────────────────────────────────────────────
+final = priority_df.copy()
+for part in [activity, dr_funnel,
+             token_dr_count, token_demand_ids, token_lane,
+             profile, hist_agg, tyre_agg, avail_agg, call_hist_agg,
+             bid_today_lane_agg, accepted_lane_agg, odvt_df]:
+    final = final.merge(part, on='operator_code', how='left')
+
+num_cols = ['va_days','ldp_days','total_ldp_count','token_count','fo_activity_score',
+            'num_of_drs_in_opsearch','num_of_drs_paid_token','total_vehicles',
+            'corrected_vehicles','total_calls']
+final[num_cols] = final[num_cols].fillna(0).astype(int)
+final['red_odvt_ratio'] = pd.to_numeric(final.get('red_odvt_ratio', 0), errors='coerce').fillna(0.0)
+for c in ['rm_name','Cluster','lane_vt_details','token_demand_ids','token_lane_details',
+          'hist_token_details','tyre_breakdown','avail_vehicles',
+          'call_history','last_call_date','last_call_disposition','last_caller',
+          'bid_today_lane_details','accepted_lane_details']:
+    if c not in final.columns: final[c] = ''
+    final[c] = final[c].astype(object).fillna('')
+final['last_event_date'] = final['last_event_date'].astype(str)
+
+# Hot today flags + re-sort
+final['bid_today']               = final['operator_code'].isin(bid_today_set)
+def _fmt_ts(x):
+    s = str(x) if pd.notna(x) else ''
+    return s[:19] if s not in ('NaT','nan','None','nat','') else ''
+final['last_bid_time']      = final['operator_code'].map(bid_last_time).apply(_fmt_ts)
+final['last_accepted_time'] = final['operator_code'].map(last_accepted_time).apply(_fmt_ts)
+final['vehicle_available_today'] = final['operator_code'].isin(va_today_set)
+final['vehicle_submitted']       = final['operator_code'].isin(vehicle_submit_set)
+final['accepted_today']          = final['operator_code'].isin(accepted_today_set)
+# Overlay new live signals
+final['token_paid_today'] = final['operator_code'].isin(token_paid_today_set)
+final['ldp_today']        = final['operator_code'].isin(ldp_today_set)
+final['ldp_7d']           = final['operator_code'].isin(ldp_7d_set)
+final['bid_7d']           = final['operator_code'].isin(bid_7d_set)
+
+final['hot_today'] = (final['bid_today'] | final['vehicle_available_today'] |
+                      final['accepted_today'] | final['token_paid_today'] | final['ldp_today'])
+
+def _hot_flag(r):
+    parts = []
+    acc = _is_true(r.get('accepted_today'))
+    va  = _is_true(r.get('vehicle_available_today'))
+    tok = _is_true(r.get('token_paid_today')) or _is_true(r.get('vehicle_submitted'))
+    bid = _is_true(r.get('bid_today'))
+    ldp = _is_true(r.get('ldp_today'))
+    if acc:
+        parts.append('ACCEPTED TODAY')
+    elif va and tok:
+        parts.append('VA+TOKEN TODAY')
+    elif va and bid:
+        parts.append('VA+BID TODAY')
+    elif va and ldp:
+        parts.append('VA+LDP TODAY')
+    elif tok:
+        parts.append('TOKEN TODAY')
+    elif bid:
+        parts.append('BID TODAY')
+    elif ldp:
+        parts.append('LDP TODAY')
+    elif va:
+        parts.append('VA TODAY')
+    return ' | '.join(parts)
+
+final['hot_flag'] = final.apply(_hot_flag, axis=1)
+
+# ── STAGE ASSIGNMENT ──────────────────────────────────────────────────────────
+# Stage 4: Post Acceptance (GOING_TO_LOAD today)
+# Stage 3: Token Paid today (with or without vehicle number)
+# Stage 2: Bid Submitted today OR LDP viewed today (but no token)
+# Stage 1: Vehicle Available today only (no bid/token/LDP today)
+# Stage H: Historical activity in last 7 days
+# Stage 5: No activity
+def _is_true(v):
+    return v in (True, 'TRUE', 'true', 'True', '1', 'Yes', 1)
+
+def _get_stage(r):
+    if _is_true(r.get('accepted_today')):                                        return 'Stage 4'
+    if _is_true(r.get('vehicle_submitted')) or _is_true(r.get('token_paid_today')): return 'Stage 3'
+    if _is_true(r.get('bid_today')) or _is_true(r.get('ldp_today')):            return 'Stage 2'
+    if _is_true(r.get('vehicle_available_today')):                               return 'Stage 1'
+    if (int(r.get('token_count', 0) or 0) > 0 or
+        int(r.get('va_days', 0) or 0) > 0 or
+        _is_true(r.get('bid_7d')) or _is_true(r.get('ldp_7d'))):                return 'Stage H'
+    return 'Stage 5'
+
+final['stage'] = final.apply(_get_stage, axis=1)
+
+# ── P0 / P1 / P2 PRIORITY ────────────────────────────────────────────────────
+def _compute_priority(r):
+    live = (_is_true(r.get('accepted_today')) or _is_true(r.get('token_paid_today')) or
+            _is_true(r.get('vehicle_submitted')) or _is_true(r.get('bid_today')) or
+            _is_true(r.get('ldp_today')) or _is_true(r.get('vehicle_available_today')))
+    if live:
+        return 'P0'
+    history = (int(r.get('token_count', 0) or 0) > 0 or
+               int(r.get('va_days', 0) or 0) > 0 or
+               _is_true(r.get('bid_7d')) or _is_true(r.get('ldp_7d')))
+    if history:
+        return 'P1'
+    return 'P2'
+
+final['priority'] = final.apply(_compute_priority, axis=1)
+
+# ── ACTIVATION SCORE ─────────────────────────────────────────────────────────
+_EPOCH = pd.Timestamp('2000-01-01')
+
+def _recency_mult(ts_str):
+    if not ts_str or ts_str in ('', 'nan', 'NaT', 'None'):
+        return 0.4
+    try:
+        ts   = pd.Timestamp(str(ts_str)[:19])
+        mins = (pd.Timestamp.now() - ts).total_seconds() / 60
+        if mins < 30:    return 1.0
+        elif mins < 180: return 0.8
+        else:             return 0.4
+    except:
+        return 0.4
+
+def _activation_score(r):
+    op = r['operator_code']
+    if r.get('accepted_today'):
+        base = 500; mult = _recency_mult(last_accepted_time.get(op, ''))
+    elif _is_true(r.get('token_paid_today')) or _is_true(r.get('vehicle_submitted')):
+        base = 300; mult = _recency_mult(bid_last_time.get(op, ''))
+    elif r['bid_today']:
+        base = 100; mult = _recency_mult(bid_last_time.get(op, ''))
+    elif _is_true(r.get('ldp_today')):
+        base = 50;  mult = 1.0
+    elif r['vehicle_available_today']:
+        base = 60;  mult = _recency_mult(va_last_time.get(op, ''))
+    else:
+        base, mult = 0, 0.4
+
+    realtime_norm = min(base * mult / 5, 100)
+    bid_days  = float(r.get('ldp_days', 0))
+    va_days   = float(r.get('va_days', 0))
+    ldp_days  = float(r.get('ldp_days', 0))
+    history   = (0.50 * min(bid_days/4,1)*100 + 0.30 * min(va_days/4,1)*100 +
+                 0.20 * min(ldp_days/8,1)*100)
+    dr_s      = float(r.get('red_odvt_ratio', 0) or 0)
+    red_cnt   = float(r.get('red_dr_count', 0) or 0)
+    pri_s     = min(red_cnt / 10.0, 1.0) * 100
+    return round(0.50*realtime_norm + 0.20*history + 0.20*dr_s + 0.10*pri_s, 1)
+
+final['activation_score'] = final.apply(_activation_score, axis=1)
+
+# ── NEW 13-TIER SORT ──────────────────────────────────────────────────────────
+# Live (1-7): Accepted > VA+Token > VA+Bid > VA+LDP > Token > Bid > LDP
+# Hist (1-6): VA+Token > VA+Bid > VA+LDP > Token > Bid > LDP
+# Within each tier: Red DR first, then activation_score desc
+def _live_priority(r):
+    acc = _is_true(r.get('accepted_today'))
+    va  = _is_true(r.get('vehicle_available_today'))
+    tok = _is_true(r.get('token_paid_today')) or _is_true(r.get('vehicle_submitted'))
+    bid = _is_true(r.get('bid_today'))
+    ldp = _is_true(r.get('ldp_today'))
+    if acc:        return 1
+    if va and tok: return 2
+    if va and bid: return 3
+    if va and ldp: return 4
+    if tok:        return 5
+    if bid:        return 6
+    if ldp:        return 7
+    return 99
+
+def _hist_priority(r):
+    va  = int(r.get('va_days', 0) or 0) > 0
+    tok = int(r.get('token_count', 0) or 0) > 0
+    bid = _is_true(r.get('bid_7d'))
+    ldp = _is_true(r.get('ldp_7d'))
+    if va and tok: return 1
+    if va and bid: return 2
+    if va and ldp: return 3
+    if tok:        return 4
+    if bid:        return 5
+    if ldp:        return 6
+    return 99
+
+final['_live_pri'] = final.apply(_live_priority, axis=1)
+final['_hist_pri'] = final.apply(_hist_priority, axis=1)
+final['_tier']     = final['_live_pri'].apply(lambda x: 0 if x < 99 else None)
+final['_tier']     = final.apply(lambda r: 0 if r['_live_pri'] < 99 else (1 if r['_hist_pri'] < 99 else 2), axis=1)
+final['_is_red']   = (final['dr_supply_type'] == 'Red DR').map({True: 0, False: 1})
+
+final = (final.sort_values(['_tier', '_is_red', '_live_pri', '_hist_pri', 'activation_score'],
+                            ascending=[True, True, True, True, False])
+         .reset_index(drop=True))
+final['calling_rank'] = range(1, len(final) + 1)
+# expose live_priority for CRM display
+final['live_priority'] = final['_live_pri'].apply(lambda x: '' if x >= 99 else str(x))
+final.drop(columns=['hot_today', '_live_pri', '_hist_pri', '_tier', '_is_red'], inplace=True)
+
+# Stable RM assignment — hash of operator_code so same operator always gets same RM
+# regardless of how activation_score or rank changes through the day
+import hashlib
+def _assign_rm(op):
+    return RM_LIST[int(hashlib.md5(op.encode()).hexdigest(), 16) % len(RM_LIST)]
+final['rm_name'] = final['operator_code'].apply(_assign_rm)
+
+# Home cluster from fo_home_district
+try:
+    hclus_df = f_hclus.result()
+    # pick first non-operator_code column as cluster
+    clus_col = [c for c in hclus_df.columns if c != 'operator_code']
+    if clus_col:
+        clus_map = dict(zip(hclus_df['operator_code'], hclus_df[clus_col[0]]))
+        final['Cluster'] = final['operator_code'].map(clus_map).fillna('').astype(str)
+    else:
+        final['Cluster'] = ''
+except Exception as e:
+    print(f"[{dt.datetime.now():%H:%M:%S}] [WARN] Home cluster fetch failed: {e}")
+    final['Cluster'] = ''
+
+# Cap to top MAX_LEADS operators (already sorted by activation_score DESC)
+if len(final) > MAX_LEADS:
+    print(f"[{dt.datetime.now():%H:%M:%S}] Capping {len(final)} → {MAX_LEADS} operators.")
+    final = final.head(MAX_LEADS).reset_index(drop=True)
+
+print(f"[{dt.datetime.now():%H:%M:%S}] Score summary: "
+      f"hot={final[final['bid_today']|final['vehicle_available_today']]['operator_code'].nunique()} | "
+      f"top score={final['activation_score'].max()}")
+
+# Column order
+final = final[[
+    'calling_rank','activation_score','live_priority','stage','hot_flag',
+    'operator_code','priority','dr_supply_type','red_dr_count','red_odvt_ratio','ldp_bucket','token_bucket',
+    'lifetime_ldps','lifetime_tokens','life_time_trips','appeared_in_drs',
+    'dr_tier','last_event_date','days_since_last_event','recency_tier',
+    'Cluster','rm_name',
+    'accepted_today','last_accepted_time','accepted_lane_details',
+    'token_paid_today','vehicle_submitted',
+    'bid_today','last_bid_time','bid_today_lane_details',
+    'ldp_today','vehicle_available_today',
+    'ldp_7d','bid_7d',
+    'va_days','ldp_days','total_ldp_count','token_count','fo_activity_score',
+    'num_of_drs_in_opsearch','lane_vt_details',
+    'num_of_drs_paid_token','token_demand_ids','token_lane_details',
+    'total_vehicles','corrected_vehicles','avail_vehicles',
+    'hist_token_details','tyre_breakdown',
+    'call_history','last_call_date','last_call_disposition','last_caller','total_calls',
+]]
+print(f"[{dt.datetime.now():%H:%M:%S}] Final shape: {final.shape}")
+
+for _col in ['lane_vt_details','token_demand_ids','token_lane_details',
+             'hist_token_details','tyre_breakdown','avail_vehicles','bid_today_lane_details',
+             'accepted_lane_details']:
+    _over = (final[_col].str.len() > MAX_CELL).sum()
+    if _over: print(f"  [WARN] {_col}: {_over} cells truncated.")
+    final[_col] = final[_col].apply(
+        lambda x: x[:MAX_CELL] if isinstance(x, str) and len(x) > MAX_CELL else x)
+
+# ─────────────────────────────────────────────
+# 13. WRITE TO GOOGLE SHEETS — read by HTML CRM
+# ─────────────────────────────────────────────
+try:
+    sh = gc.open_by_key(OUT_SHEET_KEY)
+    try:
+        ws = sh.worksheet(OUT_TAB_NAME); ws.clear()
+    except gspread.WorksheetNotFound:
+        ws = sh.add_worksheet(title=OUT_TAB_NAME, rows=len(final)+10, cols=len(final.columns)+2)
+    all_rows = [final.columns.tolist()] + final.fillna('').astype(str).values.tolist()
+    n_chunks = -(-len(all_rows) // SHEET_CHUNK)
+    print(f"[{dt.datetime.now():%H:%M:%S}] Writing {len(all_rows)} rows to Sheets in {n_chunks} chunks...")
+    for i in range(0, len(all_rows), SHEET_CHUNK):
+        ws.update(f'A{i+1}', all_rows[i:i+SHEET_CHUNK], value_input_option='RAW')
+        time.sleep(0.3)
+    print(f"[{dt.datetime.now():%H:%M:%S}] Written {len(final)} rows to Sheets '{OUT_TAB_NAME}'.")
+except Exception as e:
+    print(f"[{dt.datetime.now():%H:%M:%S}] [WARN] Sheets write failed: {e}")
+
+# ─────────────────────────────────────────────
+# 14. CLEANUP
+# ─────────────────────────────────────────────
+try:
+    cur.execute(f"DROP TABLE IF EXISTS {WORK_TABLE};")
+    print(f"[{dt.datetime.now():%H:%M:%S}] Dropped {WORK_TABLE}.")
+except Exception as e:
+    print(f"[{dt.datetime.now():%H:%M:%S}] [WARN] Cleanup failed: {e}")

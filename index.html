@@ -1101,11 +1101,28 @@ function renderHotToday(row){
   /* LDP Viewed Today box */
   if(ldpToday){
     var ldpTimeTag=ldpTime?'<span style="font-size:9px;font-weight:700;background:#E0E7FF;color:#3730A3;padding:1px 7px;border-radius:8px;margin-left:6px">⏱ '+ldpTime+'</span>':'';
+    // parse ldp_lane_details: demand_id####route####truck####view_time ||||
+    var ldpRaw=row.ldp_lane_details||'';
+    var ldpItems=ldpRaw?ldpRaw.split('||||').map(function(seg){
+      seg=seg.trim();if(!seg)return null;
+      var p=seg.split('####');
+      return{did:(p[0]||'').trim(),route:(p[1]||'').trim(),truck:(p[2]||'').trim(),vt:(p[3]||'').trim()};
+    }).filter(Boolean):[];
+    var ldpDemandHtml=ldpItems.length?ldpItems.map(function(l){
+      var truckTag=l.truck?'<span style="font-size:9px;color:var(--text-3)"> · 🚛 '+l.truck+'</span>':'';
+      var vtTag=l.vt?'<span style="font-size:9px;font-weight:700;background:#E0E7FF;color:#3730A3;padding:1px 5px;border-radius:6px;margin-left:4px">⏱ '+l.vt+'</span>':'';
+      var didTag=l.did?'<span style="font-size:9px;color:var(--text-3);font-family:var(--mono);margin-left:3px">#'+l.did+'</span>':'';
+      return '<div class="htc-item"><div class="htc-item-dot" style="background:#534AB7"></div>'
+        +'<div class="htc-item-txt"><b>'+(l.route||('Demand #'+l.did))+'</b>'+truckTag+vtTag+didTag+'</div></div>';
+    }).join('')
+    :'<div class="htc-empty" style="color:#534AB7">Demand details loading…</div>';
     html+='<div class="htc-box" style="border-color:#534AB7;background:#F5F4FF;">'
       +'<div class="htc-box-hdr"><span class="htc-box-icon">👁</span>'
-      +'<span class="htc-box-ttl" style="color:#534AB7;">LDP Viewed Today</span>'+ldpTimeTag+'</div>'
-      +'<div class="htc-items"><div style="font-size:11px;color:#534AB7;font-weight:600;padding:4px 0;">'
-      +'Operator viewed the load detail page today — high intent, push for token payment.</div></div></div>';
+      +'<span class="htc-box-ttl" style="color:#534AB7;">LDP Viewed Today</span>'+ldpTimeTag
+      +(ldpItems.length?'<span class="htc-box-cnt" style="background:#534AB7;color:#fff;">'+ldpItems.length+'</span>':'')+'</div>'
+      +'<div class="htc-items">'+ldpDemandHtml
+      +'<div style="font-size:10px;color:#534AB7;font-weight:600;padding:4px 0 0;">High intent — push for token payment on these demands.</div>'
+      +'</div></div>';
   }
 
   grid.innerHTML=html;

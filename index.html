@@ -666,6 +666,9 @@ function fmtTime(tsStr) {
 }
 function priColor(p){return{P0:'#A32D2D',P1:'var(--purple-600)',P2:'var(--amber-600)',P3:'var(--gray-600)'}[p]||'var(--gray-600)';}
 function stageColor(s){return{'P1':'var(--green-600)','P2':'var(--amber-600)','P3':'var(--amber-600)','P4':'var(--gray-600)','VA':'#0e7490','H':'var(--purple-600)'}[s]||'var(--gray-600)';}
+var _stageOrd={'P1':0,'P2':1,'P3':2,'P4':3,'VA':4,'H':5};
+function _sigTime(r){if((r.stage||'')==='P1')return r.last_accepted_time||'';return r.last_bid_time||'';}
+function _sortLeads(arr){return arr.slice().sort(function(a,b){return(_sigTime(b)).localeCompare(_sigTime(a));});}
 function copyText(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){showToast('Copied: '+t);});}else showToast(t);}
 function set(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
 function fmtN(n){var v=Number(n||0);return isNaN(v)?'0':v.toLocaleString();}
@@ -756,11 +759,11 @@ function applyFilters(){
     if(called==='not_called'&&row.last_call_date)return false;
     return true;
   });
-  // Called-today operators sink to bottom; order within each group preserved from pipeline sort
+  // Sort by stage priority then signal time descending; called-today sink to bottom
   var today=todayIST();
   var uncalled=filtered.filter(function(r){return!(r.last_call_date||'').startsWith(today);});
   var calledTdy=filtered.filter(function(r){return(r.last_call_date||'').startsWith(today);});
-  filtered=uncalled.concat(calledTdy);
+  filtered=_sortLeads(uncalled).concat(_sortLeads(calledTdy));
   currentPage=1;
   document.getElementById('filteredCount').textContent=filtered.length.toLocaleString('en-IN');
   renderLeadList();

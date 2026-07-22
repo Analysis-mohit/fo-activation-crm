@@ -74,6 +74,7 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .pri-btn.a-sh   { background:var(--purple-600);  color:#fff; border-color:var(--purple-600); }
 .pri-btn.a-s5   { background:var(--gray-600);    color:#fff; border-color:var(--gray-600); }
 .pri-btn.a-hot  { background:#C2500A; color:#fff; border-color:#C2500A; }
+.btn-cnt { opacity:.65; font-weight:400; font-size:8px; margin-left:2px; }
 /* Stage badges in lead cards */
 .lb-s4 { background:var(--green-50);  color:var(--green-800); }
 .lb-s2 { background:var(--red-50);    color:var(--red-800); }
@@ -360,11 +361,11 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
     <div class="filter-bar">
       <div class="filter-row">
         <span class="filter-lbl">Stage</span>
-        <button class="pri-btn a-all" data-pri="ALL">All</button>
-        <button class="pri-btn" data-pri="LIVE">🔴 Live</button>
-        <button class="pri-btn" data-pri="HISTORY">📋 History</button>
-        <button class="pri-btn" data-pri="ACCEPTED">🎉 Post Acceptance</button>
-        <button class="pri-btn" data-pri="TOKEN">💰 Token Paid</button>
+        <button class="pri-btn a-all" data-pri="ALL">All <span class="btn-cnt" id="cnt-ALL"></span></button>
+        <button class="pri-btn" data-pri="LIVE">🔴 Live <span class="btn-cnt" id="cnt-LIVE"></span></button>
+        <button class="pri-btn" data-pri="HISTORY">📋 History <span class="btn-cnt" id="cnt-HISTORY"></span></button>
+        <button class="pri-btn" data-pri="ACCEPTED">🎉 Post Acceptance <span class="btn-cnt" id="cnt-ACCEPTED"></span></button>
+        <button class="pri-btn" data-pri="TOKEN">💰 Token Paid <span class="btn-cnt" id="cnt-TOKEN"></span></button>
       </div>
       <div class="filter-row">
         <span class="filter-lbl">Filter</span>
@@ -664,7 +665,7 @@ function fmtTime(tsStr) {
   return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
 }
 function priColor(p){return{P0:'#A32D2D',P1:'var(--purple-600)',P2:'var(--amber-600)',P3:'var(--gray-600)'}[p]||'var(--gray-600)';}
-function stageColor(s){return{'Stage 4':'var(--green-600)','Stage 3':'var(--amber-600)','Stage 2':'var(--red-600)','Stage 1':'#0e7490','Stage H':'var(--purple-600)','Stage 5':'var(--gray-600)'}[s]||'var(--gray-600)';}
+function stageColor(s){return{'P1':'var(--green-600)','P2':'var(--amber-600)','P3':'var(--amber-600)','P4':'var(--gray-600)','VA':'#0e7490','H':'var(--purple-600)'}[s]||'var(--gray-600)';}
 function copyText(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){showToast('Copied: '+t);});}else showToast(t);}
 function set(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
 function fmtN(n){var v=Number(n||0);return isNaN(v)?'0':v.toLocaleString();}
@@ -696,7 +697,7 @@ function loadData(){
         });
         return c;
       });
-      populateRMFilter();applyFilters();
+      populateRMFilter();updateStageCounts();applyFilters();
       setStatus('ok', allData.length);
       if(currentCode){var r=findRow(currentCode);if(r)renderProfile(r);}
       setLoading(false);
@@ -736,13 +737,13 @@ function applyFilters(){
   var search=document.getElementById('leadSearch').value.trim().toUpperCase();
   filtered=allData.filter(function(row){
     if(filterPri==='LIVE'){
-      if(!['Stage 4','Stage 3','Stage 2','Stage 1'].includes(row.stage))return false;
+      if(!['P1','P2','P3','P4','VA'].includes(row.stage))return false;
     }else if(filterPri==='HISTORY'){
-      if(row.stage!=='Stage H')return false;
+      if(row.stage!=='H')return false;
     }else if(filterPri==='ACCEPTED'){
-      if(row.stage!=='Stage 4')return false;
+      if(row.stage!=='P1')return false;
     }else if(filterPri==='TOKEN'){
-      if(row.stage!=='Stage 3')return false;
+      if(row.stage!=='P2')return false;
     }
     if(recency&&row.recency_tier!==recency)return false;
     if(dr){
@@ -775,6 +776,15 @@ document.querySelectorAll('.pri-btn').forEach(function(btn){
 });
 ['fRecency','fDR','fRM','fCalled'].forEach(function(id){document.getElementById(id).addEventListener('change',applyFilters);});
 document.getElementById('leadSearch').addEventListener('input',applyFilters);
+function updateStageCounts(){
+  var total=allData.length;
+  var live=allData.filter(function(r){return['P1','P2','P3','P4','VA'].includes(r.stage);}).length;
+  var hist=allData.filter(function(r){return r.stage==='H';}).length;
+  var accepted=allData.filter(function(r){return r.stage==='P1';}).length;
+  var token=allData.filter(function(r){return r.stage==='P2';}).length;
+  var m={'cnt-ALL':total,'cnt-LIVE':live,'cnt-HISTORY':hist,'cnt-ACCEPTED':accepted,'cnt-TOKEN':token};
+  Object.keys(m).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=m[id].toLocaleString('en-IN');});
+}
 function populateRMFilter(){
   var rms=[...new Set(allData.map(function(r){return(r.rm_name||'').toUpperCase();}).filter(Boolean))].sort();
   var sel=document.getElementById('fRM'),cur=sel.value;sel.innerHTML='<option value="">All RMs</option>';
@@ -814,12 +824,12 @@ function renderLeadList(){
   if(!page.length){document.getElementById('leadList').innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--text-3);font-size:12px">No leads match.</div>';return;}
   var recCls={'Last 7 days':'lb-rec-7','8-30 days':'lb-rec-30','30+ days':'lb-rec-old'};
   var drCls={'High DR':'lb-dr-h','Mid DR':'lb-dr-m','Low DR':'lb-dr-l'};
-  var stageCls={'Stage 4':'lb-s4','Stage 3':'lb-s3','Stage 2':'lb-s2','Stage 1':'lb-s2','Stage H':'lb-s2','Stage 5':'lb-s5'};
-  var stageLbl={'Stage 4':'P0 - Post Acceptance','Stage 3':'P3 - Token Paid','Stage 2':'P1 - Bid Submitted','Stage 1':'VA Today','Stage H':'History','Stage 5':'P4 - Non Active FO'};
+  var stageCls={'P1':'lb-s4','P2':'lb-s3','P3':'lb-s3','P4':'lb-s5','VA':'lb-s5','H':'lb-s2'};
+  var stageLbl={'P1':'P1 · Post Acceptance','P2':'P2 · Token Paid','P3':'P3 · Bid+VA','P4':'P4 · Bid/LDP','VA':'VA · Available','H':'H · History'};
   var today=todayIST();
   document.getElementById('leadList').innerHTML=page.map(function(row){
     var code=(row.operator_code||'').toUpperCase();
-    var stage=row.stage||'Stage 5';
+    var stage=row.stage||'P4';
     var bidT=isTrueVal(row.bid_today), vaT=isTrueVal(row.vehicle_available_today), accT=isTrueVal(row.accepted_today);
     var tokT=isTrueVal(row.token_paid_today), ldpT=isTrueVal(row.ldp_today);
     var isHot=bidT||vaT||accT||tokT||ldpT||(row.hot_flag||'')!=='';
@@ -875,9 +885,9 @@ topSearch.addEventListener('input',function(){
   if(!matches.length){topSugg.innerHTML='<div class="sug-no-result">No operators found</div>';topSugg.style.display='block';return;}
   topSugg.innerHTML=matches.map(function(r){
     var code=(r.operator_code||'').toUpperCase(),ini=code.replace(/[^A-Z0-9]/g,'').substring(0,2);
-    var st=r.stage||'Stage 5';
-    var stBg={'Stage 4':'#EAF3DE','Stage 2':'#FCEBEB','Stage 3':'#FAEEDA','Stage 5':'#F1EFE8'}[st]||'#F1EFE8';
-    var stShort={'Stage 4':'P0','Stage 2':'P1','Stage 3':'P3','Stage 5':'P4'}[st]||'P4';
+    var st=r.stage||'P4';
+    var stBg={'P1':'#EAF3DE','P2':'#FAEEDA','P3':'#FAEEDA','P4':'#F1EFE8','VA':'#F1EFE8','H':'#FCEBEB'}[st]||'#F1EFE8';
+    var stShort={'P1':'P1','P2':'P2','P3':'P3','P4':'P4','VA':'VA','H':'H'}[st]||'P4';
     var isHot=isTrueVal(r.bid_today)||isTrueVal(r.vehicle_available_today)||isTrueVal(r.accepted_today);
     var hotTag=isHot?'<span style="font-size:9px;color:#C2500A;font-weight:700">● Hot</span> ':'';
     var lastCall=r.last_call_date?'📞 '+r.last_call_date+' · '+(r.last_call_disposition||'Called'):'Not called';
@@ -910,16 +920,18 @@ function selectOperator(code){
 function renderProfile(row){
   var code=(row.operator_code||'').toUpperCase(),ini=code.replace(/[^A-Z0-9]/g,'').substring(0,2);
   var pri=row.priority||'P3';
-  var stage=row.stage||'Stage 5';
-  var stageCssMap={'Stage 4':'stage-4','Stage 2':'stage-2','Stage 3':'stage-3','Stage 5':'stage-5'};
-  var stageBadgeMap={'Stage 4':'P0 · Accepted','Stage 3':'P0 · Token Paid','Stage 2':'P0 · Bid Submitted','Stage 1':'P0 · VA Today','Stage H':'P1 · History','Stage 5':'P2 · No Activity'};
+  var stage=row.stage||'P4';
+  var stageCssMap={'P1':'stage-4','P2':'stage-3','P3':'stage-3','P4':'stage-5','VA':'stage-5','H':'stage-2'};
+  var stageBadgeMap={'P1':'P1 · Post Acceptance','P2':'P2 · Token Paid','P3':'P3 · Bid+VA','P4':'P4 · Bid/LDP','VA':'VA · Vehicle Available','H':'H · History Only'};
   var stageDefMap={
-    'Stage 4':'Accepted a load today — highest priority',
-    'Stage 2':'Placed bid today — token not yet paid',
-    'Stage 3':'Token/vehicle submitted — awaiting acceptance',
-    'Stage 5':'No activity today — qualify on DR supply'
+    'P1':'Accepted a load today — highest priority (GOING_TO_LOAD)',
+    'P2':'Token paid or vehicle submitted today — push for acceptance',
+    'P3':'Bid placed + vehicle available today — high intent',
+    'P4':'Bid placed or LDP viewed today — standard follow-up',
+    'VA':'Vehicle available today — push for bidding',
+    'H':'Historical activity only (7d) — warm but no today signal'
   };
-  var avatarBg={'Stage 4':'#EAF3DE','Stage 2':'#FCEBEB','Stage 3':'#FAEEDA','Stage 5':'#F1EFE8'}[stage]||'#F1EFE8';
+  var avatarBg={'P1':'#EAF3DE','P2':'#FAEEDA','P3':'#FAEEDA','P4':'#F1EFE8','VA':'#F1EFE8','H':'#FCEBEB'}[stage]||'#F1EFE8';
 
   /* Stage context */
   var card=document.getElementById('pccCard');if(card)card.className='pcc '+(stageCssMap[stage]||'stage-5');

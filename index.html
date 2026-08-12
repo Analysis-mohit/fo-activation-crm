@@ -24,7 +24,6 @@
   --topbar:52px;
 }
 body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-size:14px; line-height:1.5; height:100vh; overflow:hidden; }
-
 /* TOP BAR */
 .topbar { background:var(--surface); border-bottom:.5px solid var(--border); padding:0 1.25rem; height:var(--topbar); display:flex; align-items:center; gap:14px; position:fixed; top:0; left:0; right:0; z-index:200; }
 .brand  { display:flex; align-items:center; gap:8px; flex-shrink:0; }
@@ -56,10 +55,8 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .refresh-btn svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .refresh-btn.spinning svg { animation:spin .8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg);} }
-
 /* LAYOUT */
 .app-layout { display:grid; grid-template-columns:320px 1fr; height:calc(100vh - var(--topbar)); margin-top:var(--topbar); overflow:hidden; }
-
 /* LEFT PANEL */
 .lead-panel { display:flex; flex-direction:column; border-right:.5px solid var(--border); background:var(--surface); overflow:hidden; }
 .filter-bar { padding:.5rem .75rem; border-bottom:.5px solid var(--border); display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
@@ -90,7 +87,6 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .lead-list { flex:1; overflow-y:auto; }
 .lead-list::-webkit-scrollbar { width:3px; }
 .lead-list::-webkit-scrollbar-thumb { background:var(--gray-200); border-radius:3px; }
-
 /* LEAD ROW */
 .lead-row { padding:.4rem .75rem; border-bottom:.5px solid var(--border); cursor:pointer; display:flex; align-items:flex-start; gap:7px; transition:background .1s; border-left:3px solid transparent; }
 .lead-row:hover  { background:var(--surface-2); }
@@ -121,7 +117,6 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .pg-btn { height:22px; padding:0 8px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); font-size:10px; cursor:pointer; color:var(--text-2); }
 .pg-btn:hover:not(:disabled) { background:var(--surface-2); } .pg-btn:disabled { opacity:.4; cursor:default; }
 .pg-info { font-size:10px; color:var(--text-2); }
-
 /* RIGHT PANEL */
 .detail-panel { overflow-y:auto; background:var(--bg); }
 .detail-panel::-webkit-scrollbar { width:4px; }
@@ -130,9 +125,7 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:300px; padding:2rem; text-align:center; }
 .empty-state svg { width:36px; height:36px; stroke:var(--text-3); fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; margin-bottom:12px; }
 .empty-state h2 { font-size:14px; font-weight:600; margin-bottom:5px; } .empty-state p { font-size:12px; color:var(--text-2); }
-
 .section-lbl { font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text-3); margin-bottom:7px; display:flex; align-items:center; gap:5px; }
-
 /* STAGE CONTEXT (profile card) */
 .pcc { border-radius:var(--r-xl); padding:.75rem 1.125rem; margin-bottom:.875rem; border:.5px solid; display:flex; align-items:center; gap:12px; }
 .pcc.stage-4{background:var(--green-50);border-color:#B0D98E;} .pcc.stage-2{background:var(--red-50);border-color:#E8BEBE;}
@@ -150,7 +143,6 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .pcc-rank { font-size:10px; color:var(--text-3); font-family:var(--mono); }
 .pcc-recency { font-size:10px; font-weight:600; margin-top:3px; }
 .rec-7{color:var(--green-600);} .rec-30{color:var(--amber-600);} .rec-old{color:var(--gray-600);}
-
 /* ══ HOT TODAY CARD (NEW) ══ */
 .hot-today-wrap { margin-bottom:.875rem; }
 .hot-today-card {
@@ -182,7 +174,6 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .htc-veh-pill { display:inline-flex; align-items:center; gap:3px; background:rgba(255,255,255,.9); border:.5px solid rgba(194,80,10,.2); border-radius:6px; padding:2px 6px; }
 .htc-veh-pill .vn { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--green-800); }
 .htc-veh-pill .vt { font-size:9px; color:var(--text-2); }
-
 /* PROFILE CARD */
 .profile-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); padding:.875rem 1.125rem; margin-bottom:.875rem; display:flex; align-items:center; gap:12px; }
 .profile-avatar { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; }
@@ -199,7 +190,6 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .score-block { text-align:center; flex-shrink:0; padding-left:12px; border-left:.5px solid var(--border); }
 .score-val { font-size:22px; font-weight:700; color:var(--purple-600); line-height:1; }
 .score-label { font-size:9px; color:var(--text-3); margin-top:3px; text-transform:uppercase; letter-spacing:.4px; }
-
 /* ACTION BANNER */
 .action-banner { border-radius:var(--r-xl); padding:.75rem 1.125rem; margin-bottom:.875rem; display:flex; align-items:center; gap:10px; background:var(--purple-50); border:.5px solid var(--purple-200); }
 .action-banner.warm{background:var(--amber-50);border-color:#EF9F27;} .action-banner.cold{background:var(--surface-2);border-color:var(--border-md);}
@@ -209,12 +199,10 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .action-title { font-size:12px; font-weight:700; } .action-sub { font-size:11px; color:var(--text-2); margin-top:2px; }
 .action-pitch { font-size:11px; margin-top:5px; background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-md); padding:4px 8px; }
 .action-pitch b { color:var(--purple-800); }
-
 /* METRICS */
 .metrics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:.875rem; }
 .metric-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-lg); padding:.6rem .75rem; }
 .metric-label { font-size:10px; color:var(--text-2); margin-bottom:2px; } .metric-val { font-size:20px; font-weight:700; line-height:1; } .metric-sub { font-size:9px; color:var(--text-3); margin-top:2px; }
-
 .dr-drawer { display:none; border-top:.5px solid var(--border); } .dr-drawer.open { display:block; }
 .dr-drawer-header { padding:.5rem 1.125rem; display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border-bottom:.5px solid var(--border); }
 .dr-drawer-title { font-size:11px; font-weight:600; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
@@ -230,7 +218,6 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .tok-badge { padding:2px 6px; border-radius:20px; font-size:9px; font-weight:600; display:inline-block; white-space:nowrap; }
 .tok-paid{background:var(--green-50);color:var(--green-800);} .tok-open{background:var(--surface-2);color:var(--text-3);}
 .dr-empty { padding:1rem; text-align:center; color:var(--text-3); font-size:12px; }
-
 /* BOTTOM GRID */
 .bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:.875rem; margin-bottom:.875rem; }
 .info-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; }
@@ -253,7 +240,6 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .tyre-name { font-size:11px; font-weight:600; } .tyre-counts { font-size:10px; color:var(--text-2); } .tyre-counts span { font-weight:700; color:var(--green-600); }
 .bar-track { height:4px; background:var(--surface-2); border-radius:4px; overflow:hidden; }
 .bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--green-600),var(--teal-600)); }
-
 /* LANE TABS */
 .lane-tabs { display:flex; border-bottom:.5px solid var(--border); }
 .lane-tab { flex:1; padding:.45rem .625rem; font-size:10px; font-weight:600; color:var(--text-3); background:none; border:none; cursor:pointer; border-bottom:2px solid transparent; transition:color .12s,border-color .12s; white-space:nowrap; font-family:var(--font); }
@@ -281,7 +267,6 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .hist-card { cursor:pointer; } .hist-card .chev { font-size:10px; color:var(--text-3); transition:transform .15s; display:inline-block; }
 .hist-card.open .chev { transform:rotate(90deg); } .hist-card .hist-details { display:none; margin-top:5px; } .hist-card.open .hist-details { display:block; }
 .hist-cmp { margin-left:auto; font-size:10px; font-weight:700; color:var(--text-2); white-space:nowrap; }
-
 /* CALL HISTORY */
 .call-section { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; margin-bottom:.875rem; }
 .call-section-hdr { padding:.625rem 1.125rem; border-bottom:.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
@@ -294,7 +279,6 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .disp-conn{background:var(--green-50);color:var(--green-800);} .disp-notreach{background:var(--red-50);color:var(--red-800);}
 .disp-callback{background:var(--amber-50);color:var(--amber-800);} .disp-default{background:var(--surface-2);color:var(--text-2);}
 .call-empty { padding:1rem; text-align:center; color:var(--text-3); font-size:11px; }
-
 /* CALL LOG FORM */
 .log-form-wrap { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; margin-bottom:.875rem; }
 .log-form-hdr  { padding:.625rem 1.125rem; border-bottom:.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
@@ -320,7 +304,6 @@ body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-
 .lf-status.ok  { color:var(--green-600); }
 .lf-status.err { color:var(--red-600); }
 .lf-api-note { font-size:10px; color:var(--amber-600); background:var(--amber-50); border-radius:6px; padding:4px 10px; }
-
 .toast { position:fixed; bottom:20px; right:20px; background:var(--text-1); color:#fff; border-radius:var(--r-md); padding:8px 14px; font-size:12px; z-index:9999; display:none; max-width:280px; box-shadow:0 4px 12px rgba(0,0,0,.18); }
 .toast.show { display:block; }
 .notice-bar { background:var(--amber-50); border-bottom:.5px solid #EF9F27; padding:7px 1.25rem; font-size:11px; color:var(--amber-800); display:none; }
@@ -329,7 +312,6 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
 </style>
 </head>
 <body>
-
 <header class="topbar">
   <div class="brand">
     <div class="brand-dot">FO</div>
@@ -349,13 +331,10 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
     </button>
   </div>
 </header>
-
 <div class="notice-bar" id="noticeBanner">
   ⚠️ Could not load data from Google Sheets. Make sure the sheet is shared as <b>"Anyone with the link can view"</b>. &nbsp;<a onclick="loadData()">Retry</a>
 </div>
-
 <div class="app-layout" id="appLayout" style="margin-top:var(--topbar)">
-
   <!-- LEFT: LEAD LIST -->
   <aside class="lead-panel">
     <div class="filter-bar">
@@ -411,19 +390,15 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
       <button class="pg-btn" id="nextBtn" onclick="changePage(1)" disabled>Next →</button>
     </div>
   </aside>
-
   <!-- RIGHT: DETAIL -->
   <main class="detail-panel" id="detailPanel">
     <div class="detail-inner">
-
       <div class="empty-state" id="emptyState">
         <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         <h2>Select a lead to view profile</h2>
         <p>Click any operator from the list, or use the search bar to jump to one.</p>
       </div>
-
       <div id="profileSection" style="display:none">
-
         <!-- 1. PRIORITY CONTEXT -->
         <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Activation Stage</div>
         <div class="pcc" id="pccCard">
@@ -442,7 +417,6 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
             <div class="pcc-recency" id="pccRecency">—</div>
           </div>
         </div>
-
         <!-- 2. HOT TODAY (new — shown only when bid_today or vehicle_available_today) -->
         <div id="hotTodayWrap" style="display:none">
           <div class="section-lbl" style="color:#8B4010">
@@ -457,7 +431,6 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
             <div class="htc-grid" id="htcGrid"><!-- populated by renderHotToday() --></div>
           </div>
         </div>
-
         <!-- 3. OPERATOR PROFILE -->
         <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Operator</div>
         <div class="profile-card">
@@ -474,7 +447,6 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
             <div class="score-label">Activity Score<br><span style="color:var(--text-3)">last 15d</span></div>
           </div>
         </div>
-
         <!-- 4. ACTION BANNER -->
         <div class="action-banner" id="actionBanner">
           <div class="action-icon" id="actionIcon">📞</div>
@@ -484,7 +456,6 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
             <div class="action-pitch" id="actionPitch" style="display:none"></div>
           </div>
         </div>
-
         <!-- 5. ACTIVITY METRICS -->
         <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Activity — last 15 days</div>
         <div class="metrics-grid">
@@ -493,7 +464,6 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
           <div class="metric-card"><div class="metric-label">Total LDPs</div><div class="metric-val" id="ldpCount">—</div><div class="metric-sub">load detail views</div></div>
           <div class="metric-card"><div class="metric-label">Tokens paid</div><div class="metric-val" id="tokenCount">—</div><div class="metric-sub">paid (15d)</div></div>
         </div>
-
         <!-- 6. LIVE LOADS -->
         <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Live Loads <span class="badge badge-green" style="font-size:9px;padding:1px 7px">● LIVE</span></div>
         <div class="info-card" style="margin-bottom:.875rem;overflow:hidden;">
@@ -510,7 +480,6 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
           </div>
           <div id="body-live" style="max-height:320px;overflow-y:auto;"></div>
         </div>
-
         <!-- 7. VEHICLE + LANE HISTORY -->
         <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle &amp; Lane History</div>
         <div class="bottom-grid">
@@ -540,7 +509,6 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
             <div class="lane-body" id="body-hist"></div>
           </div>
         </div>
-
         <!-- 8. LOG A CALL -->
         <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Log a Call</div>
         <div class="log-form-wrap">
@@ -586,7 +554,6 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
             </div>
           </div>
         </div>
-
         <!-- 9. CALL HISTORY -->
         <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Call History — MP Load Support</div>
         <div class="call-section">
@@ -596,14 +563,11 @@ svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width
           </div>
           <div id="callHistoryBody"><div class="call-empty">Select an operator to view call history.</div></div>
         </div>
-
       </div><!-- /profileSection -->
     </div>
   </main>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <script>
 /* ── DATA SOURCE: Google Sheets CSV ─────────────────────────────────
    Sheet must be shared as "Anyone with the link can view"
@@ -615,7 +579,6 @@ var SHEET_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_KEY
                + '/gviz/tq?tqx=out:csv&gid=' + SHEET_GID;
 var REFRESH_MS = 10*60*1000;
 var PAGE_SIZE  = 30;
-
 /* ── CALL LOG — Google Form ─────────────────────────────────────────────
    After creating the Google Form and getting the pre-fill entry ID:
      FORM_URL      → your Google Form's base URL (ends in /viewform)
@@ -625,22 +588,18 @@ var PAGE_SIZE  = 30;
    ─────────────────────────────────────────────────────────────────────── */
 var FORM_URL      = '';   // ← e.g. 'https://docs.google.com/forms/d/e/XXXX/viewform'
 var FORM_ENTRY_OP = '';   // ← e.g. 'entry.123456789'
-
 /* ── CALL LOG API (legacy Flask — keep if still using) ──────────────── */
 var API_URL = 'https://script.google.com/macros/s/AKfycbwvyBh1NOEn6bq_eZzM-YwbwsPQDnCkQBcwsFiRuSRX0lvd2g3MWlr6HXHUD4UNeTnMkQ/exec';
-
 /* STATE */
 var allData=[],filtered=[],currentCode=null,currentPage=1;
 // Default: P0P1 = show only P0 + P1 + hot operators (fast load)
 // Change to 'ALL' to see everything including P2/P3
 var filterPri='ALL',drawerOpen=null;
 var activeTyre=null,currentLanes=[],currentTokenSet={};
-
 /* HELPERS */
 function rs(v){var n=parseFloat((v||'').toString().replace(/[^0-9.]/g,''));return(isNaN(n)||n<=0)?null:n;}
 function frs(n){if(n==null||isNaN(n)||n<=0)return'—';return'&#8377;'+Math.round(n).toLocaleString('en-IN');}
 function isTrueVal(v){return v===true||v==='TRUE'||v==='true'||v==='True'||v==='1'||v==='Yes';}
-
 function minsAgo(tsStr) {
   /* Returns "X mins ago" string from an IST timestamp string like "2026-06-23 10:32:45".
      Returns '' if unparseable or > 180 mins (outside 3-hr window). */
@@ -672,7 +631,6 @@ function _sortLeads(arr){return arr.slice().sort(function(a,b){return(_sigTime(b
 function copyText(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){showToast('Copied: '+t);});}else showToast(t);}
 function set(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
 function fmtN(n){var v=Number(n||0);return isNaN(v)?'0':v.toLocaleString();}
-
 /* PARSERS */
 function parseLanes(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;var lows=(p[4]||'').split(';').map(rs).filter(function(x){return x!=null;});return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),loading:(p[3]||'').trim(),lows:lows,bid:lows.length?lows[0]:null,offered:rs(p[5]),own:rs(p[6]),tyre_req:(p[7]||'').trim()};}).filter(Boolean);}
 function parseTokenLanes(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),bid:rs(p[3]),placed:rs(p[4]),method:(p[5]||'').trim().toUpperCase()};}).filter(Boolean);}
@@ -682,7 +640,6 @@ function parseAvail(raw){if(!raw)return[];return raw.split('||||').map(function(
 function parseCallHistory(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');return{date:(p[0]||'').trim(),disposition:(p[1]||'').trim(),caller:(p[2]||'').trim(),disp_code:(p[3]||'').trim()};}).filter(Boolean);}
 function bidsTitle(l){return l.lows.length?'Lowest bids: '+l.lows.map(function(x){return'₹'+Math.round(x).toLocaleString('en-IN');}).join(' · '):'';}
 function tagLowest(lanes){lanes.forEach(function(l){l.isLow=(l.own!=null&&l.lows.length&&l.own<=l.lows[0]);});return lanes;}
-
 /* DATA LOAD — PapaParse reads CSV directly from Google Sheets CDN (~2-3s) */
 var _loadTimer = null;
 function loadData(){
@@ -727,7 +684,6 @@ function setStatus(state,count,updated){
   document.getElementById('statusText').textContent=txt;
 }
 function setLoading(on){var btn=document.getElementById('refreshBtn');btn.classList.toggle('spinning',on);btn.disabled=on;}
-
 /* FILTERS */
 function todayIST(){
   var now=new Date();
@@ -814,7 +770,6 @@ function populateRouteFilters(){
   Object.keys(origins).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;if(c===curO)o.selected=true;oSel.appendChild(o);});
   Object.keys(dests).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;if(c===curD)o.selected=true;dSel.appendChild(o);});
 }
-
 /* LEAD LIST */
 function callDotColor(d){var v=(d||'').toLowerCase();if(v.includes('connect'))return'var(--green-600)';if(v.includes('callback')||v.includes('call back'))return'var(--amber-600)';if(v.includes('not reach')||v.includes('no answer')||v.includes('busy')||v.includes('switch'))return'var(--red-600)';return'var(--gray-200)';}
 function renderLeadList(){
@@ -855,7 +810,6 @@ function renderLeadList(){
     else if(bidT)      hotB='<span class="lb lb-hot">BID (3h)</span>';
     else if(ldpT)      hotB='<span class="lb" style="background:#E6F1FB;color:#0C447C">LDP</span>';
     else if(vaT)       hotB='<span class="lb" style="background:#EAF3DE;color:#27500A">VA (4h)</span>';
-
     // Activation score badge
     var sc=parseFloat(row.activation_score||'0');
     var scColor=sc>=50?'#C2500A':sc>=20?'#534AB7':'#9A9890';
@@ -878,7 +832,6 @@ function renderLeadList(){
   }).join('');
 }
 function changePage(dir){currentPage=Math.max(1,Math.min(Math.ceil(filtered.length/PAGE_SIZE)||1,currentPage+dir));renderLeadList();document.getElementById('leadList').scrollTop=0;}
-
 /* TOP SEARCH */
 var topSearch=document.getElementById('topSearch'),topSugg=document.getElementById('topSuggestions'),topClear=document.getElementById('topClearBtn');
 topSearch.addEventListener('input',function(){
@@ -909,7 +862,6 @@ topSearch.addEventListener('keydown',function(e){
 });
 topClear.addEventListener('click',function(){topSearch.value='';topClear.style.display='none';topSugg.style.display='none';});
 document.addEventListener('click',function(e){if(!e.target.closest('.top-search-wrap'))topSugg.style.display='none';});
-
 /* SELECT & RENDER */
 function selectOperator(code){
   var row=findRow(code);if(!row){showToast('Operator '+code+' not found.');return;}
@@ -935,7 +887,6 @@ function renderProfile(row){
     'H':'Historical activity only (7d) — warm but no today signal'
   };
   var avatarBg={'P1':'#EAF3DE','P2':'#FAEEDA','P3':'#FAEEDA','P4':'#F1EFE8','VA':'#F1EFE8','H':'#FCEBEB'}[stage]||'#F1EFE8';
-
   /* Stage context */
   var card=document.getElementById('pccCard');if(card)card.className='pcc '+(stageCssMap[stage]||'stage-5');
   set('pccBadge',stageBadgeMap[stage]||stage);set('pccDef',stageDefMap[stage]||'');
@@ -944,10 +895,8 @@ function renderProfile(row){
   set('pccRank','Rank #'+(row.calling_rank||'—'));
   var recEl=document.getElementById('pccRecency');
   if(recEl){recEl.textContent=row.recency_tier||'';recEl.className='pcc-recency '+({'Last 7 days':'rec-7','8-30 days':'rec-30','30+ days':'rec-old'}[row.recency_tier]||'');}
-
   /* Hot Today */
   renderHotToday(row);
-
   /* Profile */
   var av=document.getElementById('profileAvatar');if(av){av.textContent=ini;av.style.background=avatarBg;av.style.color=stageColor(stage);}
   var pc=document.getElementById('profileCode');if(pc){pc.textContent=code;pc.onclick=function(){copyText(code);};}
@@ -959,21 +908,16 @@ function renderProfile(row){
     var src=row.source||'Cohort';
     metaEl.innerHTML='<span class="badge badge-teal">'+cluster+'</span>'+(src==='Sheet'?'<span class="badge badge-sheet">Sheet</span>':'');
   }
-
   /* Activity */
   set('vaDays',row.va_days||'0');set('ldpDays',row.ldp_days||'0');
   set('ldpCount',row.total_ldp_count||'0');set('tokenCount',row.token_count||'0');
-
   /* Funnel counts (used by action banner) */
   var drN=parseInt(row.num_of_drs_in_opsearch||'0',10),tokN=parseInt(row.num_of_drs_paid_token||'0',10);
-
   var lanes=tagLowest(parseLanes(row.lane_vt_details||''));
   var tokenSet={};(row.token_demand_ids||'').split(',').forEach(function(s){s=s.trim();if(s)tokenSet[s]=true;});
   var tokenLanes=parseTokenLanes(row.token_lane_details||'');
   var hist=parseHist(row.hist_token_details||'');
-
   renderLaneTabs(lanes,tokenSet,tokenLanes,hist);renderActionBanner(drN,tokN,lanes,tokenSet);
-
   /* Vehicles */
   var tot=parseInt(row.total_vehicles||'0',10),ver=parseInt(row.corrected_vehicles||'0',10);
   set('totalVeh',tot);set('corrVeh',ver);set('unverVeh',Math.max(0,tot-ver));
@@ -982,7 +926,6 @@ function renderProfile(row){
   renderCallHistory(row);
   initLogForm();
 }
-
 /* HOT TODAY */
 function renderHotToday(row){
   var bidToday=isTrueVal(row.bid_today),vaToday=isTrueVal(row.vehicle_available_today);
@@ -992,23 +935,19 @@ function renderHotToday(row){
   var wrap=document.getElementById('hotTodayWrap'),grid=document.getElementById('htcGrid');
   if(!bidToday&&!vaToday&&!vehSubmitted&&!acceptedToday&&!tokPdToday&&!ldpToday){wrap.style.display='none';return;}
   wrap.style.display='block';
-
   // Activation score badge next to title
   var sc=parseFloat(row.activation_score||'0');
   var scStr=sc>0?' <span style="font-size:10px;font-weight:800;background:#534AB7;color:#fff;padding:1px 7px;border-radius:10px;">Score: '+sc+'</span>':'';
   document.getElementById('htcTime').innerHTML=scStr;
-
   var parts=[];
   if(acceptedToday) parts.push('Accepted ✓ (Stage 4)');
   if(bidToday)      parts.push('Bid (last 3h)');
   if(vaToday)       parts.push('VA (last 4h)');
   if(vehSubmitted)  parts.push('Vehicle Submitted ✓');
   set('htcTitle',parts.join(' + '));
-
   // grid: if 3+ signals, single column; if 2, side-by-side; if 1, single
   grid.className='htc-grid'+(bidToday&&vaToday?'':' single');
   var html='';
-
   /* Bid Today box — uses bid_today_lane_details (all bids incl. INITIATED/EXPIRED)
      Falls back to token_lane_details (paid tokens) if that column is empty.       */
   if(bidToday){
@@ -1022,8 +961,6 @@ function renderHotToday(row){
       return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),
              bid:rs(p[3]),tokenPaid:(p[4]||'0')==='1'};
     }).filter(Boolean):[];
-
-
     var paidCount=btLanes.filter(function(l){return l.tokenPaid;}).length;
     var cntLabel=btLanes.length+(paidCount?' ('+paidCount+' paid)':'');
     var bidAge=minsAgo(row.last_bid_time||'');
@@ -1040,7 +977,6 @@ function renderHotToday(row){
       +renderBidLaneItems(btLanes,'','')
       +'</div></div>';
   }
-
   /* Vehicle Available Today box */
   if(vaToday){
     var avail=parseAvail(row.avail_vehicles||'');
@@ -1051,7 +987,6 @@ function renderHotToday(row){
     :'<div class="htc-empty">Vehicle details loading…</div>';
     html+='<div class="htc-box"><div class="htc-box-hdr"><span class="htc-box-icon">🟡</span><span class="htc-box-ttl">Vehicle Available (last 4h)</span>'+(avail.length?'<span class="htc-box-cnt">'+avail.length+'</span>':'')+'</div><div class="htc-items">'+vehHtml+'</div></div>';
   }
-
   /* Accepted Today box — GOING_TO_LOAD (Stage 4 — highest priority) */
   if(acceptedToday){
     var accAge=minsAgo(row.last_accepted_time||'');
@@ -1092,7 +1027,6 @@ function renderHotToday(row){
       +'Call immediately — handhold loading address, POC number, vehicle readiness &amp; advance policy.</div>'
       +'</div></div>';
   }
-
   /* Token Paid Today box (without vehicle submission) */
   if(tokPdToday&&!vehSubmitted){
     var tpTimeTag=tokPdTime?'<span style="font-size:9px;font-weight:700;background:#D1FAE5;color:#065F46;padding:1px 7px;border-radius:8px;margin-left:6px">⏱ '+tokPdTime+'</span>':'';
@@ -1102,7 +1036,6 @@ function renderHotToday(row){
       +'<div class="htc-items"><div style="font-size:11px;color:#0F6E56;font-weight:600;padding:4px 0;">'
       +'✅ Token paid today — push for vehicle submission and acceptance.</div></div></div>';
   }
-
   /* Vehicle Submitted Today box */
   if(vehSubmitted){
     var vsTimeTag=tokPdTime?'<span style="font-size:9px;font-weight:700;background:#D1FAE5;color:#065F46;padding:1px 7px;border-radius:8px;margin-left:6px">⏱ '+tokPdTime+'</span>':'';
@@ -1112,7 +1045,6 @@ function renderHotToday(row){
       +'<div class="htc-items"><div style="font-size:11px;color:#15803D;font-weight:600;padding:4px 0;">'
       +'✅ Operator has submitted vehicle number with token payment today.</div></div></div>';
   }
-
   /* LDP Viewed Today box */
   if(ldpToday){
     var ldpTimeTag=ldpTime?'<span style="font-size:9px;font-weight:700;background:#E0E7FF;color:#3730A3;padding:1px 7px;border-radius:8px;margin-left:6px">⏱ '+ldpTime+'</span>':'';
@@ -1139,10 +1071,8 @@ function renderHotToday(row){
       +'<div style="font-size:10px;color:#534AB7;font-weight:600;padding:4px 0 0;">High intent — push for token payment on these demands.</div>'
       +'</div></div>';
   }
-
   grid.innerHTML=html;
 }
-
 /* ACTION BANNER */
 function renderActionBanner(drN,tokN,lanes,tokenSet){
   var banner=document.getElementById('actionBanner'),icon=document.getElementById('actionIcon'),
@@ -1158,7 +1088,6 @@ function renderActionBanner(drN,tokN,lanes,tokenSet){
   if(best){var rate=best.bid!=null?best.bid:best.offered;var lbl=best.bid!=null?'lowest bid':'~rate';pitch.style.display='block';
     pitch.innerHTML='Pitch → <b>'+(best.route||'Demand '+best.did)+'</b>'+(rate?' · '+lbl+' <b>₹'+Math.round(rate).toLocaleString('en-IN')+'</b>':'')+(best.truck?' · '+best.truck:'')+' &nbsp;<span class="lane-did" onclick="copyText(\''+best.did+'\')">&#35;'+best.did+' ⧉</span>';}
 }
-
 /* BID TODAY LANE ITEMS */
 function renderBidLaneItems(lanes,oF,dF){
   if(!lanes||!lanes.length) return '<div class="htc-empty">Rate entered — demand details unavailable</div>';
@@ -1245,7 +1174,6 @@ function renderLaneTabs(lanes,ts,tl,hist){
     document.getElementById('body-hist').innerHTML=head+hist.map(histCardHTML).join('');}
 }
 function switchTab(n){['paid','hist'].forEach(function(t){document.getElementById('tab-'+t).classList.toggle('active',t===n);document.getElementById('body-'+t).classList.toggle('active',t===n);});}
-
 /* VEHICLES */
 function renderAvail(av){
   var el=document.getElementById('availList'),cnt=document.getElementById('availCnt');
@@ -1303,7 +1231,6 @@ function renderTyres(tyres){
     return '<div class="tyre-row"><div class="tyre-row-top"><span class="tyre-name">'+(t.tyres==='Unknown'?'Unknown':t.tyres+' Tyres')+'</span><span class="tyre-counts"><span>'+t.verified+'</span> / '+t.total+' verified</span></div><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%"></div></div></div>';}).join('')
     :'<div style="font-size:11px;color:var(--text-3)">No tyre data</div>';
 }
-
 /* CALL LOG FORM */
 function initLogForm(){
   var btn=document.getElementById('openFormBtn');
@@ -1311,7 +1238,6 @@ function initLogForm(){
   if(btn) btn.style.display=FORM_URL?'flex':'none';
   if(note) note.style.display=FORM_URL?'none':'block';
 }
-
 function openCallForm(){
   if(!FORM_URL){showToast('Set FORM_URL in the code first.');return;}
   var url=FORM_URL;
@@ -1319,21 +1245,17 @@ function openCallForm(){
   if(FORM_ENTRY_OP&&currentCode) url+='?'+FORM_ENTRY_OP+'='+encodeURIComponent(currentCode);
   window.open(url,'_blank','noopener');
 }
-
 function submitCallLog(){
   var op=currentCode;
   if(!op){showToast('Select an operator first.');return;}
   if(!API_URL){showToast('API URL not configured — set API_URL in the code.');return;}
-
   var status  = document.getElementById('lfStatus').value;
   var followup= document.getElementById('lfFollowup').value;
   var caller  = document.getElementById('lfCaller').value.trim();
   var training= document.getElementById('lfTraining').checked;
   var interested=document.getElementById('lfInterested').checked;
   var notes   = document.getElementById('lfNotes').value.trim();
-
   if(!status){showToast('Please select a call status.');return;}
-
   /* ── SNAPSHOT: grab current CRM state for this operator ── */
   var row=allData.find(function(r){return(r.operator_code||'').toUpperCase()===op;})||{};
   var snapshot={
@@ -1364,18 +1286,22 @@ function submitCallLog(){
     recency_tier:           row.recency_tier||'',
     days_since_last_event:  row.days_since_last_event||''
   };
-
   var btn=document.getElementById('lfSubmitBtn');
   var msg=document.getElementById('lfStatusMsg');
   btn.disabled=true; btn.textContent='Saving…';
   msg.className='lf-status'; msg.textContent='';
-
-  var _payload=encodeURIComponent(JSON.stringify({
-    operator_code:op,call_status:status,training_done:training,
-    interested:interested,followup_date:followup||null,
-    notes:notes,caller:caller,snapshot:snapshot
-  }));
-  fetch(API_URL+'?payload='+_payload)
+  /* ── POST the payload in the request BODY (not the URL) ──
+     Sending the snapshot in a long ?payload= query string overflows the URL
+     length limit and fails as a "network error". POST with a plain-text body
+     stays a "simple" CORS request (no preflight), which Apps Script can answer. */
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      operator_code:op, call_status:status, training_done:training,
+      interested:interested, followup_date:followup||null,
+      notes:notes, caller:caller, snapshot:snapshot
+    })
+  })
   .then(function(r){return r.json();})
   .then(function(d){
     if(d.status==='ok'){
@@ -1397,7 +1323,6 @@ function submitCallLog(){
     btn.disabled=false; btn.textContent='Save Record';
   });
 }
-
 /* CALL HISTORY */
 function dispClass(d){var v=(d||'').toLowerCase();if(v.includes('connect'))return'disp-conn';if(v.includes('callback')||v.includes('call back'))return'disp-callback';if(v.includes('not reach')||v.includes('no answer')||v.includes('busy'))return'disp-notreach';return'disp-default';}
 function renderCallHistory(row){
@@ -1414,11 +1339,9 @@ function renderCallHistory(row){
         '<td style="font-size:12px">'+(c.caller||'—')+'</td></tr>';}).join('')+
     '</tbody></table></div>';
 }
-
 /* TOAST */
 var toastTimer;
 function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},4000);}
-
 /* INIT */
 document.getElementById('noticeBanner').addEventListener('DOMSubtreeModified',function(){
   var shown=this.style.display!=='none';

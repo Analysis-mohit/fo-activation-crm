@@ -925,43 +925,43 @@ function renderProfile(row){
   renderTyres(parseTyres(row.tyre_breakdown||''));
   renderCallHistory(row);
   initLogForm();
-}
-/* HOT TODAY */
-function renderHotToday(row){
-  var bidToday=isTrueVal(row.bid_today),vaToday=isTrueVal(row.vehicle_available_today);
-  var vehSubmitted=isTrueVal(row.vehicle_submitted),acceptedToday=isTrueVal(row.accepted_today);
-  var tokPdToday=isTrueVal(row.token_paid_today),ldpToday=isTrueVal(row.ldp_today);
-  var tokPdTime=(row.token_paid_time||'').trim(),ldpTime=(row.ldp_view_time||'').trim();
-  var wrap=document.getElementById('hotTodayWrap'),grid=document.getElementById('htcGrid');
-  if(!bidToday&&!vaToday&&!vehSubmitted&&!acceptedToday&&!tokPdToday&&!ldpToday){wrap.style.display='none';return;}
-  wrap.style.display='block';
-  // Activation score badge next to title
-  var sc=parseFloat(row.activation_score||'0');
-  var scStr=sc>0?' <span style="font-size:10px;font-weight:800;background:#534AB7;color:#fff;padding:1px 7px;border-radius:10px;">Score: '+sc+'</span>':'';
-  document.getElementById('htcTime').innerHTML=scStr;
-  var parts=[];
-  if(acceptedToday) parts.push('Accepted ✓ (Stage 4)');
-  if(bidToday)      parts.push('Bid (last 3h)');
-  if(vaToday)       parts.push('VA (last 4h)');
-  if(vehSubmitted)  parts.push('Vehicle Submitted ✓');
-  set('htcTitle',parts.join(' + '));
-  // grid: if 3+ signals, single column; if 2, side-by-side; if 1, single
-  grid.className='htc-grid'+(bidToday&&vaToday?'':' single');
-  var html='';
-  /* Bid Today box — uses bid_today_lane_details (all bids incl. INITIATED/EXPIRED)
-     Falls back to token_lane_details (paid tokens) if that column is empty.       */
-  if(bidToday){
-    // parse bid_today_lane_details: did####route####truck####amount
-    // bid_today_lane_details: did####route####truck####opfreight####token_paid(0/1)
-    // opFreight > 0 = bid submitted; token_paid=1 = also token paid
-    var btRaw=row.bid_today_lane_details||'';
-    var btLanes=btRaw?btRaw.split('||||').map(function(seg){
-      seg=seg.trim();if(!seg)return null;
-      var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;
-      return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),
-             bid:rs(p[3]),tokenPaid:(p[4]||'0')==='1'};
-    }).filter(Boolean):[];
-    var paidCount=btLanes.filter(function(l){return l.tokenPaid;}).length;
+// }
+// /* HOT TODAY */
+// function renderHotToday(row){
+//   var bidToday=isTrueVal(row.bid_today),vaToday=isTrueVal(row.vehicle_available_today);
+//   var vehSubmitted=isTrueVal(row.vehicle_submitted),acceptedToday=isTrueVal(row.accepted_today);
+//   var tokPdToday=isTrueVal(row.token_paid_today),ldpToday=isTrueVal(row.ldp_today);
+//   var tokPdTime=(row.token_paid_time||'').trim(),ldpTime=(row.ldp_view_time||'').trim();
+//   var wrap=document.getElementById('hotTodayWrap'),grid=document.getElementById('htcGrid');
+//   if(!bidToday&&!vaToday&&!vehSubmitted&&!acceptedToday&&!tokPdToday&&!ldpToday){wrap.style.display='none';return;}
+//   wrap.style.display='block';
+//   // Activation score badge next to title
+//   var sc=parseFloat(row.activation_score||'0');
+//   var scStr=sc>0?' <span style="font-size:10px;font-weight:800;background:#534AB7;color:#fff;padding:1px 7px;border-radius:10px;">Score: '+sc+'</span>':'';
+//   document.getElementById('htcTime').innerHTML=scStr;
+//   var parts=[];
+//   if(acceptedToday) parts.push('Accepted ✓ (Stage 4)');
+//   if(bidToday)      parts.push('Bid (last 3h)');
+//   if(vaToday)       parts.push('VA (last 4h)');
+//   if(vehSubmitted)  parts.push('Vehicle Submitted ✓');
+//   set('htcTitle',parts.join(' + '));
+//   // grid: if 3+ signals, single column; if 2, side-by-side; if 1, single
+//   grid.className='htc-grid'+(bidToday&&vaToday?'':' single');
+//   var html='';
+//   /* Bid Today box — uses bid_today_lane_details (all bids incl. INITIATED/EXPIRED)
+//      Falls back to token_lane_details (paid tokens) if that column is empty.       */
+//   if(bidToday){
+//     // parse bid_today_lane_details: did####route####truck####amount
+//     // bid_today_lane_details: did####route####truck####opfreight####token_paid(0/1)
+//     // opFreight > 0 = bid submitted; token_paid=1 = also token paid
+//     var btRaw=row.bid_today_lane_details||'';
+//     var btLanes=btRaw?btRaw.split('||||').map(function(seg){
+//       seg=seg.trim();if(!seg)return null;
+//       var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;
+//       return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),
+//              bid:rs(p[3]),tokenPaid:(p[4]||'0')==='1'};
+//     }).filter(Boolean):[];
+//     var paidCount=btLanes.filter(function(l){return l.tokenPaid;}).length;
     var cntLabel=btLanes.length+(paidCount?' ('+paidCount+' paid)':'');
     var bidAge=minsAgo(row.last_bid_time||'');
     var bidAgeBar=bidAge

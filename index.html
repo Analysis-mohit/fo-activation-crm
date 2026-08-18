@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1310,44 +1310,44 @@ function submitCallLog(){
       document.getElementById('lfFollowup').value='';
       document.getElementById('lfNotes').value='';
       document.getElementById('lfTraining').checked=false;
-      document.getElementById('lfInterested').checked=false;
-      showToast('Call log saved for '+op);
-    } else {
-      msg.className='lf-status err'; msg.textContent='Error: '+(d.msg||'save failed');
-    }
-  })
-  .catch(function(e){
-    msg.className='lf-status err'; msg.textContent='Network error — check API_URL or Apps Script deployment.';
-  })
-  .finally(function(){
-    btn.disabled=false; btn.textContent='Save Record';
-  });
-}
-/* CALL HISTORY */
-function dispClass(d){var v=(d||'').toLowerCase();if(v.includes('connect'))return'disp-conn';if(v.includes('callback')||v.includes('call back'))return'disp-callback';if(v.includes('not reach')||v.includes('no answer')||v.includes('busy'))return'disp-notreach';return'disp-default';}
-function renderCallHistory(row){
-  var body=document.getElementById('callHistoryBody'),badge=document.getElementById('callBadge');
-  var calls=parseCallHistory(row.call_history||''),total=parseInt(row.total_calls||'0',10);
-  badge.textContent=total?total+' call'+(total>1?'s':'')+' total':'';
-  if(!calls.length){body.innerHTML='<div class="call-empty">No calls made to this operator in the MP Load Support campaign.</div>';return;}
-  body.innerHTML='<div style="overflow-x:auto"><table class="ch-table"><thead><tr><th>#</th><th>Date</th><th>Disposition</th><th>Code</th><th>Caller (RM)</th></tr></thead><tbody>'+
-    calls.map(function(c,i){
-      return '<tr><td style="color:var(--text-3);font-size:11px;width:24px">'+(i+1)+'</td>'+
-        '<td style="font-size:12px;white-space:nowrap">'+c.date+'</td>'+
-        '<td><span class="disp-badge '+dispClass(c.disposition)+'">'+(c.disposition||'—')+'</span></td>'+
-        '<td style="font-size:11px;color:var(--text-2)">'+(c.disp_code||'—')+'</td>'+
-        '<td style="font-size:12px">'+(c.caller||'—')+'</td></tr>';}).join('')+
-    '</tbody></table></div>';
-}
-/* TOAST */
-var toastTimer;
-function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},4000);}
-/* INIT */
-document.getElementById('noticeBanner').addEventListener('DOMSubtreeModified',function(){
-  var shown=this.style.display!=='none';
-  document.getElementById('appLayout').style.marginTop=shown?'calc(var(--topbar) + 30px)':'var(--topbar)';
-});
-loadData();
-</script>
-</body>
-</html>
+//       document.getElementById('lfInterested').checked=false;
+//       showToast('Call log saved for '+op);
+//     } else {
+//       msg.className='lf-status err'; msg.textContent='Error: '+(d.msg||'save failed');
+//     }
+//   })
+//   .catch(function(e){
+//     msg.className='lf-status err'; msg.textContent='Network error — check API_URL or Apps Script deployment.';
+//   })
+//   .finally(function(){
+//     btn.disabled=false; btn.textContent='Save Record';
+//   });
+// }
+// /* CALL HISTORY */
+// function dispClass(d){var v=(d||'').toLowerCase();if(v.includes('connect'))return'disp-conn';if(v.includes('callback')||v.includes('call back'))return'disp-callback';if(v.includes('not reach')||v.includes('no answer')||v.includes('busy'))return'disp-notreach';return'disp-default';}
+// function renderCallHistory(row){
+//   var body=document.getElementById('callHistoryBody'),badge=document.getElementById('callBadge');
+//   var calls=parseCallHistory(row.call_history||''),total=parseInt(row.total_calls||'0',10);
+//   badge.textContent=total?total+' call'+(total>1?'s':'')+' total':'';
+//   if(!calls.length){body.innerHTML='<div class="call-empty">No calls made to this operator in the MP Load Support campaign.</div>';return;}
+//   body.innerHTML='<div style="overflow-x:auto"><table class="ch-table"><thead><tr><th>#</th><th>Date</th><th>Disposition</th><th>Code</th><th>Caller (RM)</th></tr></thead><tbody>'+
+//     calls.map(function(c,i){
+//       return '<tr><td style="color:var(--text-3);font-size:11px;width:24px">'+(i+1)+'</td>'+
+//         '<td style="font-size:12px;white-space:nowrap">'+c.date+'</td>'+
+//         '<td><span class="disp-badge '+dispClass(c.disposition)+'">'+(c.disposition||'—')+'</span></td>'+
+//         '<td style="font-size:11px;color:var(--text-2)">'+(c.disp_code||'—')+'</td>'+
+//         '<td style="font-size:12px">'+(c.caller||'—')+'</td></tr>';}).join('')+
+//     '</tbody></table></div>';
+// }
+// /* TOAST */
+// var toastTimer;
+// function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},4000);}
+// /* INIT */
+// document.getElementById('noticeBanner').addEventListener('DOMSubtreeModified',function(){
+//   var shown=this.style.display!=='none';
+//   document.getElementById('appLayout').style.marginTop=shown?'calc(var(--topbar) + 30px)':'var(--topbar)';
+// });
+// loadData();
+// </script>
+// </body>
+// </html> -->

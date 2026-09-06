@@ -1,220 +1,251 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FO Caller CRM — Wheelseye</title>
+<title>FO Caller CRM</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F4F0;
+  --surface:#fff;
+  --surface2:#F0EEE8;
+  --border:rgba(0,0,0,.09);
+  --bmd:rgba(0,0,0,.16);
+  --t1:#18180F;--t2:#5C5B55;--t3:#9C9B94;
+  --p6:#5347B5;--p5:#6B5FCC;--p1:#ECEAFB;--p2:#C4BFEF;--p8:#3B3180;
+  --g6:#2E7D32;--g1:#E8F5E9;--g2:#A5D6A7;
+  --b6:#1565C0;--b1:#E3F2FD;--b2:#90CAF9;
+  --a6:#E65100;--a1:#FFF3E0;--a2:#FFCC80;
+  --r6:#C62828;--r1:#FFEBEE;--r2:#EF9A9A;
+  --teal6:#00695C;--teal1:#E0F2F1;
+  --gr6:#546E7A;--gr1:#ECEFF1;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:'SF Mono','Fira Code',monospace;
+  --rad:10px;--rad-sm:6px;--rad-lg:16px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 6px rgba(0,0,0,.05);
+  --shadow-md:0 4px 12px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.06);
+}
 
-  :root {
-    --purple-50:  #EEEDFE; --purple-200: #AFA9EC; --purple-600: #534AB7; --purple-800: #3C3489;
-    --teal-50:    #E1F5EE; --teal-600:   #0F6E56; --teal-800:   #085041;
-    --blue-50:    #E6F1FB; --blue-600:   #185FA5; --blue-800:   #0C447C;
-    --amber-50:   #FAEEDA; --amber-600:  #854F0B; --amber-800:  #633806;
-    --red-50:     #FCEBEB; --red-600:    #A32D2D; --red-800:    #791F1F;
-    --green-50:   #EAF3DE; --green-600:  #3B6D11; --green-800:  #27500A;
-    --gray-50:    #F1EFE8; --gray-200:   #B4B2A9; --gray-600:   #5F5E5A;
-    --bg:         #F7F6F2;
-    --surface:    #FFFFFF;
-    --surface-2:  #F1EFE8;
-    --border:     rgba(0,0,0,0.10);
-    --border-md:  rgba(0,0,0,0.18);
-    --text-1:     #1A1A18;
-    --text-2:     #5F5E5A;
-    --text-3:     #9A9890;
-    --radius-md:  8px;
-    --radius-lg:  12px;
-    --radius-xl:  16px;
-    --font:       -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-mono:  'SF Mono', 'Fira Code', 'Courier New', monospace;
-  }
+body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px;line-height:1.5;min-height:100vh}
 
-  body { font-family: var(--font); background: var(--bg); color: var(--text-1); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  height:56px;background:var(--p6);
+  display:flex;align-items:center;gap:16px;padding:0 20px;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.brand-icon{width:30px;height:30px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:.5px}
+.brand-name{color:#fff;font-size:14px;font-weight:700;line-height:1.2}
+.brand-sub{color:rgba(255,255,255,.6);font-size:10px}
 
-  /* ── TOP BAR ── */
-  .topbar { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 0 1.5rem; height: 56px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
-  .brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-  .brand-dot { width: 28px; height: 28px; border-radius: 8px; background: var(--purple-600); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 600; }
-  .brand-name { font-size: 14px; font-weight: 600; color: var(--text-1); }
-  .brand-sub  { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.search-wrap{flex:1;max-width:400px;position:relative}
+.search-wrap svg.si{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;opacity:.7}
+.search-wrap input{
+  width:100%;height:36px;padding:0 36px;
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);
+  border-radius:var(--rad-sm);color:#fff;font-size:13px;outline:none;
+  transition:background .15s,border-color .15s;
+}
+.search-wrap input::placeholder{color:rgba(255,255,255,.55)}
+.search-wrap input:focus{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.5)}
+.clear-x{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.7);display:none;line-height:1;padding:2px;font-size:16px}
 
-  /* ── SEARCH ── */
-  .search-wrap { flex: 1; max-width: 420px; position: relative; }
-  .search-wrap svg.s-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--text-3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
-  .search-wrap input { width: 100%; height: 36px; padding: 0 34px 0 34px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); background: var(--surface); color: var(--text-1); font-size: 13px; outline: none; transition: border-color .15s, box-shadow .15s; }
-  .search-wrap input:focus { border-color: var(--purple-600); box-shadow: 0 0 0 3px var(--purple-50); }
-  .search-wrap input::placeholder { color: var(--text-3); }
-  .clear-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-3); display: none; padding: 2px; line-height: 1; }
-  .clear-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+.suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--bmd);border-radius:var(--rad);box-shadow:var(--shadow-md);z-index:200;overflow:hidden;display:none;max-height:320px;overflow-y:auto}
+.sug-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);transition:background .1s}
+.sug-item:last-child{border-bottom:none}
+.sug-item:hover{background:var(--p1)}
+.sug-av{width:30px;height:30px;border-radius:50%;background:var(--p1);color:var(--p6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:var(--mono)}
+.sug-code{font-size:13px;font-weight:700;color:var(--t1);font-family:var(--mono)}
+.sug-rm{font-size:11px;color:var(--t2);margin-top:1px}
+.sug-right{margin-left:auto;display:flex;align-items:center;gap:6px}
 
-  .suggestions { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--surface); border: 0.5px solid var(--border-md); border-radius: var(--radius-lg); box-shadow: 0 8px 24px rgba(0,0,0,0.10); z-index: 200; overflow: hidden; display: none; }
-  .sug-item { padding: 10px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--border); transition: background .1s; }
-  .sug-item:last-child { border-bottom: none; }
-  .sug-item:hover { background: var(--surface-2); }
-  .sug-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--purple-50); color: var(--purple-800); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
-  .sug-code  { font-size: 13px; font-weight: 600; color: var(--text-1); font-family: var(--font-mono); }
-  .sug-rm    { font-size: 11px; color: var(--text-2); margin-top: 1px; }
-  .sug-cluster { margin-left: auto; font-size: 11px; color: var(--text-3); white-space: nowrap; }
-  .sug-no-result { padding: 12px 14px; font-size: 13px; color: var(--text-3); text-align: center; }
+.status-area{margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#4CAF50;animation:blink 2s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.status-txt{font-size:11px;color:rgba(255,255,255,.8)}
+.status-err .live-dot{background:#EF5350;animation:none}
+.ref-btn{height:30px;padding:0 12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--rad-sm);color:#fff;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px;transition:background .12s}
+.ref-btn:hover{background:rgba(255,255,255,.25)}
+.ref-btn svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ref-btn.spin svg{animation:rspin .8s linear infinite}
+@keyframes rspin{to{transform:rotate(360deg)}}
 
-  /* ── STATUS BAR ── */
-  .status-bar { margin-left: auto; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
-  .status-chip { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-2); }
-  .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-600); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-  .status-chip.error .pulse-dot { background: var(--red-600); animation: none; }
-  .refresh-btn { height: 30px; padding: 0 12px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); background: var(--surface); color: var(--text-2); cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 5px; transition: background .12s; }
-  .refresh-btn:hover { background: var(--surface-2); }
-  .refresh-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .refresh-btn.spinning svg { animation: spin .8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── LAYOUT ── */
+.main{max-width:960px;margin:0 auto;padding:1.25rem 1rem 3rem}
 
-  /* ── MAIN LAYOUT ── */
-  .main { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+/* ── EMPTY/LOADING ── */
+.empty-state{text-align:center;padding:5rem 1rem}
+.empty-state svg{width:48px;height:48px;stroke:var(--t3);fill:none;stroke-width:1.2;margin-bottom:14px}
+.empty-state h2{font-size:15px;font-weight:600;color:var(--t1);margin-bottom:6px}
+.empty-state p{font-size:13px;color:var(--t3)}
 
-  /* ── EMPTY / LOADING / ERROR ── */
-  .center-state { text-align: center; padding: 4rem 1rem; }
-  .center-state svg.big-icon { width: 48px; height: 48px; stroke: var(--text-3); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 16px; }
-  .center-state h2 { font-size: 15px; font-weight: 600; color: var(--text-1); margin-bottom: 6px; }
-  .center-state p  { font-size: 13px; color: var(--text-2); }
-  .skeleton { background: var(--surface-2); border-radius: var(--radius-md); animation: shimmer 1.4s ease-in-out infinite; }
-  @keyframes shimmer { 0%,100%{opacity:.6} 50%{opacity:1} }
+/* ── BADGE SYSTEM ── */
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500;line-height:1.6;white-space:nowrap}
+.tag-p1{background:var(--g1);color:var(--g6)}
+.tag-p2{background:var(--teal1);color:var(--teal6)}
+.tag-p3{background:var(--b1);color:var(--b6)}
+.tag-p4{background:var(--p1);color:var(--p6)}
+.tag-va{background:var(--a1);color:var(--a6)}
+.tag-h {background:var(--gr1);color:var(--gr6)}
+.tag-gray{background:var(--surface2);color:var(--t2)}
+.tag-red{background:var(--r1);color:var(--r6)}
+.tag-green{background:var(--g1);color:var(--g6)}
+.tag-blue{background:var(--b1);color:var(--b6)}
+.tag-purple{background:var(--p1);color:var(--p6)}
+.tag-amber{background:var(--a1);color:var(--a6)}
 
-  /* ── SECTION LABEL ── */
-  .section-label { font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+/* ── PROFILE CARD ── */
+.profile-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad-lg);padding:1.25rem 1.5rem;margin-bottom:12px;box-shadow:var(--shadow)}
+.pc-top{display:flex;align-items:flex-start;gap:14px}
+.pc-avatar{width:48px;height:48px;border-radius:12px;background:var(--p6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;letter-spacing:.5px;font-family:var(--mono)}
+.pc-info{flex:1;min-width:0}
+.pc-code{font-size:22px;font-weight:800;color:var(--t1);font-family:var(--mono);letter-spacing:.5px;line-height:1.1}
+.pc-rm{font-size:12px;color:var(--t2);margin-top:3px}
+.pc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.pc-right{text-align:right;flex-shrink:0}
+.score-num{font-size:32px;font-weight:800;color:var(--p6);line-height:1}
+.score-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-top:2px}
+.rank-chip{font-size:11px;font-weight:700;color:var(--p6);background:var(--p1);padding:3px 10px;border-radius:20px;margin-top:6px;display:inline-block}
 
-  /* ── PROFILE CARD ── */
-  .profile-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 1.25rem 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 16px; }
-  .profile-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--purple-50); color: var(--purple-800); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
-  .profile-body { flex: 1; min-width: 0; }
-  .profile-code { font-size: 20px; font-weight: 700; color: var(--text-1); font-family: var(--font-mono); letter-spacing: .5px; }
-  .profile-rm   { font-size: 12px; color: var(--text-2); margin-top: 3px; }
-  .profile-meta { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+/* run-time tag */
+.rt-tag{font-size:10px;color:var(--t3);font-family:var(--mono);display:inline-flex;align-items:center;gap:4px;background:var(--surface2);padding:2px 8px;border-radius:20px}
+.rt-tag.fresh{color:var(--g6);background:var(--g1)}
 
-  /* run time chip */
-  .run-time-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-3); background: var(--surface-2); border: 0.5px solid var(--border); padding: 2px 8px; border-radius: 20px; font-family: var(--font-mono); }
-  .run-time-chip.fresh { color: var(--green-800); background: var(--green-50); border-color: rgba(59,109,17,.2); }
+/* ── TODAY SNAPSHOT ── */
+.snapshot-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.snap-pill{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid transparent}
+.snap-yes{background:var(--g1);color:var(--g6);border-color:var(--g2)}
+.snap-no{background:var(--surface2);color:var(--t3);border-color:var(--border)}
+.snap-pill .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.snap-yes .dot{background:var(--g6)}
+.snap-no  .dot{background:var(--t3)}
 
-  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
-  .badge-teal   { background: var(--teal-50);   color: var(--teal-800); }
-  .badge-purple { background: var(--purple-50);  color: var(--purple-800); }
-  .badge-amber  { background: var(--amber-50);   color: var(--amber-800); }
-  .badge-red    { background: var(--red-50);     color: var(--red-800); }
-  .badge-blue   { background: var(--blue-50);    color: var(--blue-800); }
-  .badge-green  { background: var(--green-50);   color: var(--green-800); }
-  .badge-gray   { background: var(--gray-50);    color: var(--gray-600); }
+/* ── METRICS GRID ── */
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+@media(max-width:580px){.metrics-grid{grid-template-columns:repeat(2,1fr)}}
+.met-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad);padding:12px 14px;box-shadow:var(--shadow)}
+.met-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.met-val{font-size:26px;font-weight:800;color:var(--t1);line-height:1}
+.met-sub{font-size:10px;color:var(--t3);margin-top:3px}
 
-  .score-block { text-align: center; flex-shrink: 0; padding-left: 16px; border-left: 0.5px solid var(--border); }
-  .score-val   { font-size: 28px; font-weight: 700; color: var(--purple-600); line-height: 1; }
-  .score-label { font-size: 10px; color: var(--text-3); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+/* ── SECTION HEADER ── */
+.sec-hdr{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin-bottom:8px;margin-top:4px;display:flex;align-items:center;gap:6px}
+.sec-hdr svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-1px}
 
-  /* ── METRICS GRID ── */
-  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1rem; }
-  @media(max-width:600px){ .metrics-grid{ grid-template-columns: repeat(2,1fr); } }
-  .metric-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: .875rem 1rem; }
-  .metric-label { font-size: 11px; color: var(--text-2); margin-bottom: 4px; }
-  .metric-val   { font-size: 24px; font-weight: 700; color: var(--text-1); line-height: 1; }
-  .metric-sub   { font-size: 10px; color: var(--text-3); margin-top: 4px; }
+/* ── CARD ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad-lg);overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow)}
+.card-hdr{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--surface)}
+.card-title{font-size:13px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:7px}
+.card-title svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card-hint{font-size:11px;color:var(--t3)}
+.card-count{font-size:11px;color:var(--t2);font-weight:500}
+.toggle-btn{background:none;border:1px solid var(--border);border-radius:var(--rad-sm);cursor:pointer;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:var(--t2);transition:background .12s;font-size:13px}
+.toggle-btn:hover{background:var(--surface2)}
 
-  /* ── FUNNEL CARD ── */
-  .funnel-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; margin-bottom: 1rem; }
-  .funnel-header { padding: .875rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid var(--border); }
-  .funnel-title { font-size: 13px; font-weight: 600; color: var(--text-1); display: flex; align-items: center; gap: 7px; }
-  .funnel-hint  { font-size: 11px; color: var(--text-3); }
-  .funnel-steps { display: flex; }
-  .funnel-step  { flex: 1; padding: .875rem 1rem; text-align: center; border-right: 0.5px solid var(--border); cursor: default; }
-  .funnel-step:last-child { border-right: none; }
-  .funnel-step.clickable { cursor: pointer; transition: background .12s; }
-  .funnel-step.clickable:hover { background: var(--purple-50); }
-  .funnel-step.clickable.active { background: var(--purple-50); }
-  .fs-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-  .fs-val   { font-size: 26px; font-weight: 700; line-height: 1; }
-  .fs-val.blue   { color: var(--blue-600); }
-  .fs-val.purple { color: var(--purple-600); }
-  .fs-val.green  { color: var(--green-600); }
-  .fs-hint  { font-size: 10px; color: var(--text-3); margin-top: 5px; }
-  .fs-hint-click { color: var(--purple-600); }
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto}
+table.dtbl{width:100%;border-collapse:collapse;font-size:12px}
+table.dtbl th{text-align:left;padding:8px 14px;font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--t3);background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
+table.dtbl td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--t1);vertical-align:middle}
+table.dtbl tr:last-child td{border-bottom:none}
+table.dtbl tr:hover td{background:var(--bg)}
+.tbl-empty{padding:20px;text-align:center;color:var(--t3);font-size:12px}
+.mono{font-family:var(--mono);font-size:11px}
+.fw{font-weight:700;font-family:var(--mono)}
+.row-num{color:var(--t3);font-size:10px;width:24px}
 
-  /* ── DR DRAWER ── */
-  .dr-drawer { display: none; border-top: 0.5px solid var(--border); }
-  .dr-drawer.open { display: block; }
-  .dr-drawer-header { padding: .75rem 1.25rem; display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); border-bottom: 0.5px solid var(--border); }
-  .dr-drawer-title { font-size: 12px; font-weight: 600; color: var(--text-1); display: flex; align-items: center; gap: 6px; }
-  .dr-close-btn { background: none; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); cursor: pointer; color: var(--text-2); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: background .12s; }
-  .dr-close-btn:hover { background: var(--surface); }
-  .dr-table-wrap { overflow-x: auto; }
-  .dr-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .dr-table th { text-align: left; padding: 8px 1.25rem; font-size: 10px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--text-3); background: var(--surface-2); border-bottom: 0.5px solid var(--border); white-space: nowrap; }
-  .dr-table td { padding: 10px 1.25rem; border-bottom: 0.5px solid var(--border); color: var(--text-1); vertical-align: middle; }
-  .dr-table tr:last-child td { border-bottom: none; }
-  .dr-table tr:hover td { background: var(--bg); }
-  .odvt-text { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--text-1); letter-spacing: .3px; }
-  .dr-empty { padding: 1.5rem; text-align: center; color: var(--text-3); font-size: 12px; }
+/* supply range */
+.sr-row{display:flex;gap:3px}
+.sr{padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:10px;font-weight:700}
+.sr-l1{background:var(--g1);color:var(--g6)}
+.sr-l2{background:var(--b1);color:var(--b6)}
+.sr-l3{background:var(--a1);color:var(--a6)}
+.sr-nil{color:var(--t3);font-size:10px}
 
-  /* ── SUPPLY TABLE (bids + tokens) ── */
-  .supply-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; margin-bottom: 1rem; }
-  .supply-header { padding: .875rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid var(--border); background: var(--surface); }
-  .supply-title { font-size: 13px; font-weight: 600; color: var(--text-1); display: flex; align-items: center; gap: 7px; }
-  .supply-count { font-size: 11px; color: var(--text-3); }
-  .supply-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .supply-table th { text-align: left; padding: 8px 1rem; font-size: 10px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--text-3); background: var(--surface-2); border-bottom: 0.5px solid var(--border); white-space: nowrap; }
-  .supply-table td { padding: 10px 1rem; border-bottom: 0.5px solid var(--border); color: var(--text-1); vertical-align: middle; }
-  .supply-table tr:last-child td { border-bottom: none; }
-  .supply-table tr:hover td { background: var(--bg); }
-  .mono { font-family: var(--font-mono); font-size: 11px; }
-  .freight-val { font-family: var(--font-mono); font-weight: 700; color: var(--text-1); }
+/* status chips in tables */
+.chip{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500}
+.chip-won{background:var(--g1);color:var(--g6)}
+.chip-lost{background:var(--r1);color:var(--r6)}
+.chip-live{background:var(--b1);color:var(--b6)}
+.chip-cancel{background:var(--surface2);color:var(--t3)}
 
-  /* supply range cells */
-  .sr-wrap { display: flex; gap: 4px; }
-  .sr-pill { padding: 2px 7px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; white-space: nowrap; }
-  .sr-l1 { background: var(--green-50);  color: var(--green-800); }
-  .sr-l2 { background: var(--blue-50);   color: var(--blue-800); }
-  .sr-l3 { background: var(--amber-50);  color: var(--amber-800); }
-  .sr-empty { color: var(--text-3); font-size: 11px; }
+/* ── FUNNEL ── */
+.funnel{display:flex}
+.funnel-step{flex:1;padding:16px 12px;text-align:center;border-right:1px solid var(--border);cursor:pointer;transition:background .12s}
+.funnel-step:last-child{border-right:none;cursor:default}
+.funnel-step.clickable:hover{background:var(--p1)}
+.funnel-step.active{background:var(--p1)}
+.fs-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.fs-v{font-size:28px;font-weight:800;line-height:1}
+.fs-v.blue{color:var(--b6)}
+.fs-v.purple{color:var(--p6)}
+.fs-v.green{color:var(--g6)}
+.fs-v.red{color:var(--r6)}
+.fs-hint{font-size:9px;color:var(--p6);margin-top:4px}
+.fs-sub{font-size:9px;color:var(--t3);margin-top:4px}
 
-  /* token paid chip */
-  .tok-paid   { background: var(--green-50);  color: var(--green-800);  padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
-  .tok-unpaid { background: var(--gray-50);   color: var(--gray-600);   padding: 2px 8px; border-radius: 20px; font-size: 10px; }
-  .supply-empty { padding: 1.25rem; text-align: center; color: var(--text-3); font-size: 12px; }
+/* ── DRAWER ── */
+.drawer{display:none;border-top:1px solid var(--border)}
+.drawer.open{display:block}
+.drawer-hdr{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-bottom:1px solid var(--border)}
+.drawer-title{font-size:11px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:5px}
+.close-x{background:none;border:1px solid var(--border);border-radius:var(--rad-sm);cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--t2);font-size:12px}
+.close-x:hover{background:var(--surface)}
 
-  /* ── BOTTOM CARDS ── */
-  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-  @media(max-width:600px){ .bottom-grid{ grid-template-columns: 1fr; } }
-  .info-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 1rem 1.25rem; }
-  .info-card-title { font-size: 12px; font-weight: 600; color: var(--text-1); margin-bottom: .875rem; display: flex; align-items: center; gap: 6px; }
+/* ── TWO-COL GRID ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:580px){.two-col{grid-template-columns:1fr}}
 
-  /* vehicle stats */
-  .veh-stats { display: flex; gap: 0; }
-  .veh-stat { flex: 1; text-align: center; padding: 0 .5rem; border-right: 0.5px solid var(--border); }
-  .veh-stat:last-child { border-right: none; }
-  .veh-val   { font-size: 22px; font-weight: 700; color: var(--text-1); }
-  .veh-val.red { color: var(--red-600); }
-  .veh-label { font-size: 10px; color: var(--text-3); margin-top: 4px; }
+/* vehicle row */
+.veh-row{display:flex;padding:10px 16px;gap:0;border-bottom:1px solid var(--border)}
+.veh-row:last-child{border-bottom:none}
+.veh-no{font-family:var(--mono);font-weight:700;font-size:12px;flex:1}
+.veh-meta{display:flex;gap:6px;align-items:center}
+.stat-grid{display:flex;gap:0}
+.stat-item{flex:1;text-align:center;padding:12px 8px;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-val{font-size:22px;font-weight:800;color:var(--t1)}
+.stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:3px}
+.stat-val.red{color:var(--r6)}
+.stat-val.green{color:var(--g6)}
 
-  /* lane pills */
-  .lane-pills { display: flex; flex-wrap: wrap; gap: 5px; }
-  .lane-pill  { background: var(--amber-50); color: var(--amber-800); padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 500; font-family: var(--font-mono); line-height: 1.4; }
-  .no-lanes   { font-size: 12px; color: var(--text-3); }
+/* call row */
+.call-row{display:flex;align-items:center;padding:10px 16px;gap:10px;border-bottom:1px solid var(--border)}
+.call-row:last-child{border-bottom:none}
+.call-date{font-size:11px;color:var(--t2);white-space:nowrap;min-width:90px}
+.call-by{font-size:11px;color:var(--t3)}
+.call-disp{margin-left:auto}
 
-  /* ── ERROR TOAST ── */
-  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--red-50); color: var(--red-800); border: 0.5px solid var(--red-600); padding: 10px 16px; border-radius: var(--radius-md); font-size: 12px; z-index: 9999; display: none; max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.10); }
-  .toast.show { display: block; }
+/* collapsible section */
+.collapsible-body{display:none}
+.collapsible-body.open{display:block}
 
-  /* ── NOTICE BANNER ── */
-  .notice-banner { background: var(--amber-50); border: 0.5px solid #EF9F27; border-radius: var(--radius-md); padding: 10px 14px; font-size: 11px; color: var(--amber-800); margin-bottom: 1rem; display: none; }
-  .notice-banner a { color: var(--amber-600); font-weight: 600; }
+/* lane pills */
+.lane-pills{display:flex;flex-wrap:wrap;gap:5px;padding:14px 16px}
+.lane-pill{background:var(--a1);color:var(--a6);padding:4px 10px;border-radius:20px;font-size:10px;font-weight:500;font-family:var(--mono)}
 
-  svg.icon { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -2px; }
+/* info row */
+.info-row{display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px}
+
+/* ── NOTICE ── */
+.notice{background:var(--a1);border:1px solid var(--a2);border-radius:var(--rad);padding:10px 14px;font-size:11px;color:var(--a6);margin-bottom:12px;display:none}
+.notice a{color:var(--a6);font-weight:700}
+
+/* utility */
+svg.i{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px}
+.sug-no{padding:14px;text-align:center;color:var(--t3);font-size:12px}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════  TOP BAR  ═══════════════════════════ -->
+<!-- ═══ TOPBAR ═══ -->
 <header class="topbar">
   <div class="brand">
-    <div class="brand-dot">FO</div>
+    <div class="brand-icon">FO</div>
     <div>
       <div class="brand-name">FO Caller CRM</div>
       <div class="brand-sub">Wheelseye · Cx Growth</div>
@@ -222,617 +253,607 @@
   </div>
 
   <div class="search-wrap">
-    <svg class="s-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-    </svg>
-    <input type="text" id="searchInput" placeholder="Search operator code…" autocomplete="off" spellcheck="false" />
-    <button class="clear-btn" id="clearBtn" aria-label="Clear search">
-      <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
-    </button>
-    <div class="suggestions" id="suggestions" role="listbox"></div>
+    <svg class="si" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="searchInput" type="text" placeholder="Search operator code…" autocomplete="off" spellcheck="false"/>
+    <button class="clear-x" id="clearBtn">×</button>
+    <div class="suggestions" id="suggestions"></div>
   </div>
 
-  <div class="status-bar">
-    <div class="status-chip" id="statusChip">
-      <div class="pulse-dot" id="pulseDot"></div>
-      <span id="statusText">Loading…</span>
+  <div class="status-area">
+    <div id="statusWrap" style="display:flex;align-items:center;gap:7px">
+      <div class="live-dot" id="liveDot"></div>
+      <span class="status-txt" id="statusTxt">Loading…</span>
     </div>
-    <button class="refresh-btn" id="refreshBtn" title="Refresh now">
-      <svg id="refreshIcon" viewBox="0 0 24 24">
-        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-      </svg>
-      <span id="refreshLabel">Refresh</span>
+    <button class="ref-btn" id="refBtn">
+      <svg id="refIcon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Refresh
     </button>
   </div>
 </header>
 
-<!-- ═══════════════════════════  MAIN  ═══════════════════════════ -->
+<!-- ═══ MAIN ═══ -->
 <main class="main">
+  <div class="notice" id="notice">⚠ Could not load data. Make sure the sheet is <strong>public (Anyone with link → Viewer)</strong>. <a href="#" onclick="loadData();return false">Retry</a></div>
 
-  <div class="notice-banner" id="noticeBanner">
-    ⚠️ Could not load data from Google Sheets. Make sure the sheet is set to
-    <strong>"Anyone with the link → Viewer"</strong> and try again.
-    <a href="#" onclick="loadData();return false;">Retry now</a>
-  </div>
-
-  <!-- EMPTY STATE -->
-  <div class="center-state" id="emptyState">
-    <svg class="big-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-    </svg>
+  <div class="empty-state" id="emptyState">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <h2>Search an operator</h2>
-    <p>Type an operator code in the search bar above<br>to load their activity profile and live DR funnel.</p>
+    <p>Type an FO operator code to load their<br>full activity profile and live DR funnel</p>
   </div>
 
-  <!-- LOADING STATE -->
-  <div id="loadingState" style="display:none">
-    <div class="center-state">
-      <svg class="big-icon" style="animation:spin 1s linear infinite" viewBox="0 0 24 24" aria-hidden="true">
-        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-      </svg>
-      <h2>Loading data…</h2>
-      <p>Fetching from Google Sheets</p>
-    </div>
-  </div>
-
-  <!-- OPERATOR PROFILE -->
   <div id="profileSection" style="display:none">
 
-    <!-- PROFILE HEADER -->
+    <!-- PROFILE CARD -->
     <div class="profile-card">
-      <div class="profile-avatar" id="profileAvatar">OP</div>
-      <div class="profile-body">
-        <div class="profile-code" id="profileCode">—</div>
-        <div class="profile-rm"  id="profileRM">—</div>
-        <div class="profile-meta">
-          <span class="badge badge-teal"   id="clusterBadge">—</span>
-          <span class="badge"              id="priorityBadge" style="display:none">—</span>
-          <span class="badge badge-purple" id="stageBadge"    style="display:none">—</span>
-          <span class="badge badge-green"  id="rankBadge"     style="display:none">—</span>
-          <span class="run-time-chip"      id="runTimeBadge"  style="display:none">—</span>
+      <div class="pc-top">
+        <div class="pc-avatar" id="pcAvatar">OP</div>
+        <div class="pc-info">
+          <div class="pc-code" id="pcCode">—</div>
+          <div class="pc-rm"  id="pcRM">—</div>
+          <div class="pc-tags" id="pcTags"></div>
         </div>
-      </div>
-      <div class="score-block">
-        <div class="score-val"   id="scoreVal">—</div>
-        <div class="score-label">activation score<br><span style="color:var(--text-3)">last 15 days</span></div>
+        <div class="pc-right">
+          <div class="score-num" id="scoreNum">—</div>
+          <div class="score-lbl">Activation<br>Score</div>
+          <div id="rankChip" style="display:none" class="rank-chip">—</div>
+        </div>
       </div>
     </div>
 
+    <!-- TODAY SNAPSHOT -->
+    <div class="snapshot-row" id="snapshotRow"></div>
+
     <!-- ACTIVITY METRICS -->
-    <div class="section-label" style="margin-bottom:8px">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Activity — last 15 days
-    </div>
+    <div class="sec-hdr"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Activity · last 15 days</div>
     <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">VA days</div>
-        <div class="metric-val" id="vaDays">—</div>
-        <div class="metric-sub">vehicle marked available</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">LDP days</div>
-        <div class="metric-val" id="ldpDays">—</div>
-        <div class="metric-sub">days browsed loads</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Total LDPs</div>
-        <div class="metric-val" id="ldpCount">—</div>
-        <div class="metric-sub">load detail views</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Tokens paid</div>
-        <div class="metric-val" id="tokenCount">—</div>
-        <div class="metric-sub">paid tokens (15d)</div>
+      <div class="met-card"><div class="met-lbl">VA Days</div><div class="met-val" id="mVaDays">—</div><div class="met-sub">vehicle available</div></div>
+      <div class="met-card"><div class="met-lbl">LDP Days</div><div class="met-val" id="mLdpDays">—</div><div class="met-sub">days browsed</div></div>
+      <div class="met-card"><div class="met-lbl">Total LDPs</div><div class="met-val" id="mLdpCount">—</div><div class="met-sub">load detail views</div></div>
+      <div class="met-card"><div class="met-lbl">Tokens Paid</div><div class="met-val" id="mTokens">—</div><div class="met-sub">in 15 days</div></div>
+    </div>
+
+    <!-- LIFETIME -->
+    <div class="sec-hdr"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Lifetime stats</div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="stat-grid">
+        <div class="stat-item"><div class="stat-val" id="ltLdp">—</div><div class="stat-lbl">LDPs</div></div>
+        <div class="stat-item"><div class="stat-val green" id="ltTokens">—</div><div class="stat-lbl">Tokens paid</div></div>
+        <div class="stat-item"><div class="stat-val" id="ltTrips">—</div><div class="stat-lbl">Trips</div></div>
+        <div class="stat-item"><div class="stat-val" id="ltDRs">—</div><div class="stat-lbl">DRs seen</div></div>
       </div>
     </div>
 
     <!-- LIVE DR FUNNEL -->
-    <div class="section-label" style="margin-bottom:8px">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-      Live DR funnel — today
-      <span class="badge badge-green" style="font-size:10px;padding:2px 8px">● LIVE</span>
-    </div>
-    <div class="funnel-card">
-      <div class="funnel-header">
-        <div class="funnel-title">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Demand request pipeline
-        </div>
-        <div class="funnel-hint">click "In op-search" to see matched lanes</div>
-      </div>
-      <div class="funnel-steps">
-        <div class="funnel-step clickable" id="drStep" onclick="toggleDrawer()">
-          <div class="fs-label">In op-search</div>
-          <div class="fs-val blue" id="drCountVal">—</div>
-          <div class="fs-hint fs-hint-click">▾ view details</div>
+    <div class="sec-hdr"><svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Live DR funnel · today</div>
+    <div class="card">
+      <div class="funnel">
+        <div class="funnel-step clickable" id="fStep" onclick="toggleDrawer()">
+          <div class="fs-l">In Op-search</div>
+          <div class="fs-v blue" id="fDRs">—</div>
+          <div class="fs-hint">▾ view lanes</div>
         </div>
         <div class="funnel-step">
-          <div class="fs-label">Tokens paid</div>
-          <div class="fs-val purple" id="tokenDRVal">—</div>
-          <div class="fs-hint">of matched DRs</div>
+          <div class="fs-l">Red DRs</div>
+          <div class="fs-v red" id="fRed">—</div>
+          <div class="fs-sub">high urgency</div>
         </div>
         <div class="funnel-step">
-          <div class="fs-label">Conversion</div>
-          <div class="fs-val green" id="convRateVal">—</div>
-          <div class="fs-hint">token / search</div>
+          <div class="fs-l">Token Paid</div>
+          <div class="fs-v purple" id="fToken">—</div>
+          <div class="fs-sub">of matched</div>
+        </div>
+        <div class="funnel-step">
+          <div class="fs-l">Conversion</div>
+          <div class="fs-v green" id="fConv">—</div>
+          <div class="fs-sub">token / search</div>
         </div>
       </div>
-
-      <!-- EXPANDABLE DRAWER -->
-      <div class="dr-drawer" id="drDrawer">
-        <div class="dr-drawer-header">
-          <div class="dr-drawer-title">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-            Matched lanes / vehicle types today
-          </div>
-          <button class="dr-close-btn" onclick="toggleDrawer()" aria-label="Close">✕</button>
+      <!-- DRAWER: matched lanes -->
+      <div class="drawer" id="drDrawer">
+        <div class="drawer-hdr">
+          <div class="drawer-title"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Matched lanes in op-search today</div>
+          <button class="close-x" onclick="toggleDrawer()">✕</button>
         </div>
-        <div class="dr-table-wrap">
-          <table class="dr-table">
-            <thead><tr><th>#</th><th>ODVT (Origin · Destination · Tyres · Size · Body)</th></tr></thead>
-            <tbody id="drTableBody"></tbody>
+        <div class="tbl-wrap">
+          <table class="dtbl">
+            <thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Supply (L1 / L2 / L3)</th></tr></thead>
+            <tbody id="drBody"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- TODAY'S BIDS WITH SUPPLY RANGE -->
-    <div class="section-label" style="margin-bottom:8px" id="bidSectionLabel" style="display:none">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      Today's bids
-      <span class="badge badge-blue" style="font-size:10px;padding:2px 8px">● TODAY</span>
-    </div>
-    <div class="supply-card" id="bidCard" style="display:none">
-      <div class="supply-header">
-        <div class="supply-title">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Bid details with supply range
+    <!-- TODAY'S BIDS -->
+    <div id="bidSection" style="display:none">
+      <div class="sec-hdr"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Today's bids</div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Bid lane details with supply range</div>
+          <div class="card-count" id="bidCount"></div>
         </div>
-        <div class="supply-count" id="bidCount"></div>
-      </div>
-      <div class="dr-table-wrap">
-        <table class="supply-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Demand</th>
-              <th>Route</th>
-              <th>Truck</th>
-              <th>Op Freight</th>
-              <th>Token</th>
-              <th>L1</th>
-              <th>L2</th>
-              <th>L3</th>
-            </tr>
-          </thead>
-          <tbody id="bidTableBody"></tbody>
-        </table>
+        <div class="tbl-wrap">
+          <table class="dtbl">
+            <thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Op Freight</th><th>Token</th><th>L1</th><th>L2</th><th>L3</th></tr></thead>
+            <tbody id="bidBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- TOKEN LANES WITH SUPPLY RANGE -->
-    <div class="section-label" style="margin-bottom:8px" id="tokenSectionLabel" style="display:none">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-      Token-paid lanes today
-    </div>
-    <div class="supply-card" id="tokenCard" style="display:none">
-      <div class="supply-header">
-        <div class="supply-title">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-          Token lanes with supply range
+    <!-- TOKEN LANES -->
+    <div id="tokenSection" style="display:none">
+      <div class="sec-hdr"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Token-paid lanes today</div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Token demand details</div>
+          <div class="card-count" id="tokenCount2"></div>
         </div>
-        <div class="supply-count" id="tokenLaneCount"></div>
+        <div class="tbl-wrap">
+          <table class="dtbl">
+            <thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Op Freight</th><th>Placed</th><th>Method</th><th>L1</th><th>L2</th><th>L3</th></tr></thead>
+            <tbody id="tokenBody"></tbody>
+          </table>
+        </div>
       </div>
-      <div class="dr-table-wrap">
-        <table class="supply-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Demand</th>
-              <th>Route</th>
-              <th>Truck</th>
-              <th>Op Freight</th>
-              <th>Placed Rate</th>
-              <th>Method</th>
-              <th>L1</th>
-              <th>L2</th>
-              <th>L3</th>
-            </tr>
-          </thead>
-          <tbody id="tokenTableBody"></tbody>
-        </table>
+    </div>
+
+    <!-- ACCEPTED TODAY -->
+    <div id="acceptedSection" style="display:none">
+      <div class="sec-hdr"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Accepted today</div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Accepted trip details</div>
+          <div class="card-count" id="accCount"></div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="dtbl">
+            <thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Freight</th><th>Status</th><th>Placement</th><th>Time</th></tr></thead>
+            <tbody id="accBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORICAL TOKENS -->
+    <div id="histSection" style="display:none">
+      <div class="sec-hdr"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Historical tokens (7d)</div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Recent token history</div>
+          <div class="card-count" id="histCount"></div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="dtbl">
+            <thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Op Freight</th><th>Placed</th><th>Result</th><th>Date</th></tr></thead>
+            <tbody id="histBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
     <!-- BOTTOM ROW -->
-    <div class="bottom-grid">
+    <div class="two-col">
       <!-- VEHICLE PROFILE -->
-      <div class="info-card">
-        <div class="info-card-title">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-          Vehicle profile
-        </div>
-        <div class="veh-stats">
-          <div class="veh-stat"><div class="veh-val" id="totalVeh">—</div><div class="veh-label">total trucks</div></div>
-          <div class="veh-stat"><div class="veh-val" id="corrVeh">—</div><div class="veh-label">attr. verified</div></div>
-          <div class="veh-stat"><div class="veh-val red" id="unverVeh">—</div><div class="veh-label">unverified</div></div>
+      <div>
+        <div class="sec-hdr"><svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle profile</div>
+        <div class="card">
+          <div class="stat-grid">
+            <div class="stat-item"><div class="stat-val" id="vTotal">—</div><div class="stat-lbl">Total</div></div>
+            <div class="stat-item"><div class="stat-val green" id="vCorr">—</div><div class="stat-lbl">Verified</div></div>
+            <div class="stat-item"><div class="stat-val red" id="vUnver">—</div><div class="stat-lbl">Unverified</div></div>
+          </div>
+          <div id="vehList" style="max-height:160px;overflow-y:auto"></div>
         </div>
       </div>
 
-      <!-- MATCHED LANES -->
-      <div class="info-card">
-        <div class="info-card-title">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          Matched lanes today
+      <!-- CALL HISTORY -->
+      <div>
+        <div class="sec-hdr"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.44 2 2 0 0 1 3.59 1.28h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.78a16 16 0 0 0 6.29 6.29l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call history</div>
+        <div class="card">
+          <div class="stat-grid" style="border-bottom:1px solid var(--border)">
+            <div class="stat-item"><div class="stat-val" id="cTotal">—</div><div class="stat-lbl">Total calls</div></div>
+            <div class="stat-item"><div class="stat-val" id="cLast">—</div><div class="stat-lbl">Last called</div></div>
+            <div class="stat-item"><div class="stat-val" id="cDisp">—</div><div class="stat-lbl">Disposition</div></div>
+          </div>
+          <div id="callList" style="max-height:160px;overflow-y:auto"></div>
         </div>
-        <div class="lane-pills" id="lanePills"></div>
       </div>
     </div>
 
   </div><!-- /profileSection -->
-
 </main>
 
-<!-- ERROR TOAST -->
-<div class="toast" id="errorToast"></div>
-
-<!-- ═══════════════════════════  SCRIPT  ═══════════════════════════ -->
 <script>
-/* ─── CONFIG ─────────────────────────────────────────────────────── */
-const SHEET_ID   = '1nUhQ5SX0KpE83pYaAmtmXB1HBEFNoBKdc92bWSrhimQ';
-const GID        = '351915797';
-const CSV_URL    = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+const SHEET_ID = '1nUhQ5SX0KpE83pYaAmtmXB1HBEFNoBKdc92bWSrhimQ';
+const GID      = '351915797';
+const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
 const REFRESH_MS = 5 * 60 * 1000;
-const MAX_SUGGESTIONS = 8;
-const DELIM_FIELD = '####';
-const DELIM_REC   = '||||';
+const DF = '####', DR = '||||';
 
-/* ─── STATE ──────────────────────────────────────────────────────── */
-let allData      = [];
-let drawerOpen   = false;
-let refreshTimer = null;
-let countdownTimer = null;
-let nextRefreshAt  = null;
-let currentCode    = null;
+let allData = [], currentCode = null, drawerOpen = false;
+let nextAt = null, timer = null, cdTimer = null;
 
-/* ─── PRIORITY BADGE STYLES ──────────────────────────────────────── */
-const PRIORITY_STYLE = {
-  P1: 'badge-green',
-  P2: 'badge-teal',
-  P3: 'badge-blue',
-  P4: 'badge-purple',
-  VA: 'badge-amber',
-  H:  'badge-gray',
-};
+const PTAG = {P1:'tag-p1',P2:'tag-p2',P3:'tag-p3',P4:'tag-p4',VA:'tag-va',H:'tag-h'};
+const PTXT = {P1:'P1 — Accepted',P2:'P2 — Token / Vehicle',P3:'P3 — Bid + VA',P4:'P4 — Bid / LDP',VA:'VA only',H:'Historical'};
 
-/* ─── FETCH & PARSE ──────────────────────────────────────────────── */
+/* ── FETCH ── */
 async function loadData() {
-  setLoading(true);
+  spin(true);
   try {
-    const resp = await fetch(CSV_URL + '&t=' + Date.now(), { cache: 'no-store' });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const text = await resp.text();
-    parseCSV(text);
-    setStatus('ok');
-    document.getElementById('noticeBanner').style.display = 'none';
-    scheduleRefresh();
-    if (currentCode) { const row = findRow(currentCode); if (row) renderProfile(row); }
-  } catch (err) {
-    setStatus('error', err.message);
-    document.getElementById('noticeBanner').style.display = 'block';
-    showToast('Could not reach Google Sheets — check public access setting.');
-    scheduleRefresh();
-  } finally {
-    setLoading(false);
-  }
+    const r = await fetch(CSV_URL + '&t=' + Date.now(), {cache:'no-store'});
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    const txt = await r.text();
+    const res = Papa.parse(txt, {header:true, skipEmptyLines:true});
+    allData = res.data.map(row => {
+      const o = {};
+      for (const [k,v] of Object.entries(row)) o[k.trim()] = typeof v==='string'?v.trim():v;
+      return o;
+    });
+    setStatus(true);
+    document.getElementById('notice').style.display = 'none';
+    schedule();
+    if (currentCode) { const row = findRow(currentCode); if (row) render(row); }
+  } catch(e) {
+    setStatus(false);
+    document.getElementById('notice').style.display = 'block';
+  } finally { spin(false); }
 }
 
-function parseCSV(text) {
-  const result = Papa.parse(text, { header: true, skipEmptyLines: true });
-  allData = result.data.map(row => {
-    const clean = {};
-    for (const [k, v] of Object.entries(row))
-      clean[k.trim()] = typeof v === 'string' ? v.trim() : v;
-    return clean;
-  });
+function findRow(code) { return allData.find(r => (r.operator_code||'').toUpperCase() === code.toUpperCase()); }
+
+function setStatus(ok) {
+  const dot = document.getElementById('liveDot');
+  const txt = document.getElementById('statusTxt');
+  const sw  = document.getElementById('statusWrap');
+  dot.style.background = ok ? '#4CAF50' : '#EF5350';
+  dot.style.animation  = ok ? 'blink 2s infinite' : 'none';
+  if (!ok) txt.textContent = 'Connection error';
 }
 
-function findRow(code) {
-  return allData.find(r => (r.operator_code || '').toUpperCase() === code.toUpperCase());
+function schedule() {
+  clearTimeout(timer); clearInterval(cdTimer);
+  nextAt = Date.now() + REFRESH_MS;
+  timer   = setTimeout(() => loadData(), REFRESH_MS);
+  cdTimer = setInterval(countdown, 1000);
+  countdown();
 }
 
-/* ─── SCHEDULE / STATUS ──────────────────────────────────────────── */
-function scheduleRefresh() {
-  clearTimeout(refreshTimer); clearInterval(countdownTimer);
-  nextRefreshAt = Date.now() + REFRESH_MS;
-  refreshTimer = setTimeout(() => loadData(), REFRESH_MS);
-  updateCountdown();
-  countdownTimer = setInterval(updateCountdown, 1000);
+function countdown() {
+  const s = Math.max(0, Math.round((nextAt - Date.now())/1000));
+  const m = Math.floor(s/60);
+  document.getElementById('statusTxt').textContent =
+    `${allData.length} operators · next in ${m}:${String(s%60).padStart(2,'0')}`;
 }
 
-function updateCountdown() {
-  const secs = Math.max(0, Math.round((nextRefreshAt - Date.now()) / 1000));
-  const m = Math.floor(secs / 60), s = secs % 60;
-  const el = document.getElementById('statusText');
-  if (document.getElementById('statusChip').classList.contains('error')) return;
-  if (allData.length === 0) return;
-  el.textContent = `${allData.length} operators · next in ${m}:${String(s).padStart(2,'0')}`;
-}
-
-function setStatus(state, msg) {
-  const chip = document.getElementById('statusChip');
-  const dot  = document.getElementById('pulseDot');
-  chip.classList.toggle('error', state === 'error');
-  dot.style.background = state === 'error' ? 'var(--red-600)' : 'var(--green-600)';
-  if (state === 'error') { document.getElementById('statusText').textContent = 'Connection error'; dot.style.animation = 'none'; }
-  else { dot.style.animation = 'pulse 2s infinite'; }
-}
-
-function setLoading(on) {
-  const btn = document.getElementById('refreshBtn');
-  btn.classList.toggle('spinning', on);
+function spin(on) {
+  const btn = document.getElementById('refBtn');
+  btn.classList.toggle('spin', on);
   btn.disabled = on;
-  if (allData.length === 0 && on) { document.getElementById('emptyState').style.display='none'; document.getElementById('loadingState').style.display='block'; }
-  if (!on && allData.length === 0) { document.getElementById('loadingState').style.display='none'; document.getElementById('emptyState').style.display='block'; }
-  if (!on && allData.length > 0 && !currentCode) { document.getElementById('loadingState').style.display='none'; document.getElementById('emptyState').style.display='block'; }
 }
 
-/* ─── SEARCH / AUTOCOMPLETE ──────────────────────────────────────── */
-const searchInput = document.getElementById('searchInput');
-const suggBox     = document.getElementById('suggestions');
-const clearBtn    = document.getElementById('clearBtn');
+/* ── SEARCH ── */
+const inp = document.getElementById('searchInput');
+const sug = document.getElementById('suggestions');
+const clr = document.getElementById('clearBtn');
 
-searchInput.addEventListener('input', function () {
+inp.addEventListener('input', function(){
   const q = this.value.trim().toUpperCase();
-  clearBtn.style.display = q ? 'block' : 'none';
-  if (q.length < 2) { suggBox.style.display = 'none'; return; }
-  const matches = allData.filter(r => (r.operator_code || '').toUpperCase().includes(q)).slice(0, MAX_SUGGESTIONS);
-  if (!matches.length) { suggBox.innerHTML = '<div class="sug-no-result">No operators found</div>'; suggBox.style.display = 'block'; return; }
-  suggBox.innerHTML = matches.map(r => {
-    const code = (r.operator_code || '').toUpperCase();
-    const pri  = r.priority || '';
-    return `<div class="sug-item" data-code="${code}" role="option">
-      <div class="sug-avatar">${code.replace(/[^A-Z0-9]/g,'').substring(0,2)}</div>
-      <div>
-        <div class="sug-code">${code}</div>
-        <div class="sug-rm">${r.rm_name ? r.rm_name.toUpperCase() : '—'}</div>
+  clr.style.display = q ? 'block' : 'none';
+  if (q.length < 2) { sug.style.display='none'; return; }
+  const hits = allData.filter(r => (r.operator_code||'').toUpperCase().includes(q)).slice(0,10);
+  if (!hits.length) { sug.innerHTML='<div class="sug-no">No operators found</div>'; sug.style.display='block'; return; }
+  sug.innerHTML = hits.map(r => {
+    const code = (r.operator_code||'').toUpperCase();
+    const pri  = r.priority||'';
+    const cls  = PTAG[pri]||'tag-gray';
+    return `<div class="sug-item" data-code="${code}">
+      <div class="sug-av">${code.replace(/[^A-Z0-9]/g,'').slice(0,2)}</div>
+      <div><div class="sug-code">${code}</div><div class="sug-rm">${r.rm_name||'—'} · ${r.Cluster||'—'}</div></div>
+      <div class="sug-right">
+        ${pri ? `<span class="tag ${cls}">${pri}</span>` : ''}
+        <span style="font-size:10px;color:var(--t3)">Rank #${r.calling_rank||'—'}</span>
       </div>
-      ${pri ? `<span class="badge ${PRIORITY_STYLE[pri]||'badge-gray'}" style="font-size:10px;padding:2px 7px;margin-left:auto">${pri}</span>` : ''}
-      <div class="sug-cluster" style="${pri ? 'margin-left:8px' : ''}">${r.Cluster || '—'}</div>
     </div>`;
   }).join('');
-  suggBox.querySelectorAll('.sug-item').forEach(el => {
-    el.addEventListener('click', () => {
-      searchInput.value = el.dataset.code;
-      clearBtn.style.display = 'block';
-      suggBox.style.display = 'none';
-      selectOperator(el.dataset.code);
-    });
-  });
-  suggBox.style.display = 'block';
+  sug.querySelectorAll('.sug-item').forEach(el => el.addEventListener('click', () => {
+    inp.value = el.dataset.code; clr.style.display='block'; sug.style.display='none';
+    selectOp(el.dataset.code);
+  }));
+  sug.style.display = 'block';
 });
 
-searchInput.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { suggBox.style.display = 'none'; }
-  if (e.key === 'Enter') {
-    const q = searchInput.value.trim().toUpperCase();
-    const exact = allData.find(r => (r.operator_code || '').toUpperCase() === q);
-    if (exact) { suggBox.style.display = 'none'; selectOperator(q); }
-  }
+inp.addEventListener('keydown', e => {
+  if (e.key==='Escape') sug.style.display='none';
+  if (e.key==='Enter') { const r=findRow(inp.value.trim().toUpperCase()); if(r){sug.style.display='none';selectOp(r.operator_code);} }
 });
-
-clearBtn.addEventListener('click', () => {
-  searchInput.value = ''; clearBtn.style.display = 'none'; suggBox.style.display = 'none';
-  currentCode = null;
-  document.getElementById('profileSection').style.display = 'none';
-  document.getElementById('emptyState').style.display     = 'block';
+clr.addEventListener('click', () => {
+  inp.value=''; clr.style.display='none'; sug.style.display='none'; currentCode=null;
+  document.getElementById('profileSection').style.display='none';
+  document.getElementById('emptyState').style.display='block';
 });
+document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) sug.style.display='none'; });
+document.getElementById('refBtn').addEventListener('click', () => loadData());
 
-document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) suggBox.style.display = 'none'; });
-document.getElementById('refreshBtn').addEventListener('click', () => loadData());
-
-/* ─── HELPERS ────────────────────────────────────────────────────── */
-function fmt(v) { return v && v !== '' ? v : '—'; }
-function fmtMoney(v) {
-  const n = parseInt(v, 10);
-  if (!n || isNaN(n)) return '—';
-  return '₹' + n.toLocaleString('en-IN');
-}
-
-function srPill(val, cls, label) {
-  if (!val || val === '') return `<span class="sr-empty">—</span>`;
-  return `<span class="sr-pill ${cls}" title="${label}">${fmtMoney(val)}</span>`;
-}
-
-/* parse ####-delimited records split by |||| */
-function parseDelim(raw) {
-  if (!raw || raw.trim() === '') return [];
-  return raw.split('||||').map(r => r.split('####').map(f => f.trim())).filter(r => r.length > 1);
-}
-
-/* ─── SELECT & RENDER ────────────────────────────────────────────── */
-function selectOperator(code) {
+/* ── SELECT ── */
+function selectOp(code) {
   const row = findRow(code);
-  if (!row) { showToast(`Operator ${code} not found in current data.`); return; }
+  if (!row) return;
   currentCode = code;
-  renderProfile(row);
+  render(row);
 }
 
-function renderProfile(row) {
-  drawerOpen = false;
+/* ── HELPERS ── */
+const fmt  = v => (v && v!=='')?v:'—';
+const bool = v => String(v).toLowerCase()==='true';
+function money(v) { const n=parseInt(v,10); return (!n||isNaN(n))? '—' : '₹'+n.toLocaleString('en-IN'); }
+
+function parseDR(raw) {
+  if (!raw||raw.trim()==='') return [];
+  return raw.split(DR).map(r=>r.split(DF).map(f=>f.trim())).filter(r=>r.length>1||r[0]);
+}
+
+function srCells(l1,l2,l3) {
+  const cell = (v,cls,lbl) => v&&v!=='' ? `<span class="sr ${cls}" title="${lbl}">${money(v)}</span>` : `<span class="sr-nil">—</span>`;
+  return `<div class="sr-row">${cell(l1,'sr-l1','L1')}</div>`;
+  // separate cells
+}
+function srCell(v, cls, lbl) { return v&&v!=='' ? `<span class="sr ${cls}" title="${lbl}">${money(v)}</span>` : `<span class="sr-nil">—</span>`; }
+
+function tripChip(st) {
+  const s=(st||'').toUpperCase();
+  if (s.includes('CANCEL')) return '<span class="chip chip-cancel">Cancelled</span>';
+  if (s.includes('WON'))   return '<span class="chip chip-won">Won</span>';
+  if (s.includes('LOST'))  return '<span class="chip chip-lost">Lost</span>';
+  return `<span class="chip chip-live">${st||'Live'}</span>`;
+}
+
+/* ── RENDER ── */
+function render(row) {
+  drawerOpen=false;
   document.getElementById('drDrawer').classList.remove('open');
-  document.getElementById('drStep').classList.remove('active');
-  document.getElementById('emptyState').style.display    = 'none';
-  document.getElementById('profileSection').style.display = 'block';
+  document.getElementById('fStep').classList.remove('active');
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('profileSection').style.display='block';
 
-  /* ── header ── */
-  const code = (row.operator_code || '').toUpperCase();
-  document.getElementById('profileAvatar').textContent = code.replace(/[^A-Z0-9]/g,'').substring(0,2);
-  document.getElementById('profileCode').textContent   = code;
-  document.getElementById('profileRM').textContent     = 'RM: ' + (row.rm_name ? row.rm_name.toUpperCase() : '—');
-  document.getElementById('clusterBadge').textContent  = row.Cluster || '—';
+  const code = (row.operator_code||'').toUpperCase();
 
-  /* priority badge */
-  const priBadge = document.getElementById('priorityBadge');
-  const pri = row.priority || '';
-  if (pri) {
-    priBadge.textContent = pri;
-    priBadge.className   = 'badge ' + (PRIORITY_STYLE[pri] || 'badge-gray');
-    priBadge.style.display = '';
-  } else { priBadge.style.display = 'none'; }
+  /* Profile header */
+  document.getElementById('pcAvatar').textContent = code.replace(/[^A-Z0-9]/g,'').slice(0,2);
+  document.getElementById('pcCode').textContent   = code;
+  document.getElementById('pcRM').textContent     = `${row.rm_name||'—'} · ${row.Cluster||'—'}`;
 
-  /* stage badge */
-  const stageBadge = document.getElementById('stageBadge');
-  const stage = row.stage || '';
-  if (stage) {
-    stageBadge.textContent = stage;
-    stageBadge.style.display = '';
-  } else { stageBadge.style.display = 'none'; }
+  const tags = document.getElementById('pcTags');
+  tags.innerHTML = '';
+  const pri = row.priority||'';
+  if (pri) tags.innerHTML += `<span class="tag ${PTAG[pri]||'tag-gray'}" title="${PTXT[pri]||''}">${pri}</span>`;
+  if (row.stage && row.stage!==pri) tags.innerHTML += `<span class="tag tag-gray">${row.stage}</span>`;
+  if (row.dr_supply_type==='Red DR') tags.innerHTML += `<span class="tag tag-red">🔴 Red DR</span>`;
+  if (row.va_sub_bucket) tags.innerHTML += `<span class="tag tag-amber">${row.va_sub_bucket}</span>`;
+  if (bool(row.trained_graduate)) tags.innerHTML += `<span class="tag tag-purple">Trained Graduate</span>`;
 
-  /* calling rank */
-  const rankBadge = document.getElementById('rankBadge');
-  const rank = row.calling_rank || '';
-  if (rank) {
-    rankBadge.textContent = `#${rank}`;
-    rankBadge.style.display = '';
-  } else { rankBadge.style.display = 'none'; }
-
-  /* last run time */
-  const rtBadge = document.getElementById('runTimeBadge');
-  const rt = row.last_run_time || '';
+  /* run time */
+  const rt = row.last_run_time||'';
   if (rt) {
-    rtBadge.textContent = `⏱ Last seen ${rt}`;
-    rtBadge.style.display = '';
-    // green if within last 30 min (rough check by comparing HH:MM)
-    try {
-      const now = new Date();
-      const parts = rt.split(':');
-      const runDate = new Date();
-      runDate.setHours(+parts[0], +parts[1], +parts[2] || 0, 0);
-      const diffMin = (now - runDate) / 60000;
-      rtBadge.className = 'run-time-chip' + (diffMin < 35 ? ' fresh' : '');
-    } catch(e) { rtBadge.className = 'run-time-chip'; }
-  } else { rtBadge.style.display = 'none'; }
+    let fresh=false;
+    try { const p=rt.split(':'); const rd=new Date(); rd.setHours(+p[0],+p[1],+p[2]||0,0); fresh=(Date.now()-rd)/60000<35; } catch(e){}
+    tags.innerHTML += `<span class="rt-tag ${fresh?'fresh':''}" style="margin-left:2px">⏱ ${rt}</span>`;
+  }
 
-  /* activation score */
-  document.getElementById('scoreVal').textContent = Number(row.activation_score || row.fo_activity_score || 0).toFixed(1);
+  document.getElementById('scoreNum').textContent = parseFloat(row.activation_score||row.fo_activity_score||0).toFixed(1);
+  const rank = row.calling_rank||'';
+  const rc   = document.getElementById('rankChip');
+  if (rank) { rc.textContent=`#${rank} in queue`; rc.style.display='block'; } else rc.style.display='none';
 
-  /* ── activity metrics ── */
-  document.getElementById('vaDays').textContent    = row.va_days    || '0';
-  document.getElementById('ldpDays').textContent   = row.ldp_days   || '0';
-  document.getElementById('ldpCount').textContent  = row.total_ldp_count || '0';
-  document.getElementById('tokenCount').textContent = row.token_count || '0';
+  /* Today snapshot */
+  const snaps = [
+    {key:'vehicle_available_today', label:'VA'},
+    {key:'accepted_today',          label:'Accepted'},
+    {key:'token_paid_today',        label:'Token Paid'},
+    {key:'bid_today',               label:'Bid Today'},
+    {key:'ldp_today',               label:'LDP Today'},
+    {key:'vehicle_submitted',       label:'Vehicle Sub.'},
+    {key:'called_today',            label:'Called Today'},
+  ];
+  document.getElementById('snapshotRow').innerHTML = snaps.map(s => {
+    const on = bool(row[s.key]);
+    return `<div class="snap-pill ${on?'snap-yes':'snap-no'}"><div class="dot"></div>${s.label}</div>`;
+  }).join('');
 
-  /* ── DR funnel ── */
-  const drCount = parseInt(row.num_of_drs_in_opsearch || '0', 10);
-  const tokenDR = parseInt(row.num_of_drs_paid_token  || '0', 10);
-  const conv    = drCount > 0 ? Math.round((tokenDR / drCount) * 100) : 0;
-  document.getElementById('drCountVal').textContent  = drCount;
-  document.getElementById('tokenDRVal').textContent  = tokenDR;
-  document.getElementById('convRateVal').textContent = conv + '%';
+  /* Activity metrics */
+  document.getElementById('mVaDays').textContent   = row.va_days    ||'0';
+  document.getElementById('mLdpDays').textContent  = row.ldp_days   ||'0';
+  document.getElementById('mLdpCount').textContent = row.total_ldp_count||'0';
+  document.getElementById('mTokens').textContent   = row.token_count ||'0';
 
-  /* DR drawer lanes */
-  const laneRaw = (row.lane_vt_details || '').trim();
-  const lanes   = laneRaw ? laneRaw.split('|').map(s => s.trim().toUpperCase()).filter(Boolean) : [];
-  const tbody   = document.getElementById('drTableBody');
-  tbody.innerHTML = lanes.length
-    ? lanes.map((l,i) => `<tr><td style="color:var(--text-3);font-size:11px;width:32px">${i+1}</td><td><span class="odvt-text">${l}</span></td></tr>`).join('')
-    : '<tr><td colspan="2" class="dr-empty">No lane details available</td></tr>';
+  /* Lifetime */
+  document.getElementById('ltLdp').textContent    = row.lifetime_ldps   ||'0';
+  document.getElementById('ltTokens').textContent = row.lifetime_tokens ||'0';
+  document.getElementById('ltTrips').textContent  = row.life_time_trips ||'0';
+  document.getElementById('ltDRs').textContent    = row.appeared_in_drs ||'0';
 
-  /* ── vehicles ── */
-  const total = parseInt(row.total_vehicles     || '0', 10);
-  const corr  = parseInt(row.corrected_vehicles || '0', 10);
-  document.getElementById('totalVeh').textContent = total;
-  document.getElementById('corrVeh').textContent  = corr;
-  document.getElementById('unverVeh').textContent = Math.max(0, total - corr);
+  /* DR Funnel */
+  const drCount  = parseInt(row.num_of_drs_in_opsearch||'0',10);
+  const tokDR    = parseInt(row.num_of_drs_paid_token ||'0',10);
+  const redDR    = parseInt(row.red_dr_count          ||'0',10);
+  const conv     = drCount>0 ? Math.round(tokDR/drCount*100) : 0;
+  document.getElementById('fDRs').textContent   = drCount;
+  document.getElementById('fRed').textContent   = redDR;
+  document.getElementById('fToken').textContent = tokDR;
+  document.getElementById('fConv').textContent  = conv+'%';
 
-  /* lane pills */
-  const pillsEl = document.getElementById('lanePills');
-  pillsEl.innerHTML = lanes.length
-    ? lanes.map(l => `<span class="lane-pill">${l}</span>`).join('')
-    : '<span class="no-lanes">No live matches today</span>';
+  /* DR drawer — lane_vt_details (#### fields, |||| records) */
+  const laneRecs = parseDR(row.lane_vt_details||'');
+  const drBody   = document.getElementById('drBody');
+  drBody.innerHTML = laneRecs.length
+    ? laneRecs.map((f,i) => {
+        const did   = f[0]||'';
+        const route = f[1]||'';
+        const truck = f[2]||'';
+        // supply info at various positions; look for semicolons (L1;L2;L3)
+        const sup = f.find((v,idx) => idx>2 && v && v.includes(';')) || '';
+        const [l1='',l2='',l3=''] = sup.split(';');
+        return `<tr>
+          <td class="row-num">${i+1}</td>
+          <td class="mono">${fmt(did)}</td>
+          <td>${fmt(route)}</td>
+          <td style="color:var(--t2)">${fmt(truck)}</td>
+          <td><div class="sr-row">
+            ${srCell(l1,'sr-l1','L1')}${srCell(l2,'sr-l2','L2')}${srCell(l3,'sr-l3','L3')}
+          </div></td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="5" class="tbl-empty">No lanes in op-search today</td></tr>';
 
-  /* ── TODAY'S BIDS — bid_today_lane_details ── */
-  /* Format: demand_id####route####truck####opfreight####token_paid####L1####L2####L3 */
-  const bidRecs = parseDelim(row.bid_today_lane_details || '');
-  const bidCard  = document.getElementById('bidCard');
-  const bidLabel = document.getElementById('bidSectionLabel');
-  const bidBody  = document.getElementById('bidTableBody');
+  /* Bid Today — bid_today_lane_details */
+  /* f: [did, route, truck, opFreight, token_paid, L1, L2, L3] */
+  const bidRecs = parseDR(row.bid_today_lane_details||'');
+  const bidSec  = document.getElementById('bidSection');
   if (bidRecs.length) {
-    bidCard.style.display  = '';
-    bidLabel.style.display = '';
+    bidSec.style.display='';
     document.getElementById('bidCount').textContent = `${bidRecs.length} demand${bidRecs.length>1?'s':''}`;
-    bidBody.innerHTML = bidRecs.map((f, i) => {
-      const [did, route, truck, opFr, tokPaid, l1, l2, l3] = f;
-      const paid = tokPaid === '1';
+    document.getElementById('bidBody').innerHTML = bidRecs.map((f,i) => {
+      const [did,route,truck,opFr,tokPaid,l1,l2,l3]=f;
+      const paid = tokPaid==='1'||tokPaid==='True'||bool(tokPaid);
       return `<tr>
-        <td style="color:var(--text-3);font-size:11px;width:28px">${i+1}</td>
-        <td><span class="mono">${fmt(did)}</span></td>
+        <td class="row-num">${i+1}</td>
+        <td class="mono">${fmt(did)}</td>
         <td>${fmt(route)}</td>
-        <td style="color:var(--text-2)">${fmt(truck)}</td>
-        <td><span class="freight-val">${fmtMoney(opFr)}</span></td>
-        <td>${paid ? '<span class="tok-paid">✓ Paid</span>' : '<span class="tok-unpaid">Pending</span>'}</td>
-        <td>${srPill(l1,'sr-l1','L1 — Lowest rate card')}</td>
-        <td>${srPill(l2,'sr-l2','L2 — Mid rate card')}</td>
-        <td>${srPill(l3,'sr-l3','L3 — High rate card')}</td>
+        <td style="color:var(--t2)">${fmt(truck)}</td>
+        <td class="fw">${money(opFr)}</td>
+        <td>${paid?'<span class="chip chip-won">Paid</span>':'<span class="chip" style="background:var(--surface2);color:var(--t3)">Pending</span>'}</td>
+        <td>${srCell(l1,'sr-l1','L1')}</td>
+        <td>${srCell(l2,'sr-l2','L2')}</td>
+        <td>${srCell(l3,'sr-l3','L3')}</td>
       </tr>`;
     }).join('');
-  } else {
-    bidCard.style.display  = 'none';
-    bidLabel.style.display = 'none';
-  }
+  } else bidSec.style.display='none';
 
-  /* ── TOKEN LANES — token_lane_details ── */
-  /* Format: demand_id####route####truck####opfreight####placed_rate####method####L1####L2####L3 */
-  const tokRecs = parseDelim(row.token_lane_details || '');
-  const tokCard  = document.getElementById('tokenCard');
-  const tokLabel = document.getElementById('tokenSectionLabel');
-  const tokBody  = document.getElementById('tokenTableBody');
+  /* Token Lanes — token_lane_details */
+  /* f: [did, route, truck, opFreight, placed_rate, method, L1, L2, L3] */
+  const tokRecs = parseDR(row.token_lane_details||'');
+  const tokSec  = document.getElementById('tokenSection');
   if (tokRecs.length) {
-    tokCard.style.display  = '';
-    tokLabel.style.display = '';
-    document.getElementById('tokenLaneCount').textContent = `${tokRecs.length} demand${tokRecs.length>1?'s':''}`;
-    tokBody.innerHTML = tokRecs.map((f, i) => {
-      const [did, route, truck, opFr, placedRate, method, l1, l2, l3] = f;
+    tokSec.style.display='';
+    document.getElementById('tokenCount2').textContent = `${tokRecs.length} demand${tokRecs.length>1?'s':''}`;
+    document.getElementById('tokenBody').innerHTML = tokRecs.map((f,i) => {
+      const [did,route,truck,opFr,placed,method,l1,l2,l3]=f;
       return `<tr>
-        <td style="color:var(--text-3);font-size:11px;width:28px">${i+1}</td>
-        <td><span class="mono">${fmt(did)}</span></td>
+        <td class="row-num">${i+1}</td>
+        <td class="mono">${fmt(did)}</td>
         <td>${fmt(route)}</td>
-        <td style="color:var(--text-2)">${fmt(truck)}</td>
-        <td><span class="freight-val">${fmtMoney(opFr)}</span></td>
-        <td>${fmtMoney(placedRate)}</td>
-        <td><span style="font-size:10px;color:var(--text-3)">${fmt(method)}</span></td>
-        <td>${srPill(l1,'sr-l1','L1 — Lowest rate card')}</td>
-        <td>${srPill(l2,'sr-l2','L2 — Mid rate card')}</td>
-        <td>${srPill(l3,'sr-l3','L3 — High rate card')}</td>
+        <td style="color:var(--t2)">${fmt(truck)}</td>
+        <td class="fw">${money(opFr)}</td>
+        <td>${money(placed)}</td>
+        <td style="font-size:10px;color:var(--t3)">${fmt(method)}</td>
+        <td>${srCell(l1,'sr-l1','L1')}</td>
+        <td>${srCell(l2,'sr-l2','L2')}</td>
+        <td>${srCell(l3,'sr-l3','L3')}</td>
       </tr>`;
     }).join('');
-  } else {
-    tokCard.style.display  = 'none';
-    tokLabel.style.display = 'none';
-  }
+  } else tokSec.style.display='none';
+
+  /* Accepted Today — accepted_lane_details */
+  /* f: [did, route, truck, opFreight, ?, status/method, placement_id, time, trip_status] */
+  const accRecs = parseDR(row.accepted_lane_details||'');
+  const accSec  = document.getElementById('acceptedSection');
+  if (accRecs.length) {
+    accSec.style.display='';
+    document.getElementById('accCount').textContent = `${accRecs.length} trip${accRecs.length>1?'s':''}`;
+    document.getElementById('accBody').innerHTML = accRecs.map((f,i) => {
+      const did    = f[0]||'';
+      const route  = f[1]||'';
+      const truck  = f[2]||'';
+      const opFr   = f[3]||'';
+      const status = f[5]||'';
+      const plc    = f[6]||'';
+      const ts     = f[7]||'';
+      const state  = f[8]||'';
+      return `<tr>
+        <td class="row-num">${i+1}</td>
+        <td class="mono">${fmt(did)}</td>
+        <td>${fmt(route)}</td>
+        <td style="color:var(--t2)">${fmt(truck)}</td>
+        <td class="fw">${money(opFr)}</td>
+        <td>${tripChip(state||status)}</td>
+        <td class="mono" style="font-size:10px">${fmt(plc)}</td>
+        <td style="font-size:10px;color:var(--t3)">${fmt(ts)}</td>
+      </tr>`;
+    }).join('');
+  } else accSec.style.display='none';
+
+  /* Historical Tokens — hist_token_details */
+  /* f: [did, route, truck, opFreight, placed_rate, result, date] */
+  const histRecs = parseDR(row.hist_token_details||'');
+  const histSec  = document.getElementById('histSection');
+  if (histRecs.length) {
+    histSec.style.display='';
+    document.getElementById('histCount').textContent = `${histRecs.length} record${histRecs.length>1?'s':''}`;
+    document.getElementById('histBody').innerHTML = histRecs.map((f,i) => {
+      const [did,route,truck,opFr,placed,result,date]=f;
+      return `<tr>
+        <td class="row-num">${i+1}</td>
+        <td class="mono">${fmt(did)}</td>
+        <td>${fmt(route)}</td>
+        <td style="color:var(--t2)">${fmt(truck)}</td>
+        <td class="fw">${money(opFr)}</td>
+        <td>${money(placed)}</td>
+        <td>${tripChip(result)}</td>
+        <td style="font-size:10px;color:var(--t3)">${fmt(date)}</td>
+      </tr>`;
+    }).join('');
+  } else histSec.style.display='none';
+
+  /* Vehicle profile */
+  const total=parseInt(row.total_vehicles||'0',10);
+  const corr =parseInt(row.corrected_vehicles||'0',10);
+  document.getElementById('vTotal').textContent = total;
+  document.getElementById('vCorr').textContent  = corr;
+  document.getElementById('vUnver').textContent = Math.max(0,total-corr);
+  /* avail_vehicles: vehicle_no####tyre####status####something, records by |||| */
+  const vehRecs = parseDR(row.avail_vehicles||'');
+  document.getElementById('vehList').innerHTML = vehRecs.length
+    ? vehRecs.map(f => {
+        const no=f[0]||'', tyre=f[1]||'', stat=(f[2]||'').toLowerCase();
+        const sc=stat==='open'?'chip chip-won':stat==='booked'?'chip chip-live':'chip chip-cancel';
+        return `<div class="veh-row">
+          <div class="veh-no">${no}</div>
+          <div class="veh-meta">
+            ${tyre ? `<span class="tag tag-gray">${tyre}T</span>`:''}
+            ${stat ? `<span class="${sc}">${stat}</span>`:''}
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="tbl-empty">No vehicle records</div>';
+
+  /* Call history */
+  document.getElementById('cTotal').textContent = row.total_calls||'0';
+  document.getElementById('cLast').textContent  = row.last_call_date||'—';
+  const dispFull = row.last_call_disposition||'';
+  const dispShort = dispFull.replace(/-$/, '').trim();
+  document.getElementById('cDisp').textContent = dispShort||'—';
+  /* call_history: date####disposition####caller####status, records by |||| */
+  const callRecs = parseDR(row.call_history||'');
+  document.getElementById('callList').innerHTML = callRecs.length
+    ? callRecs.map(f => {
+        const [date,disp,caller,status]=f;
+        const s=(status||'').toLowerCase();
+        const sc=s.includes('connect')?'chip chip-won':s.includes('not')||s.includes('busy')||s.includes('no')?'chip chip-lost':'chip chip-cancel';
+        return `<div class="call-row">
+          <div class="call-date">${fmt(date)}</div>
+          <div class="call-by">${fmt(caller)}</div>
+          <div class="call-disp"><span class="${sc}">${fmt(disp||status)}</span></div>
+        </div>`;
+      }).join('')
+    : '<div class="tbl-empty">No call history</div>';
 }
 
-/* ─── DRAWER TOGGLE ──────────────────────────────────────────────── */
+/* ── DRAWER ── */
 function toggleDrawer() {
-  drawerOpen = !drawerOpen;
-  document.getElementById('drDrawer').classList.toggle('open', drawerOpen);
-  document.getElementById('drStep').classList.toggle('active', drawerOpen);
+  drawerOpen=!drawerOpen;
+  document.getElementById('drDrawer').classList.toggle('open',drawerOpen);
+  document.getElementById('fStep').classList.toggle('active',drawerOpen);
 }
 
-/* ─── TOAST ──────────────────────────────────────────────────────── */
-let toastTimer;
-function showToast(msg) {
-  const toast = document.getElementById('errorToast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 5000);
-}
-
-/* ─── INIT ───────────────────────────────────────────────────────── */
 loadData();
 </script>
 </body>

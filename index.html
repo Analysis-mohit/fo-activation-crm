@@ -3,16 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FO Caller CRM</title>
+<title>FO Activation CRM</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F5F4F0;
-  --surface:#fff;
-  --surface2:#F0EEE8;
-  --border:rgba(0,0,0,.09);
-  --bmd:rgba(0,0,0,.16);
+  --bg:#F6F5F1;--surface:#fff;--surface2:#EFEDE8;
+  --border:rgba(0,0,0,.09);--bmd:rgba(0,0,0,.16);
   --t1:#18180F;--t2:#5C5B55;--t3:#9C9B94;
   --p6:#5347B5;--p5:#6B5FCC;--p1:#ECEAFB;--p2:#C4BFEF;--p8:#3B3180;
   --g6:#2E7D32;--g1:#E8F5E9;--g2:#A5D6A7;
@@ -23,835 +20,929 @@
   --gr6:#546E7A;--gr1:#ECEFF1;
   --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   --mono:'SF Mono','Fira Code',monospace;
-  --rad:10px;--rad-sm:6px;--rad-lg:16px;
-  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 6px rgba(0,0,0,.05);
-  --shadow-md:0 4px 12px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.06);
+  --rad:10px;--rad-sm:6px;--rad-lg:14px;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 6px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.10);
 }
+body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px;line-height:1.5;display:flex;min-height:100vh}
 
-body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px;line-height:1.5;min-height:100vh}
+/* ── SIDEBAR ── */
+.sidebar{width:64px;background:#1A1A2E;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px;position:sticky;top:0;height:100vh;overflow:hidden}
+.sb-logo{width:36px;height:36px;background:var(--p5);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800;margin-bottom:8px;letter-spacing:.5px}
+.sb-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);cursor:pointer;transition:all .15s;margin:1px 0}
+.sb-icon:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8)}
+.sb-icon.active{background:rgba(83,71,181,.5);color:#fff}
+.sb-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sb-sep{width:30px;height:1px;background:rgba(255,255,255,.1);margin:6px 0}
 
-/* ── TOPBAR ── */
-.topbar{
-  position:sticky;top:0;z-index:100;
-  height:56px;background:var(--p6);
-  display:flex;align-items:center;gap:16px;padding:0 20px;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
-}
-.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.brand-icon{width:30px;height:30px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:.5px}
-.brand-name{color:#fff;font-size:14px;font-weight:700;line-height:1.2}
-.brand-sub{color:rgba(255,255,255,.6);font-size:10px}
+/* ── MAIN ── */
+.main{flex:1;min-width:0;overflow-y:auto;height:100vh}
 
-.search-wrap{flex:1;max-width:400px;position:relative}
-.search-wrap svg.si{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;opacity:.7}
-.search-wrap input{
-  width:100%;height:36px;padding:0 36px;
-  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);
-  border-radius:var(--rad-sm);color:#fff;font-size:13px;outline:none;
-  transition:background .15s,border-color .15s;
-}
-.search-wrap input::placeholder{color:rgba(255,255,255,.55)}
-.search-wrap input:focus{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.5)}
-.clear-x{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.7);display:none;line-height:1;padding:2px;font-size:16px}
+/* ── LIST VIEW ── */
+#listView{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+.lv-title{font-size:22px;font-weight:800;color:var(--t1);margin-bottom:18px}
 
-.suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--bmd);border-radius:var(--rad);box-shadow:var(--shadow-md);z-index:200;overflow:hidden;display:none;max-height:320px;overflow-y:auto}
-.sug-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);transition:background .1s}
-.sug-item:last-child{border-bottom:none}
-.sug-item:hover{background:var(--p1)}
-.sug-av{width:30px;height:30px;border-radius:50%;background:var(--p1);color:var(--p6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:var(--mono)}
-.sug-code{font-size:13px;font-weight:700;color:var(--t1);font-family:var(--mono)}
-.sug-rm{font-size:11px;color:var(--t2);margin-top:1px}
-.sug-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+/* search */
+.lv-search-wrap{position:relative;margin-bottom:16px}
+.lv-search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--t3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.lv-search{width:100%;height:42px;padding:0 40px;border:1.5px solid var(--border);border-radius:var(--rad);background:var(--surface);color:var(--t1);font-size:13px;outline:none;box-shadow:var(--shadow);transition:border-color .15s}
+.lv-search:focus{border-color:var(--p6)}
+.lv-search::placeholder{color:var(--t3)}
 
-.status-area{margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0}
-.live-dot{width:7px;height:7px;border-radius:50%;background:#4CAF50;animation:blink 2s infinite;flex-shrink:0}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.status-txt{font-size:11px;color:rgba(255,255,255,.8)}
-.status-err .live-dot{background:#EF5350;animation:none}
-.ref-btn{height:30px;padding:0 12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--rad-sm);color:#fff;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px;transition:background .12s}
-.ref-btn:hover{background:rgba(255,255,255,.25)}
-.ref-btn svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.ref-btn.spin svg{animation:rspin .8s linear infinite}
-@keyframes rspin{to{transform:rotate(360deg)}}
+/* stage tabs */
+.stage-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.stage-lbl{font-size:12px;font-weight:600;color:var(--t2);flex-shrink:0}
+.stage-btn{padding:5px 13px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;transition:all .12s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.stage-btn:hover{border-color:var(--p6);color:var(--p6)}
+.stage-btn.active{background:var(--p6);border-color:var(--p6);color:#fff}
+.stage-btn .cnt{font-size:11px;font-weight:700;opacity:.85}
+.stage-btn.live-btn .dot-live{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+.stage-btn.tab-post{background:var(--g1);border-color:var(--g2);color:var(--g6)}
+.stage-btn.tab-post.active{background:var(--g6);border-color:var(--g6);color:#fff}
+.stage-btn.tab-tok{background:var(--a1);border-color:var(--a2);color:var(--a6)}
+.stage-btn.tab-tok.active{background:var(--a6);border-color:var(--a6);color:#fff}
 
-/* ── LAYOUT ── */
-.main{max-width:960px;margin:0 auto;padding:1.25rem 1rem 3rem}
+/* filters */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.filter-lbl{font-size:12px;font-weight:600;color:var(--t2);flex-shrink:0}
+.fsel{height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--rad-sm);background:var(--surface);color:var(--t1);font-size:12px;outline:none;cursor:pointer;transition:border-color .15s}
+.fsel:focus{border-color:var(--p6)}
 
-/* ── EMPTY/LOADING ── */
-.empty-state{text-align:center;padding:5rem 1rem}
-.empty-state svg{width:48px;height:48px;stroke:var(--t3);fill:none;stroke-width:1.2;margin-bottom:14px}
-.empty-state h2{font-size:15px;font-weight:600;color:var(--t1);margin-bottom:6px}
-.empty-state p{font-size:13px;color:var(--t3)}
+/* text filter */
+.text-filter-wrap{position:relative;margin-bottom:12px}
+.text-filter-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--t3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.text-filter{width:100%;height:36px;padding:0 12px 0 32px;border:1.5px solid var(--border);border-radius:var(--rad-sm);background:var(--surface);color:var(--t1);font-size:12px;outline:none;transition:border-color .15s}
+.text-filter:focus{border-color:var(--p6)}
+.text-filter::placeholder{color:var(--t3)}
 
-/* ── BADGE SYSTEM ── */
-.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500;line-height:1.6;white-space:nowrap}
+/* count bar */
+.count-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 0;margin-bottom:4px;border-bottom:1px solid var(--border)}
+.count-lbl{font-size:13px;font-weight:600;color:var(--t1)}
+.count-range{font-size:12px;color:var(--t3)}
+.pag-btns{display:flex;gap:6px;margin-top:12px;justify-content:center}
+.pag-btn{height:32px;min-width:32px;padding:0 12px;border:1.5px solid var(--border);border-radius:var(--rad-sm);background:var(--surface);color:var(--t2);font-size:12px;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:4px}
+.pag-btn:hover:not(:disabled){border-color:var(--p6);color:var(--p6)}
+.pag-btn:disabled{opacity:.4;cursor:default}
+.pag-btn.active{background:var(--p6);border-color:var(--p6);color:#fff}
+.pag-info{display:flex;align-items:center;font-size:12px;color:var(--t2);padding:0 8px}
+
+/* operator card */
+.op-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rad-lg);padding:13px 16px;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;gap:14px;align-items:flex-start;box-shadow:var(--shadow)}
+.op-card:hover{border-color:var(--p6);box-shadow:0 2px 12px rgba(83,71,181,.12)}
+.op-card.priority-left{border-left:3px solid var(--p6)}
+.op-card.priority-p1{border-left-color:var(--g6)}
+.op-card.priority-p2{border-left-color:var(--teal6)}
+.op-card.priority-p3{border-left-color:var(--b6)}
+.op-card.priority-p4{border-left-color:var(--a6)}
+.op-card.priority-va{border-left-color:var(--a6)}
+.op-card.priority-h {border-left-color:var(--gr6)}
+
+.op-rank{font-size:18px;font-weight:800;color:var(--t3);min-width:36px;text-align:right;flex-shrink:0;padding-top:1px;font-family:var(--mono)}
+.op-body{flex:1;min-width:0}
+.op-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.op-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.op-dot.live{background:#4CAF50;box-shadow:0 0 0 2px rgba(76,175,80,.2)}
+.op-dot.idle{background:var(--t3)}
+.op-code{font-size:15px;font-weight:800;color:var(--t1);font-family:var(--mono);letter-spacing:.3px}
+.time-chip{font-size:11px;color:var(--t2);background:var(--surface2);padding:2px 8px;border-radius:20px;font-family:var(--mono);white-space:nowrap}
+.time-chip.fresh{color:var(--g6);background:var(--g1)}
+
+.op-tags{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
 .tag-p1{background:var(--g1);color:var(--g6)}
 .tag-p2{background:var(--teal1);color:var(--teal6)}
 .tag-p3{background:var(--b1);color:var(--b6)}
-.tag-p4{background:var(--p1);color:var(--p6)}
+.tag-p4{background:var(--a1);color:var(--a6)}
 .tag-va{background:var(--a1);color:var(--a6)}
 .tag-h {background:var(--gr1);color:var(--gr6)}
 .tag-gray{background:var(--surface2);color:var(--t2)}
 .tag-red{background:var(--r1);color:var(--r6)}
 .tag-green{background:var(--g1);color:var(--g6)}
 .tag-blue{background:var(--b1);color:var(--b6)}
-.tag-purple{background:var(--p1);color:var(--p6)}
 .tag-amber{background:var(--a1);color:var(--a6)}
+.tag-purple{background:var(--p1);color:var(--p6)}
+.tag-outline{background:transparent;border:1.5px solid var(--border);color:var(--t2)}
+.rm-name{font-size:11px;font-weight:600;color:var(--t2);margin-left:auto;padding-left:8px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}
+.op-call{margin-top:5px;font-size:11px;color:var(--t3);display:flex;align-items:center;gap:6px}
+.call-dot-g{width:6px;height:6px;border-radius:50%;background:var(--g6);flex-shrink:0}
+.call-dot-r{width:6px;height:6px;border-radius:50%;background:var(--t3);flex-shrink:0}
 
-/* ── PROFILE CARD ── */
-.profile-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad-lg);padding:1.25rem 1.5rem;margin-bottom:12px;box-shadow:var(--shadow)}
-.pc-top{display:flex;align-items:flex-start;gap:14px}
-.pc-avatar{width:48px;height:48px;border-radius:12px;background:var(--p6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;letter-spacing:.5px;font-family:var(--mono)}
-.pc-info{flex:1;min-width:0}
-.pc-code{font-size:22px;font-weight:800;color:var(--t1);font-family:var(--mono);letter-spacing:.5px;line-height:1.1}
-.pc-rm{font-size:12px;color:var(--t2);margin-top:3px}
-.pc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
-.pc-right{text-align:right;flex-shrink:0}
-.score-num{font-size:32px;font-weight:800;color:var(--p6);line-height:1}
-.score-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-top:2px}
-.rank-chip{font-size:11px;font-weight:700;color:var(--p6);background:var(--p1);padding:3px 10px;border-radius:20px;margin-top:6px;display:inline-block}
+/* loading / empty */
+.lv-loader{text-align:center;padding:3rem;color:var(--t3);font-size:13px}
+.lv-loader svg{width:32px;height:32px;stroke:var(--t3);fill:none;stroke-width:1.5;display:block;margin:0 auto 12px;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lv-empty{text-align:center;padding:4rem;color:var(--t3);font-size:13px}
+.lv-empty svg{width:40px;height:40px;stroke:var(--t3);fill:none;stroke-width:1.4;display:block;margin:0 auto 12px}
 
-/* run-time tag */
-.rt-tag{font-size:10px;color:var(--t3);font-family:var(--mono);display:inline-flex;align-items:center;gap:4px;background:var(--surface2);padding:2px 8px;border-radius:20px}
+/* status bar (top of list) */
+.status-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:11px;color:var(--t3)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#4CAF50;animation:blink 2s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ref-btn-sm{margin-left:auto;height:28px;padding:0 10px;border:1px solid var(--border);border-radius:var(--rad-sm);background:var(--surface);color:var(--t2);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .12s}
+.ref-btn-sm:hover{background:var(--surface2)}
+.ref-btn-sm svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ref-btn-sm.spin svg{animation:spin .8s linear infinite}
+
+/* ═══ PROFILE VIEW ═══ */
+#profileView{display:none;max-width:720px;margin:0 auto;padding:16px 16px 48px}
+
+.back-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid var(--border);border-radius:var(--rad-sm);background:var(--surface);color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;margin-bottom:16px;transition:all .12s}
+.back-btn:hover{border-color:var(--p6);color:var(--p6)}
+.back-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* profile header */
+.pf-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rad-lg);padding:18px 20px;margin-bottom:10px;box-shadow:var(--shadow)}
+.pf-top{display:flex;align-items:flex-start;gap:14px}
+.pf-av{width:50px;height:50px;border-radius:12px;background:var(--p6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;flex-shrink:0;font-family:var(--mono)}
+.pf-info{flex:1;min-width:0}
+.pf-code{font-size:22px;font-weight:800;font-family:var(--mono);letter-spacing:.5px;line-height:1.1}
+.pf-rm{font-size:12px;color:var(--t2);margin-top:3px}
+.pf-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.rt-tag{font-size:10px;color:var(--t3);font-family:var(--mono);background:var(--surface2);padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:4px}
 .rt-tag.fresh{color:var(--g6);background:var(--g1)}
+.pf-right{text-align:right;flex-shrink:0}
+.pf-score{font-size:32px;font-weight:800;color:var(--p6);line-height:1}
+.pf-slbl{font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--t3);margin-top:2px}
+.rank-chip{display:inline-block;margin-top:5px;background:var(--p1);color:var(--p6);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
 
-/* ── TODAY SNAPSHOT ── */
-.snapshot-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.snap-pill{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid transparent}
+/* snapshot */
+.snap-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.snap-pill{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:500;border:1.5px solid transparent}
 .snap-yes{background:var(--g1);color:var(--g6);border-color:var(--g2)}
 .snap-no{background:var(--surface2);color:var(--t3);border-color:var(--border)}
-.snap-pill .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.snap-yes .dot{background:var(--g6)}
-.snap-no  .dot{background:var(--t3)}
+.snap-pill .sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.snap-yes .sdot{background:var(--g6)}
+.snap-no  .sdot{background:var(--t3)}
 
-/* ── METRICS GRID ── */
-.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-@media(max-width:580px){.metrics-grid{grid-template-columns:repeat(2,1fr)}}
-.met-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad);padding:12px 14px;box-shadow:var(--shadow)}
-.met-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.met-val{font-size:26px;font-weight:800;color:var(--t1);line-height:1}
-.met-sub{font-size:10px;color:var(--t3);margin-top:3px}
+/* section label */
+.sec-lbl{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin:14px 0 6px;display:flex;align-items:center;gap:5px}
+.sec-lbl svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-/* ── SECTION HEADER ── */
-.sec-hdr{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin-bottom:8px;margin-top:4px;display:flex;align-items:center;gap:6px}
-.sec-hdr svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-1px}
+/* metrics grid */
+.met-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+@media(max-width:560px){.met-grid{grid-template-columns:repeat(2,1fr)}}
+.met-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rad);padding:12px 14px;box-shadow:var(--shadow)}
+.met-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.met-val{font-size:24px;font-weight:800;color:var(--t1);line-height:1}
+.met-sub{font-size:9px;color:var(--t3);margin-top:3px}
 
-/* ── CARD ── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad-lg);overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow)}
-.card-hdr{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--surface)}
-.card-title{font-size:13px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:7px}
-.card-title svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.card-hint{font-size:11px;color:var(--t3)}
-.card-count{font-size:11px;color:var(--t2);font-weight:500}
-.toggle-btn{background:none;border:1px solid var(--border);border-radius:var(--rad-sm);cursor:pointer;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:var(--t2);transition:background .12s;font-size:13px}
-.toggle-btn:hover{background:var(--surface2)}
+/* card */
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rad-lg);overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow)}
+.card-hdr{padding:11px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.card-ttl{font-size:12px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:6px}
+.card-ttl svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card-cnt{font-size:11px;color:var(--t3)}
 
-/* ── TABLES ── */
-.tbl-wrap{overflow-x:auto}
-table.dtbl{width:100%;border-collapse:collapse;font-size:12px}
-table.dtbl th{text-align:left;padding:8px 14px;font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--t3);background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
-table.dtbl td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--t1);vertical-align:middle}
-table.dtbl tr:last-child td{border-bottom:none}
-table.dtbl tr:hover td{background:var(--bg)}
-.tbl-empty{padding:20px;text-align:center;color:var(--t3);font-size:12px}
+/* stat row */
+.stat-row{display:flex}
+.stat-item{flex:1;text-align:center;padding:12px 8px;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-v{font-size:22px;font-weight:800;color:var(--t1)}
+.stat-v.gr{color:var(--g6)}
+.stat-v.re{color:var(--r6)}
+.stat-v.bl{color:var(--b6)}
+.stat-v.pu{color:var(--p6)}
+.stat-l{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:3px}
+
+/* funnel */
+.funnel{display:flex}
+.f-step{flex:1;padding:14px 10px;text-align:center;border-right:1px solid var(--border);cursor:pointer;transition:background .12s}
+.f-step:last-child{border-right:none;cursor:default}
+.f-step.clickable:hover,.f-step.active{background:var(--p1)}
+.f-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.f-v{font-size:26px;font-weight:800;line-height:1}
+.f-v.bl{color:var(--b6)}.f-v.pu{color:var(--p6)}.f-v.gr{color:var(--g6)}.f-v.re{color:var(--r6)}
+.f-sub{font-size:9px;color:var(--t3);margin-top:3px}
+.f-hint{font-size:9px;color:var(--p6);margin-top:3px}
+
+/* drawer */
+.drawer{display:none;border-top:1px solid var(--border)}
+.drawer.open{display:block}
+.drawer-hdr{padding:9px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-bottom:1px solid var(--border)}
+.drawer-ttl{font-size:11px;font-weight:600;color:var(--t1)}
+.close-x{background:none;border:1px solid var(--border);border-radius:var(--rad-sm);cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--t2);font-size:12px}
+.close-x:hover{background:var(--surface)}
+
+/* tables */
+.tw{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:12px}
+table.t th{text-align:left;padding:7px 14px;font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--t3);background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
+table.t td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--t1);vertical-align:middle}
+table.t tr:last-child td{border-bottom:none}
+table.t tr:hover td{background:var(--bg)}
+.te{padding:18px;text-align:center;color:var(--t3);font-size:12px}
+.rn{color:var(--t3);font-size:10px;width:22px}
 .mono{font-family:var(--mono);font-size:11px}
 .fw{font-weight:700;font-family:var(--mono)}
-.row-num{color:var(--t3);font-size:10px;width:24px}
-
-/* supply range */
-.sr-row{display:flex;gap:3px}
-.sr{padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:10px;font-weight:700}
+.chip{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:500}
+.c-won{background:var(--g1);color:var(--g6)}
+.c-lost{background:var(--r1);color:var(--r6)}
+.c-live{background:var(--b1);color:var(--b6)}
+.c-nil{background:var(--surface2);color:var(--t3)}
+.sr{padding:2px 5px;border-radius:4px;font-family:var(--mono);font-size:10px;font-weight:700}
 .sr-l1{background:var(--g1);color:var(--g6)}
 .sr-l2{background:var(--b1);color:var(--b6)}
 .sr-l3{background:var(--a1);color:var(--a6)}
 .sr-nil{color:var(--t3);font-size:10px}
 
-/* status chips in tables */
-.chip{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500}
-.chip-won{background:var(--g1);color:var(--g6)}
-.chip-lost{background:var(--r1);color:var(--r6)}
-.chip-live{background:var(--b1);color:var(--b6)}
-.chip-cancel{background:var(--surface2);color:var(--t3)}
+/* two col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+@media(max-width:560px){.two-col{grid-template-columns:1fr}}
 
-/* ── FUNNEL ── */
-.funnel{display:flex}
-.funnel-step{flex:1;padding:16px 12px;text-align:center;border-right:1px solid var(--border);cursor:pointer;transition:background .12s}
-.funnel-step:last-child{border-right:none;cursor:default}
-.funnel-step.clickable:hover{background:var(--p1)}
-.funnel-step.active{background:var(--p1)}
-.fs-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
-.fs-v{font-size:28px;font-weight:800;line-height:1}
-.fs-v.blue{color:var(--b6)}
-.fs-v.purple{color:var(--p6)}
-.fs-v.green{color:var(--g6)}
-.fs-v.red{color:var(--r6)}
-.fs-hint{font-size:9px;color:var(--p6);margin-top:4px}
-.fs-sub{font-size:9px;color:var(--t3);margin-top:4px}
-
-/* ── DRAWER ── */
-.drawer{display:none;border-top:1px solid var(--border)}
-.drawer.open{display:block}
-.drawer-hdr{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-bottom:1px solid var(--border)}
-.drawer-title{font-size:11px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:5px}
-.close-x{background:none;border:1px solid var(--border);border-radius:var(--rad-sm);cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--t2);font-size:12px}
-.close-x:hover{background:var(--surface)}
-
-/* ── TWO-COL GRID ── */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-@media(max-width:580px){.two-col{grid-template-columns:1fr}}
-
-/* vehicle row */
-.veh-row{display:flex;padding:10px 16px;gap:0;border-bottom:1px solid var(--border)}
-.veh-row:last-child{border-bottom:none}
-.veh-no{font-family:var(--mono);font-weight:700;font-size:12px;flex:1}
-.veh-meta{display:flex;gap:6px;align-items:center}
-.stat-grid{display:flex;gap:0}
-.stat-item{flex:1;text-align:center;padding:12px 8px;border-right:1px solid var(--border)}
-.stat-item:last-child{border-right:none}
-.stat-val{font-size:22px;font-weight:800;color:var(--t1)}
-.stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:3px}
-.stat-val.red{color:var(--r6)}
-.stat-val.green{color:var(--g6)}
-
-/* call row */
-.call-row{display:flex;align-items:center;padding:10px 16px;gap:10px;border-bottom:1px solid var(--border)}
-.call-row:last-child{border-bottom:none}
-.call-date{font-size:11px;color:var(--t2);white-space:nowrap;min-width:90px}
-.call-by{font-size:11px;color:var(--t3)}
-.call-disp{margin-left:auto}
-
-/* collapsible section */
-.collapsible-body{display:none}
-.collapsible-body.open{display:block}
-
-/* lane pills */
-.lane-pills{display:flex;flex-wrap:wrap;gap:5px;padding:14px 16px}
-.lane-pill{background:var(--a1);color:var(--a6);padding:4px 10px;border-radius:20px;font-size:10px;font-weight:500;font-family:var(--mono)}
-
-/* info row */
-.info-row{display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px}
-
-/* ── NOTICE ── */
-.notice{background:var(--a1);border:1px solid var(--a2);border-radius:var(--rad);padding:10px 14px;font-size:11px;color:var(--a6);margin-bottom:12px;display:none}
-.notice a{color:var(--a6);font-weight:700}
-
-/* utility */
-svg.i{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px}
-.sug-no{padding:14px;text-align:center;color:var(--t3);font-size:12px}
+/* call/veh row */
+.small-row{display:flex;align-items:center;padding:9px 16px;gap:8px;border-bottom:1px solid var(--border)}
+.small-row:last-child{border-bottom:none}
+.sr-date{font-size:11px;color:var(--t2);white-space:nowrap;min-width:85px}
+.sr-by{font-size:11px;color:var(--t3)}
+.sr-right{margin-left:auto}
+.sr-no{font-family:var(--mono);font-weight:700;font-size:12px}
+.lane-pills{display:flex;flex-wrap:wrap;gap:5px;padding:12px 16px}
+.lane-pill{background:var(--a1);color:var(--a6);padding:3px 9px;border-radius:20px;font-size:10px;font-weight:500;font-family:var(--mono)}
 </style>
 </head>
 <body>
 
-<!-- ═══ TOPBAR ═══ -->
-<header class="topbar">
-  <div class="brand">
-    <div class="brand-icon">FO</div>
-    <div>
-      <div class="brand-name">FO Caller CRM</div>
-      <div class="brand-sub">Wheelseye · Cx Growth</div>
-    </div>
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar">
+  <div class="sb-logo">FO</div>
+  <div class="sb-sep"></div>
+  <div class="sb-icon active" title="Calling list">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  </div>
+  <div class="sb-icon" title="Analytics">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+  </div>
+  <div class="sb-icon" title="Funnel">
+    <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+  </div>
+  <div class="sb-sep"></div>
+  <div class="sb-icon" title="Settings">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+<!-- ════ LIST VIEW ════ -->
+<div id="listView">
+  <div class="lv-title">FO Activation CRM</div>
+
+  <!-- global search jump -->
+  <div class="lv-search-wrap">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="lv-search" id="jumpSearch" type="text" placeholder="Jump to operator code…" autocomplete="off" spellcheck="false"/>
+  </div>
+  <div class="suggestions" id="jumpSug" style="position:absolute;width:calc(100% - 32px);max-width:688px;background:var(--surface);border:1px solid var(--bmd);border-radius:var(--rad);box-shadow:var(--shadow-md);z-index:200;overflow:hidden;display:none"></div>
+
+  <!-- stage tabs -->
+  <div class="stage-row" id="stageTabs">
+    <div class="stage-lbl">Stage</div>
+    <button class="stage-btn active" data-stage="all">All <span class="cnt" id="cnt-all">0</span></button>
+    <button class="stage-btn live-btn" data-stage="live"><span class="dot-live"></span>Live <span class="cnt" id="cnt-live">0</span></button>
+    <button class="stage-btn" data-stage="history">🗂 History <span class="cnt" id="cnt-history">0</span></button>
+    <button class="stage-btn tab-post" data-stage="accepted">🎉 Post Acceptance <span class="cnt" id="cnt-accepted">0</span></button>
+    <button class="stage-btn tab-tok" data-stage="token">💰 Token Paid <span class="cnt" id="cnt-token">0</span></button>
   </div>
 
-  <div class="search-wrap">
-    <svg class="si" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input id="searchInput" type="text" placeholder="Search operator code…" autocomplete="off" spellcheck="false"/>
-    <button class="clear-x" id="clearBtn">×</button>
-    <div class="suggestions" id="suggestions"></div>
+  <!-- filters row 1 -->
+  <div class="filter-row">
+    <div class="filter-lbl">Filter</div>
+    <select class="fsel" id="fRecency"><option value="">All recency</option></select>
+    <select class="fsel" id="fDRType"><option value="">All DR types</option></select>
+  </div>
+  <!-- filters row 2 -->
+  <div class="filter-row">
+    <div class="filter-lbl">RM</div>
+    <select class="fsel" id="fRM"><option value="">All RMs</option></select>
+    <select class="fsel" id="fStatus">
+      <option value="">All statuses</option>
+      <option value="called">Called today</option>
+      <option value="not_called">Not called</option>
+    </select>
   </div>
 
-  <div class="status-area">
-    <div id="statusWrap" style="display:flex;align-items:center;gap:7px">
-      <div class="live-dot" id="liveDot"></div>
-      <span class="status-txt" id="statusTxt">Loading…</span>
-    </div>
-    <button class="ref-btn" id="refBtn">
-      <svg id="refIcon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+  <!-- text filter -->
+  <div class="text-filter-wrap">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="text-filter" id="textFilter" type="text" placeholder="Filter by code or RM…" autocomplete="off"/>
+  </div>
+
+  <!-- status bar -->
+  <div class="status-bar">
+    <div class="live-dot" id="lvDot"></div>
+    <span id="lvStatus">Loading…</span>
+    <button class="ref-btn-sm" id="lvRefBtn">
+      <svg id="lvRefIcon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       Refresh
     </button>
   </div>
-</header>
 
-<!-- ═══ MAIN ═══ -->
-<main class="main">
-  <div class="notice" id="notice">⚠ Could not load data. Make sure the sheet is <strong>public (Anyone with link → Viewer)</strong>. <a href="#" onclick="loadData();return false">Retry</a></div>
-
-  <div class="empty-state" id="emptyState">
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <h2>Search an operator</h2>
-    <p>Type an FO operator code to load their<br>full activity profile and live DR funnel</p>
+  <!-- count bar -->
+  <div class="count-bar">
+    <div class="count-lbl" id="leadCount">— leads</div>
+    <div class="count-range" id="leadRange"></div>
   </div>
 
-  <div id="profileSection" style="display:none">
+  <!-- operator list -->
+  <div id="opList">
+    <div class="lv-loader"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Loading operators…</div>
+  </div>
 
-    <!-- PROFILE CARD -->
-    <div class="profile-card">
-      <div class="pc-top">
-        <div class="pc-avatar" id="pcAvatar">OP</div>
-        <div class="pc-info">
-          <div class="pc-code" id="pcCode">—</div>
-          <div class="pc-rm"  id="pcRM">—</div>
-          <div class="pc-tags" id="pcTags"></div>
-        </div>
-        <div class="pc-right">
-          <div class="score-num" id="scoreNum">—</div>
-          <div class="score-lbl">Activation<br>Score</div>
-          <div id="rankChip" style="display:none" class="rank-chip">—</div>
-        </div>
+  <!-- pagination -->
+  <div class="pag-btns" id="pagBtns"></div>
+</div>
+
+<!-- ════ PROFILE VIEW ════ -->
+<div id="profileView">
+  <button class="back-btn" id="backBtn" onclick="showList()">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to list
+  </button>
+
+  <!-- profile card -->
+  <div class="pf-card">
+    <div class="pf-top">
+      <div class="pf-av" id="pfAv">OP</div>
+      <div class="pf-info">
+        <div class="pf-code" id="pfCode">—</div>
+        <div class="pf-rm"  id="pfRM">—</div>
+        <div class="pf-tags" id="pfTags"></div>
+      </div>
+      <div class="pf-right">
+        <div class="pf-score" id="pfScore">—</div>
+        <div class="pf-slbl">Activation<br>Score</div>
+        <div class="rank-chip" id="pfRank" style="display:none">—</div>
       </div>
     </div>
+  </div>
 
-    <!-- TODAY SNAPSHOT -->
-    <div class="snapshot-row" id="snapshotRow"></div>
+  <!-- today snapshot -->
+  <div class="snap-row" id="pfSnap"></div>
 
-    <!-- ACTIVITY METRICS -->
-    <div class="sec-hdr"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Activity · last 15 days</div>
-    <div class="metrics-grid">
-      <div class="met-card"><div class="met-lbl">VA Days</div><div class="met-val" id="mVaDays">—</div><div class="met-sub">vehicle available</div></div>
-      <div class="met-card"><div class="met-lbl">LDP Days</div><div class="met-val" id="mLdpDays">—</div><div class="met-sub">days browsed</div></div>
-      <div class="met-card"><div class="met-lbl">Total LDPs</div><div class="met-val" id="mLdpCount">—</div><div class="met-sub">load detail views</div></div>
-      <div class="met-card"><div class="met-lbl">Tokens Paid</div><div class="met-val" id="mTokens">—</div><div class="met-sub">in 15 days</div></div>
+  <!-- activity metrics -->
+  <div class="sec-lbl"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Activity · last 15 days</div>
+  <div class="met-grid">
+    <div class="met-card"><div class="met-lbl">VA Days</div><div class="met-val" id="mVa">—</div><div class="met-sub">available</div></div>
+    <div class="met-card"><div class="met-lbl">LDP Days</div><div class="met-val" id="mLdpD">—</div><div class="met-sub">browsed</div></div>
+    <div class="met-card"><div class="met-lbl">Total LDPs</div><div class="met-val" id="mLdpC">—</div><div class="met-sub">detail views</div></div>
+    <div class="met-card"><div class="met-lbl">Tokens Paid</div><div class="met-val" id="mTok">—</div><div class="met-sub">in 15 days</div></div>
+  </div>
+
+  <!-- lifetime -->
+  <div class="sec-lbl"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Lifetime</div>
+  <div class="card">
+    <div class="stat-row">
+      <div class="stat-item"><div class="stat-v" id="ltL">—</div><div class="stat-l">LDPs</div></div>
+      <div class="stat-item"><div class="stat-v gr" id="ltT">—</div><div class="stat-l">Tokens</div></div>
+      <div class="stat-item"><div class="stat-v" id="ltR">—</div><div class="stat-l">Trips</div></div>
+      <div class="stat-item"><div class="stat-v bl" id="ltD">—</div><div class="stat-l">DRs seen</div></div>
     </div>
+  </div>
 
-    <!-- LIFETIME -->
-    <div class="sec-hdr"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Lifetime stats</div>
-    <div class="card" style="margin-bottom:12px">
-      <div class="stat-grid">
-        <div class="stat-item"><div class="stat-val" id="ltLdp">—</div><div class="stat-lbl">LDPs</div></div>
-        <div class="stat-item"><div class="stat-val green" id="ltTokens">—</div><div class="stat-lbl">Tokens paid</div></div>
-        <div class="stat-item"><div class="stat-val" id="ltTrips">—</div><div class="stat-lbl">Trips</div></div>
-        <div class="stat-item"><div class="stat-val" id="ltDRs">—</div><div class="stat-lbl">DRs seen</div></div>
+  <!-- DR funnel -->
+  <div class="sec-lbl"><svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Live DR funnel · today</div>
+  <div class="card">
+    <div class="funnel">
+      <div class="f-step clickable" id="pfFStep" onclick="toggleDr()">
+        <div class="f-l">Op-search</div><div class="f-v bl" id="pfFDR">—</div><div class="f-hint">▾ lanes</div>
+      </div>
+      <div class="f-step">
+        <div class="f-l">Red DRs</div><div class="f-v re" id="pfFRed">—</div><div class="f-sub">urgent</div>
+      </div>
+      <div class="f-step">
+        <div class="f-l">Token Paid</div><div class="f-v pu" id="pfFTok">—</div><div class="f-sub">of matched</div>
+      </div>
+      <div class="f-step">
+        <div class="f-l">Conversion</div><div class="f-v gr" id="pfFConv">—</div><div class="f-sub">token / search</div>
       </div>
     </div>
+    <div class="drawer" id="pfDrawer">
+      <div class="drawer-hdr">
+        <div class="drawer-ttl">Matched lanes in op-search today</div>
+        <button class="close-x" onclick="toggleDr()">✕</button>
+      </div>
+      <div class="tw">
+        <table class="t"><thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Supply L1 / L2 / L3</th></tr></thead>
+        <tbody id="pfDRBody"></tbody></table>
+      </div>
+    </div>
+  </div>
 
-    <!-- LIVE DR FUNNEL -->
-    <div class="sec-hdr"><svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Live DR funnel · today</div>
+  <!-- today's bids -->
+  <div id="pfBidSec" style="display:none">
+    <div class="sec-lbl"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Today's bids</div>
     <div class="card">
-      <div class="funnel">
-        <div class="funnel-step clickable" id="fStep" onclick="toggleDrawer()">
-          <div class="fs-l">In Op-search</div>
-          <div class="fs-v blue" id="fDRs">—</div>
-          <div class="fs-hint">▾ view lanes</div>
-        </div>
-        <div class="funnel-step">
-          <div class="fs-l">Red DRs</div>
-          <div class="fs-v red" id="fRed">—</div>
-          <div class="fs-sub">high urgency</div>
-        </div>
-        <div class="funnel-step">
-          <div class="fs-l">Token Paid</div>
-          <div class="fs-v purple" id="fToken">—</div>
-          <div class="fs-sub">of matched</div>
-        </div>
-        <div class="funnel-step">
-          <div class="fs-l">Conversion</div>
-          <div class="fs-v green" id="fConv">—</div>
-          <div class="fs-sub">token / search</div>
-        </div>
-      </div>
-      <!-- DRAWER: matched lanes -->
-      <div class="drawer" id="drDrawer">
-        <div class="drawer-hdr">
-          <div class="drawer-title"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Matched lanes in op-search today</div>
-          <button class="close-x" onclick="toggleDrawer()">✕</button>
-        </div>
-        <div class="tbl-wrap">
-          <table class="dtbl">
-            <thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Supply (L1 / L2 / L3)</th></tr></thead>
-            <tbody id="drBody"></tbody>
-          </table>
-        </div>
-      </div>
+      <div class="card-hdr"><div class="card-ttl"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Bid details with supply range</div><div class="card-cnt" id="pfBidCnt"></div></div>
+      <div class="tw"><table class="t"><thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Op Freight</th><th>Token</th><th>L1</th><th>L2</th><th>L3</th></tr></thead><tbody id="pfBidBody"></tbody></table></div>
     </div>
+  </div>
 
-    <!-- TODAY'S BIDS -->
-    <div id="bidSection" style="display:none">
-      <div class="sec-hdr"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Today's bids</div>
+  <!-- token lanes -->
+  <div id="pfTokSec" style="display:none">
+    <div class="sec-lbl"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Token-paid lanes today</div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-ttl"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Token demand details</div><div class="card-cnt" id="pfTokCnt"></div></div>
+      <div class="tw"><table class="t"><thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Op Freight</th><th>Placed</th><th>Method</th><th>L1</th><th>L2</th><th>L3</th></tr></thead><tbody id="pfTokBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- accepted today -->
+  <div id="pfAccSec" style="display:none">
+    <div class="sec-lbl"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Accepted today</div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-ttl"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Accepted trips</div><div class="card-cnt" id="pfAccCnt"></div></div>
+      <div class="tw"><table class="t"><thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Freight</th><th>Status</th><th>Placement</th><th>Time</th></tr></thead><tbody id="pfAccBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- historical tokens -->
+  <div id="pfHistSec" style="display:none">
+    <div class="sec-lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Historical tokens (7d)</div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-ttl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Token history</div><div class="card-cnt" id="pfHistCnt"></div></div>
+      <div class="tw"><table class="t"><thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Op Freight</th><th>Placed</th><th>Result</th><th>Date</th></tr></thead><tbody id="pfHistBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- bottom row -->
+  <div class="two-col">
+    <div>
+      <div class="sec-lbl"><svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle profile</div>
       <div class="card">
-        <div class="card-hdr">
-          <div class="card-title"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Bid lane details with supply range</div>
-          <div class="card-count" id="bidCount"></div>
+        <div class="stat-row" style="border-bottom:1px solid var(--border)">
+          <div class="stat-item"><div class="stat-v" id="vT">—</div><div class="stat-l">Total</div></div>
+          <div class="stat-item"><div class="stat-v gr" id="vC">—</div><div class="stat-l">Verified</div></div>
+          <div class="stat-item"><div class="stat-v re" id="vU">—</div><div class="stat-l">Unverified</div></div>
         </div>
-        <div class="tbl-wrap">
-          <table class="dtbl">
-            <thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Op Freight</th><th>Token</th><th>L1</th><th>L2</th><th>L3</th></tr></thead>
-            <tbody id="bidBody"></tbody>
-          </table>
-        </div>
+        <div id="vehList" style="max-height:150px;overflow-y:auto"></div>
       </div>
     </div>
-
-    <!-- TOKEN LANES -->
-    <div id="tokenSection" style="display:none">
-      <div class="sec-hdr"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Token-paid lanes today</div>
+    <div>
+      <div class="sec-lbl"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.44 2 2 0 0 1 3.59 1.28h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.78a16 16 0 0 0 6.29 6.29l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call history</div>
       <div class="card">
-        <div class="card-hdr">
-          <div class="card-title"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Token demand details</div>
-          <div class="card-count" id="tokenCount2"></div>
+        <div class="stat-row" style="border-bottom:1px solid var(--border)">
+          <div class="stat-item"><div class="stat-v" id="cTot">—</div><div class="stat-l">Calls</div></div>
+          <div class="stat-item"><div class="stat-v" id="cDate" style="font-size:13px">—</div><div class="stat-l">Last call</div></div>
+          <div class="stat-item"><div class="stat-v" id="cDisp" style="font-size:11px">—</div><div class="stat-l">Disposition</div></div>
         </div>
-        <div class="tbl-wrap">
-          <table class="dtbl">
-            <thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Op Freight</th><th>Placed</th><th>Method</th><th>L1</th><th>L2</th><th>L3</th></tr></thead>
-            <tbody id="tokenBody"></tbody>
-          </table>
-        </div>
+        <div id="callList" style="max-height:150px;overflow-y:auto"></div>
       </div>
     </div>
+  </div>
+</div><!-- /profileView -->
 
-    <!-- ACCEPTED TODAY -->
-    <div id="acceptedSection" style="display:none">
-      <div class="sec-hdr"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Accepted today</div>
-      <div class="card">
-        <div class="card-hdr">
-          <div class="card-title"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Accepted trip details</div>
-          <div class="card-count" id="accCount"></div>
-        </div>
-        <div class="tbl-wrap">
-          <table class="dtbl">
-            <thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Freight</th><th>Status</th><th>Placement</th><th>Time</th></tr></thead>
-            <tbody id="accBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- HISTORICAL TOKENS -->
-    <div id="histSection" style="display:none">
-      <div class="sec-hdr"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Historical tokens (7d)</div>
-      <div class="card">
-        <div class="card-hdr">
-          <div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Recent token history</div>
-          <div class="card-count" id="histCount"></div>
-        </div>
-        <div class="tbl-wrap">
-          <table class="dtbl">
-            <thead><tr><th>#</th><th>Demand</th><th>Route</th><th>Truck</th><th>Op Freight</th><th>Placed</th><th>Result</th><th>Date</th></tr></thead>
-            <tbody id="histBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- BOTTOM ROW -->
-    <div class="two-col">
-      <!-- VEHICLE PROFILE -->
-      <div>
-        <div class="sec-hdr"><svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle profile</div>
-        <div class="card">
-          <div class="stat-grid">
-            <div class="stat-item"><div class="stat-val" id="vTotal">—</div><div class="stat-lbl">Total</div></div>
-            <div class="stat-item"><div class="stat-val green" id="vCorr">—</div><div class="stat-lbl">Verified</div></div>
-            <div class="stat-item"><div class="stat-val red" id="vUnver">—</div><div class="stat-lbl">Unverified</div></div>
-          </div>
-          <div id="vehList" style="max-height:160px;overflow-y:auto"></div>
-        </div>
-      </div>
-
-      <!-- CALL HISTORY -->
-      <div>
-        <div class="sec-hdr"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.44 2 2 0 0 1 3.59 1.28h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.78a16 16 0 0 0 6.29 6.29l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call history</div>
-        <div class="card">
-          <div class="stat-grid" style="border-bottom:1px solid var(--border)">
-            <div class="stat-item"><div class="stat-val" id="cTotal">—</div><div class="stat-lbl">Total calls</div></div>
-            <div class="stat-item"><div class="stat-val" id="cLast">—</div><div class="stat-lbl">Last called</div></div>
-            <div class="stat-item"><div class="stat-val" id="cDisp">—</div><div class="stat-lbl">Disposition</div></div>
-          </div>
-          <div id="callList" style="max-height:160px;overflow-y:auto"></div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /profileSection -->
-</main>
+</div><!-- /main -->
 
 <script>
+/* ─── CONFIG ──────────────────────────────────────────────────── */
 const SHEET_ID = '1nUhQ5SX0KpE83pYaAmtmXB1HBEFNoBKdc92bWSrhimQ';
 const GID      = '351915797';
 const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
-const REFRESH_MS = 5 * 60 * 1000;
+const REFRESH_MS = 5*60*1000;
+const PAGE_SIZE  = 30;
 const DF = '####', DR = '||||';
 
-let allData = [], currentCode = null, drawerOpen = false;
-let nextAt = null, timer = null, cdTimer = null;
+/* ─── STATE ───────────────────────────────────────────────────── */
+let allData=[], filtered=[], page=1, currentStage='all', drawerOpen=false;
+let nextAt=null, timer=null, cdTimer=null, currentRow=null;
 
+/* ─── PRIORITY MAP ─────────────────────────────────────────────── */
 const PTAG = {P1:'tag-p1',P2:'tag-p2',P3:'tag-p3',P4:'tag-p4',VA:'tag-va',H:'tag-h'};
-const PTXT = {P1:'P1 — Accepted',P2:'P2 — Token / Vehicle',P3:'P3 — Bid + VA',P4:'P4 — Bid / LDP',VA:'VA only',H:'Historical'};
 
-/* ── FETCH ── */
-async function loadData() {
+/* ─── DATA LOAD ────────────────────────────────────────────────── */
+async function loadData(){
   spin(true);
   try {
-    const r = await fetch(CSV_URL + '&t=' + Date.now(), {cache:'no-store'});
-    if (!r.ok) throw new Error('HTTP '+r.status);
+    const r = await fetch(CSV_URL+'&t='+Date.now(),{cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
     const txt = await r.text();
-    const res = Papa.parse(txt, {header:true, skipEmptyLines:true});
-    allData = res.data.map(row => {
-      const o = {};
-      for (const [k,v] of Object.entries(row)) o[k.trim()] = typeof v==='string'?v.trim():v;
+    const res = Papa.parse(txt,{header:true,skipEmptyLines:true});
+    allData = res.data.map(row=>{
+      const o={};
+      for(const [k,v] of Object.entries(row)) o[k.trim()]=typeof v==='string'?v.trim():v;
       return o;
     });
+    buildFilters();
+    applyFilters();
     setStatus(true);
-    document.getElementById('notice').style.display = 'none';
     schedule();
-    if (currentCode) { const row = findRow(currentCode); if (row) render(row); }
-  } catch(e) {
+    // if profile open, refresh it
+    if(currentRow){const fresh=findRow(currentRow.operator_code);if(fresh){currentRow=fresh;renderProfile(fresh);}}
+  } catch(e){
     setStatus(false);
-    document.getElementById('notice').style.display = 'block';
-  } finally { spin(false); }
+    if(!allData.length) document.getElementById('opList').innerHTML=
+      '<div class="lv-empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Could not load. Check sheet is public and retry.</div>';
+  }
+  finally{ spin(false); }
 }
 
-function findRow(code) { return allData.find(r => (r.operator_code||'').toUpperCase() === code.toUpperCase()); }
+function findRow(code){ return allData.find(r=>(r.operator_code||'').toUpperCase()===code.toUpperCase()); }
 
-function setStatus(ok) {
-  const dot = document.getElementById('liveDot');
-  const txt = document.getElementById('statusTxt');
-  const sw  = document.getElementById('statusWrap');
-  dot.style.background = ok ? '#4CAF50' : '#EF5350';
-  dot.style.animation  = ok ? 'blink 2s infinite' : 'none';
-  if (!ok) txt.textContent = 'Connection error';
+/* ─── FILTERS BUILD ──────────────────────────────────────────── */
+function buildFilters(){
+  const recencies=[...new Set(allData.map(r=>r.recency_tier||'').filter(Boolean))].sort();
+  const drTypes  =[...new Set(allData.map(r=>r.dr_supply_type||'').filter(Boolean))].sort();
+  const rms      =[...new Set(allData.map(r=>r.rm_name||'').filter(Boolean))].sort();
+  setOpts('fRecency','All recency',recencies);
+  setOpts('fDRType' ,'All DR types',drTypes);
+  setOpts('fRM'     ,'All RMs',rms);
+}
+function setOpts(id,placeholder,vals){
+  const el=document.getElementById(id);
+  const cur=el.value;
+  el.innerHTML=`<option value="">${placeholder}</option>`+vals.map(v=>`<option value="${v}"${v===cur?' selected':''}>${v}</option>`).join('');
 }
 
-function schedule() {
-  clearTimeout(timer); clearInterval(cdTimer);
-  nextAt = Date.now() + REFRESH_MS;
-  timer   = setTimeout(() => loadData(), REFRESH_MS);
-  cdTimer = setInterval(countdown, 1000);
-  countdown();
+/* ─── APPLY FILTERS ──────────────────────────────────────────── */
+function applyFilters(){
+  const stage  = currentStage;
+  const recency= document.getElementById('fRecency').value;
+  const drType = document.getElementById('fDRType').value;
+  const rm     = document.getElementById('fRM').value;
+  const status = document.getElementById('fStatus').value;
+  const text   = document.getElementById('textFilter').value.trim().toUpperCase();
+
+  // update tab counts
+  const cnt = grp => {
+    let d=allData;
+    if(grp==='live')     d=d.filter(r=>r.priority!=='H');
+    if(grp==='history')  d=d.filter(r=>r.priority==='H');
+    if(grp==='accepted') d=d.filter(r=>bool(r.accepted_today));
+    if(grp==='token')    d=d.filter(r=>bool(r.token_paid_today));
+    return d.length;
+  };
+  ['all','live','history','accepted','token'].forEach(s=>{
+    const el=document.getElementById('cnt-'+s); if(el) el.textContent=cnt(s);
+  });
+
+  filtered = allData.filter(r=>{
+    if(stage==='live'     && r.priority==='H') return false;
+    if(stage==='history'  && r.priority!=='H') return false;
+    if(stage==='accepted' && !bool(r.accepted_today)) return false;
+    if(stage==='token'    && !bool(r.token_paid_today)) return false;
+    if(recency && r.recency_tier!==recency) return false;
+    if(drType  && r.dr_supply_type!==drType) return false;
+    if(rm      && r.rm_name!==rm) return false;
+    if(status==='called'     && !bool(r.called_today)) return false;
+    if(status==='not_called' && bool(r.called_today))  return false;
+    if(text){
+      const code=(r.operator_code||'').toUpperCase();
+      const rname=(r.rm_name||'').toUpperCase();
+      if(!code.includes(text)&&!rname.includes(text)) return false;
+    }
+    return true;
+  });
+  // sort by calling_rank asc
+  filtered.sort((a,b)=>parseInt(a.calling_rank||9999)-parseInt(b.calling_rank||9999));
+  page=1;
+  renderList();
 }
 
-function countdown() {
-  const s = Math.max(0, Math.round((nextAt - Date.now())/1000));
-  const m = Math.floor(s/60);
-  document.getElementById('statusTxt').textContent =
-    `${allData.length} operators · next in ${m}:${String(s%60).padStart(2,'0')}`;
-}
+/* ─── RENDER LIST ────────────────────────────────────────────── */
+function renderList(){
+  const total = filtered.length;
+  const start = (page-1)*PAGE_SIZE;
+  const end   = Math.min(start+PAGE_SIZE, total);
+  const slice = filtered.slice(start, end);
 
-function spin(on) {
-  const btn = document.getElementById('refBtn');
-  btn.classList.toggle('spin', on);
-  btn.disabled = on;
-}
+  document.getElementById('leadCount').textContent = `${total.toLocaleString()} lead${total!==1?'s':''}`;
+  document.getElementById('leadRange').textContent  = total ? `${start+1}–${end}` : '';
 
-/* ── SEARCH ── */
-const inp = document.getElementById('searchInput');
-const sug = document.getElementById('suggestions');
-const clr = document.getElementById('clearBtn');
+  if(!slice.length){
+    document.getElementById('opList').innerHTML = '<div class="lv-empty"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>No operators match the current filters</div>';
+    renderPag(total);
+    return;
+  }
 
-inp.addEventListener('input', function(){
-  const q = this.value.trim().toUpperCase();
-  clr.style.display = q ? 'block' : 'none';
-  if (q.length < 2) { sug.style.display='none'; return; }
-  const hits = allData.filter(r => (r.operator_code||'').toUpperCase().includes(q)).slice(0,10);
-  if (!hits.length) { sug.innerHTML='<div class="sug-no">No operators found</div>'; sug.style.display='block'; return; }
-  sug.innerHTML = hits.map(r => {
-    const code = (r.operator_code||'').toUpperCase();
-    const pri  = r.priority||'';
-    const cls  = PTAG[pri]||'tag-gray';
-    return `<div class="sug-item" data-code="${code}">
-      <div class="sug-av">${code.replace(/[^A-Z0-9]/g,'').slice(0,2)}</div>
-      <div><div class="sug-code">${code}</div><div class="sug-rm">${r.rm_name||'—'} · ${r.Cluster||'—'}</div></div>
-      <div class="sug-right">
-        ${pri ? `<span class="tag ${cls}">${pri}</span>` : ''}
-        <span style="font-size:10px;color:var(--t3)">Rank #${r.calling_rank||'—'}</span>
+  document.getElementById('opList').innerHTML = slice.map((r,idx)=>{
+    const code     = (r.operator_code||'').toUpperCase();
+    const rank     = r.calling_rank||'—';
+    const pri      = r.priority||'';
+    const priCls   = PTAG[pri]||'tag-gray';
+    const stage    = r.stage||'';
+    const drType   = r.dr_supply_type||'';
+    const recency  = r.recency_tier||'';
+    const drTier   = r.dr_tier||'';
+    const rm       = (r.rm_name||'').toUpperCase();
+    const isLive   = pri!=='H';
+    const called   = bool(r.called_today);
+    const pos      = start+idx+1;
+
+    // best time to show
+    const t = bestTime(r);
+    let timeHtml='';
+    if(t.time){
+      const ago = minsAgo(t.time);
+      const fresh = ago!==null && ago<60;
+      timeHtml=`<span class="time-chip ${fresh?'fresh':''}">${t.time}${ago!==null?' · '+fmtAgo(ago):''}</span>`;
+    }
+
+    // activity badge
+    const act = actBadge(r);
+
+    // last call
+    let callHtml='';
+    if(r.last_call_date && r.last_call_disposition){
+      const disp=(r.last_call_disposition||'').replace(/-$/,'').trim();
+      const conn=disp.toLowerCase().includes('connect');
+      callHtml=`<div class="op-call"><div class="${conn?'call-dot-g':'call-dot-r'}"></div>${r.last_call_date} · ${disp}${r.last_caller?' · '+r.last_caller.toLowerCase():''}</div>`;
+    }
+
+    return `<div class="op-card priority-left priority-${pri.toLowerCase()}" data-code="${code}" onclick="openProfile('${code}')">
+      <div class="op-rank">${rank}</div>
+      <div class="op-body">
+        <div class="op-top">
+          <div class="op-dot ${isLive?'live':'idle'}"></div>
+          <div class="op-code">${code}</div>
+          ${timeHtml}
+          <div class="rm-name">${rm}</div>
+        </div>
+        <div class="op-tags">
+          <span class="tag tag-outline">#${pos}</span>
+          ${pri?`<span class="tag ${priCls}">${pri} · ${stage||pri}</span>`:''}
+          ${act?`<span class="tag ${act.cls}">${act.label}</span>`:''}
+          ${drType==='Red DR'?'<span class="tag tag-red">🔴 Red DR</span>':''}
+          ${recency?`<span class="tag tag-gray">${recency}</span>`:''}
+          ${drTier?`<span class="tag tag-outline">${drTier}</span>`:''}
+          ${called?'<span class="tag tag-green">Called ✓</span>':''}
+        </div>
+        ${callHtml}
       </div>
     </div>`;
   }).join('');
-  sug.querySelectorAll('.sug-item').forEach(el => el.addEventListener('click', () => {
-    inp.value = el.dataset.code; clr.style.display='block'; sug.style.display='none';
-    selectOp(el.dataset.code);
-  }));
-  sug.style.display = 'block';
-});
 
-inp.addEventListener('keydown', e => {
-  if (e.key==='Escape') sug.style.display='none';
-  if (e.key==='Enter') { const r=findRow(inp.value.trim().toUpperCase()); if(r){sug.style.display='none';selectOp(r.operator_code);} }
-});
-clr.addEventListener('click', () => {
-  inp.value=''; clr.style.display='none'; sug.style.display='none'; currentCode=null;
-  document.getElementById('profileSection').style.display='none';
-  document.getElementById('emptyState').style.display='block';
-});
-document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) sug.style.display='none'; });
-document.getElementById('refBtn').addEventListener('click', () => loadData());
-
-/* ── SELECT ── */
-function selectOp(code) {
-  const row = findRow(code);
-  if (!row) return;
-  currentCode = code;
-  render(row);
+  renderPag(total);
 }
 
-/* ── HELPERS ── */
-const fmt  = v => (v && v!=='')?v:'—';
-const bool = v => String(v).toLowerCase()==='true';
-function money(v) { const n=parseInt(v,10); return (!n||isNaN(n))? '—' : '₹'+n.toLocaleString('en-IN'); }
-
-function parseDR(raw) {
-  if (!raw||raw.trim()==='') return [];
-  return raw.split(DR).map(r=>r.split(DF).map(f=>f.trim())).filter(r=>r.length>1||r[0]);
-}
-
-function srCells(l1,l2,l3) {
-  const cell = (v,cls,lbl) => v&&v!=='' ? `<span class="sr ${cls}" title="${lbl}">${money(v)}</span>` : `<span class="sr-nil">—</span>`;
-  return `<div class="sr-row">${cell(l1,'sr-l1','L1')}</div>`;
-  // separate cells
-}
-function srCell(v, cls, lbl) { return v&&v!=='' ? `<span class="sr ${cls}" title="${lbl}">${money(v)}</span>` : `<span class="sr-nil">—</span>`; }
-
-function tripChip(st) {
-  const s=(st||'').toUpperCase();
-  if (s.includes('CANCEL')) return '<span class="chip chip-cancel">Cancelled</span>';
-  if (s.includes('WON'))   return '<span class="chip chip-won">Won</span>';
-  if (s.includes('LOST'))  return '<span class="chip chip-lost">Lost</span>';
-  return `<span class="chip chip-live">${st||'Live'}</span>`;
-}
-
-/* ── RENDER ── */
-function render(row) {
-  drawerOpen=false;
-  document.getElementById('drDrawer').classList.remove('open');
-  document.getElementById('fStep').classList.remove('active');
-  document.getElementById('emptyState').style.display='none';
-  document.getElementById('profileSection').style.display='block';
-
-  const code = (row.operator_code||'').toUpperCase();
-
-  /* Profile header */
-  document.getElementById('pcAvatar').textContent = code.replace(/[^A-Z0-9]/g,'').slice(0,2);
-  document.getElementById('pcCode').textContent   = code;
-  document.getElementById('pcRM').textContent     = `${row.rm_name||'—'} · ${row.Cluster||'—'}`;
-
-  const tags = document.getElementById('pcTags');
-  tags.innerHTML = '';
-  const pri = row.priority||'';
-  if (pri) tags.innerHTML += `<span class="tag ${PTAG[pri]||'tag-gray'}" title="${PTXT[pri]||''}">${pri}</span>`;
-  if (row.stage && row.stage!==pri) tags.innerHTML += `<span class="tag tag-gray">${row.stage}</span>`;
-  if (row.dr_supply_type==='Red DR') tags.innerHTML += `<span class="tag tag-red">🔴 Red DR</span>`;
-  if (row.va_sub_bucket) tags.innerHTML += `<span class="tag tag-amber">${row.va_sub_bucket}</span>`;
-  if (bool(row.trained_graduate)) tags.innerHTML += `<span class="tag tag-purple">Trained Graduate</span>`;
-
-  /* run time */
-  const rt = row.last_run_time||'';
-  if (rt) {
-    let fresh=false;
-    try { const p=rt.split(':'); const rd=new Date(); rd.setHours(+p[0],+p[1],+p[2]||0,0); fresh=(Date.now()-rd)/60000<35; } catch(e){}
-    tags.innerHTML += `<span class="rt-tag ${fresh?'fresh':''}" style="margin-left:2px">⏱ ${rt}</span>`;
+function renderPag(total){
+  const pages = Math.ceil(total/PAGE_SIZE);
+  const el    = document.getElementById('pagBtns');
+  if(pages<=1){el.innerHTML='';return;}
+  let html='';
+  html+=`<button class="pag-btn" onclick="goPage(${page-1})" ${page===1?'disabled':''}>← Prev</button>`;
+  const range=[];
+  for(let i=1;i<=pages;i++) if(i===1||i===pages||Math.abs(i-page)<=2) range.push(i);
+  let last=0;
+  for(const i of range){
+    if(last&&i-last>1) html+=`<span class="pag-info">…</span>`;
+    html+=`<button class="pag-btn${i===page?' active':''}" onclick="goPage(${i})">${i}</button>`;
+    last=i;
   }
+  html+=`<button class="pag-btn" onclick="goPage(${page+1})" ${page===pages?'disabled':''}>Next →</button>`;
+  el.innerHTML=html;
+}
 
-  document.getElementById('scoreNum').textContent = parseFloat(row.activation_score||row.fo_activity_score||0).toFixed(1);
-  const rank = row.calling_rank||'';
-  const rc   = document.getElementById('rankChip');
-  if (rank) { rc.textContent=`#${rank} in queue`; rc.style.display='block'; } else rc.style.display='none';
+function goPage(p){
+  page=p;
+  renderList();
+  document.getElementById('listView').scrollTo(0,0);
+  window.scrollTo(0,0);
+}
 
-  /* Today snapshot */
-  const snaps = [
-    {key:'vehicle_available_today', label:'VA'},
-    {key:'accepted_today',          label:'Accepted'},
-    {key:'token_paid_today',        label:'Token Paid'},
-    {key:'bid_today',               label:'Bid Today'},
-    {key:'ldp_today',               label:'LDP Today'},
-    {key:'vehicle_submitted',       label:'Vehicle Sub.'},
-    {key:'called_today',            label:'Called Today'},
+/* ─── OPEN PROFILE ───────────────────────────────────────────── */
+function openProfile(code){
+  const row = findRow(code);
+  if(!row) return;
+  currentRow=row;
+  drawerOpen=false;
+  document.getElementById('pfDrawer').classList.remove('open');
+  document.getElementById('pfFStep').classList.remove('active');
+  document.getElementById('listView').style.display='none';
+  document.getElementById('profileView').style.display='block';
+  document.querySelector('.main').scrollTo(0,0);
+  window.scrollTo(0,0);
+  renderProfile(row);
+}
+
+function showList(){
+  document.getElementById('profileView').style.display='none';
+  document.getElementById('listView').style.display='block';
+}
+
+/* ─── RENDER PROFILE ─────────────────────────────────────────── */
+function renderProfile(row){
+  const code = (row.operator_code||'').toUpperCase();
+  document.getElementById('pfAv').textContent  = code.replace(/[^A-Z0-9]/g,'').slice(0,2);
+  document.getElementById('pfCode').textContent = code;
+  document.getElementById('pfRM').textContent   = `${row.rm_name||'—'} · ${row.Cluster||'—'}`;
+
+  const tags = document.getElementById('pfTags');
+  const pri  = row.priority||'';
+  let th = '';
+  if(pri) th+=`<span class="tag ${PTAG[pri]||'tag-gray'}">${pri}</span>`;
+  if(row.stage&&row.stage!==pri) th+=`<span class="tag tag-gray">${row.stage}</span>`;
+  if(row.dr_supply_type==='Red DR') th+=`<span class="tag tag-red">🔴 Red DR</span>`;
+  if(row.va_sub_bucket) th+=`<span class="tag tag-amber">${row.va_sub_bucket}</span>`;
+  if(bool(row.trained_graduate)) th+=`<span class="tag tag-purple">Trained Grad</span>`;
+  const rt=row.last_run_time||'';
+  if(rt){
+    let fresh=false;
+    try{const p=rt.split(':');const rd=new Date();rd.setHours(+p[0],+p[1],+p[2]||0,0);fresh=(Date.now()-rd)/60000<35;}catch(e){}
+    th+=`<span class="rt-tag ${fresh?'fresh':''}" style="margin-left:2px">⏱ ${rt}</span>`;
+  }
+  tags.innerHTML=th;
+
+  const sc = document.getElementById('pfRank');
+  const rk = row.calling_rank||'';
+  if(rk){sc.textContent=`#${rk} in queue`;sc.style.display='block';}else sc.style.display='none';
+  document.getElementById('pfScore').textContent=parseFloat(row.activation_score||row.fo_activity_score||0).toFixed(1);
+
+  // snapshot
+  const snaps=[
+    {k:'vehicle_available_today',l:'VA'},
+    {k:'accepted_today',l:'Accepted'},
+    {k:'token_paid_today',l:'Token Paid'},
+    {k:'bid_today',l:'Bid Today'},
+    {k:'ldp_today',l:'LDP Today'},
+    {k:'vehicle_submitted',l:'Vehicle Sub.'},
+    {k:'called_today',l:'Called'},
   ];
-  document.getElementById('snapshotRow').innerHTML = snaps.map(s => {
-    const on = bool(row[s.key]);
-    return `<div class="snap-pill ${on?'snap-yes':'snap-no'}"><div class="dot"></div>${s.label}</div>`;
+  document.getElementById('pfSnap').innerHTML=snaps.map(s=>{
+    const on=bool(row[s.k]);
+    return `<div class="snap-pill ${on?'snap-yes':'snap-no'}"><div class="sdot"></div>${s.l}</div>`;
   }).join('');
 
-  /* Activity metrics */
-  document.getElementById('mVaDays').textContent   = row.va_days    ||'0';
-  document.getElementById('mLdpDays').textContent  = row.ldp_days   ||'0';
-  document.getElementById('mLdpCount').textContent = row.total_ldp_count||'0';
-  document.getElementById('mTokens').textContent   = row.token_count ||'0';
+  // activity
+  document.getElementById('mVa').textContent  =row.va_days||'0';
+  document.getElementById('mLdpD').textContent=row.ldp_days||'0';
+  document.getElementById('mLdpC').textContent=row.total_ldp_count||'0';
+  document.getElementById('mTok').textContent =row.token_count||'0';
+  document.getElementById('ltL').textContent  =row.lifetime_ldps||'0';
+  document.getElementById('ltT').textContent  =row.lifetime_tokens||'0';
+  document.getElementById('ltR').textContent  =row.life_time_trips||'0';
+  document.getElementById('ltD').textContent  =row.appeared_in_drs||'0';
 
-  /* Lifetime */
-  document.getElementById('ltLdp').textContent    = row.lifetime_ldps   ||'0';
-  document.getElementById('ltTokens').textContent = row.lifetime_tokens ||'0';
-  document.getElementById('ltTrips').textContent  = row.life_time_trips ||'0';
-  document.getElementById('ltDRs').textContent    = row.appeared_in_drs ||'0';
+  // DR funnel
+  const drc=parseInt(row.num_of_drs_in_opsearch||'0',10);
+  const tok=parseInt(row.num_of_drs_paid_token||'0',10);
+  const red=parseInt(row.red_dr_count||'0',10);
+  document.getElementById('pfFDR').textContent  =drc;
+  document.getElementById('pfFRed').textContent =red;
+  document.getElementById('pfFTok').textContent =tok;
+  document.getElementById('pfFConv').textContent=drc>0?Math.round(tok/drc*100)+'%':'—';
 
-  /* DR Funnel */
-  const drCount  = parseInt(row.num_of_drs_in_opsearch||'0',10);
-  const tokDR    = parseInt(row.num_of_drs_paid_token ||'0',10);
-  const redDR    = parseInt(row.red_dr_count          ||'0',10);
-  const conv     = drCount>0 ? Math.round(tokDR/drCount*100) : 0;
-  document.getElementById('fDRs').textContent   = drCount;
-  document.getElementById('fRed').textContent   = redDR;
-  document.getElementById('fToken').textContent = tokDR;
-  document.getElementById('fConv').textContent  = conv+'%';
-
-  /* DR drawer — lane_vt_details (#### fields, |||| records) */
-  const laneRecs = parseDR(row.lane_vt_details||'');
-  const drBody   = document.getElementById('drBody');
-  drBody.innerHTML = laneRecs.length
-    ? laneRecs.map((f,i) => {
-        const did   = f[0]||'';
-        const route = f[1]||'';
-        const truck = f[2]||'';
-        // supply info at various positions; look for semicolons (L1;L2;L3)
-        const sup = f.find((v,idx) => idx>2 && v && v.includes(';')) || '';
-        const [l1='',l2='',l3=''] = sup.split(';');
-        return `<tr>
-          <td class="row-num">${i+1}</td>
-          <td class="mono">${fmt(did)}</td>
-          <td>${fmt(route)}</td>
-          <td style="color:var(--t2)">${fmt(truck)}</td>
-          <td><div class="sr-row">
-            ${srCell(l1,'sr-l1','L1')}${srCell(l2,'sr-l2','L2')}${srCell(l3,'sr-l3','L3')}
-          </div></td>
-        </tr>`;
+  // DR lanes
+  const lr=parseDel(row.lane_vt_details||'');
+  document.getElementById('pfDRBody').innerHTML=lr.length
+    ?lr.map((f,i)=>{
+        const sup=f.find((v,idx)=>idx>2&&v&&v.includes(';'))||'';
+        const [l1='',l2='',l3='']=sup.split(';');
+        return `<tr><td class="rn">${i+1}</td><td class="mono">${f[0]||'—'}</td><td>${f[1]||'—'}</td><td style="color:var(--t2)">${f[2]||'—'}</td><td style="display:flex;gap:3px">${sc2(l1,'sr-l1')}${sc2(l2,'sr-l2')}${sc2(l3,'sr-l3')}</td></tr>`;
       }).join('')
-    : '<tr><td colspan="5" class="tbl-empty">No lanes in op-search today</td></tr>';
+    :'<tr><td colspan="5" class="te">No matched lanes today</td></tr>';
 
-  /* Bid Today — bid_today_lane_details */
-  /* f: [did, route, truck, opFreight, token_paid, L1, L2, L3] */
-  const bidRecs = parseDR(row.bid_today_lane_details||'');
-  const bidSec  = document.getElementById('bidSection');
-  if (bidRecs.length) {
-    bidSec.style.display='';
-    document.getElementById('bidCount').textContent = `${bidRecs.length} demand${bidRecs.length>1?'s':''}`;
-    document.getElementById('bidBody').innerHTML = bidRecs.map((f,i) => {
-      const [did,route,truck,opFr,tokPaid,l1,l2,l3]=f;
-      const paid = tokPaid==='1'||tokPaid==='True'||bool(tokPaid);
-      return `<tr>
-        <td class="row-num">${i+1}</td>
-        <td class="mono">${fmt(did)}</td>
-        <td>${fmt(route)}</td>
-        <td style="color:var(--t2)">${fmt(truck)}</td>
-        <td class="fw">${money(opFr)}</td>
-        <td>${paid?'<span class="chip chip-won">Paid</span>':'<span class="chip" style="background:var(--surface2);color:var(--t3)">Pending</span>'}</td>
-        <td>${srCell(l1,'sr-l1','L1')}</td>
-        <td>${srCell(l2,'sr-l2','L2')}</td>
-        <td>${srCell(l3,'sr-l3','L3')}</td>
-      </tr>`;
-    }).join('');
-  } else bidSec.style.display='none';
+  // bid lanes
+  sectionTable('pfBidSec','pfBidCnt','pfBidBody',parseDel(row.bid_today_lane_details||''),
+    f=>{const[did,route,truck,opFr,tokP,l1,l2,l3]=f;const paid=tokP==='1'||bool(tokP);
+      return `<td class="mono">${fmt(did)}</td><td>${fmt(route)}</td><td style="color:var(--t2)">${fmt(truck)}</td><td class="fw">${money(opFr)}</td><td>${paid?'<span class="chip c-won">Paid</span>':'<span class="chip c-nil">Pending</span>'}</td><td>${sc2(l1,'sr-l1')}</td><td>${sc2(l2,'sr-l2')}</td><td>${sc2(l3,'sr-l3')}</td>`;
+    });
 
-  /* Token Lanes — token_lane_details */
-  /* f: [did, route, truck, opFreight, placed_rate, method, L1, L2, L3] */
-  const tokRecs = parseDR(row.token_lane_details||'');
-  const tokSec  = document.getElementById('tokenSection');
-  if (tokRecs.length) {
-    tokSec.style.display='';
-    document.getElementById('tokenCount2').textContent = `${tokRecs.length} demand${tokRecs.length>1?'s':''}`;
-    document.getElementById('tokenBody').innerHTML = tokRecs.map((f,i) => {
-      const [did,route,truck,opFr,placed,method,l1,l2,l3]=f;
-      return `<tr>
-        <td class="row-num">${i+1}</td>
-        <td class="mono">${fmt(did)}</td>
-        <td>${fmt(route)}</td>
-        <td style="color:var(--t2)">${fmt(truck)}</td>
-        <td class="fw">${money(opFr)}</td>
-        <td>${money(placed)}</td>
-        <td style="font-size:10px;color:var(--t3)">${fmt(method)}</td>
-        <td>${srCell(l1,'sr-l1','L1')}</td>
-        <td>${srCell(l2,'sr-l2','L2')}</td>
-        <td>${srCell(l3,'sr-l3','L3')}</td>
-      </tr>`;
-    }).join('');
-  } else tokSec.style.display='none';
+  // token lanes
+  sectionTable('pfTokSec','pfTokCnt','pfTokBody',parseDel(row.token_lane_details||''),
+    f=>{const[did,route,truck,opFr,placed,method,l1,l2,l3]=f;
+      return `<td class="mono">${fmt(did)}</td><td>${fmt(route)}</td><td style="color:var(--t2)">${fmt(truck)}</td><td class="fw">${money(opFr)}</td><td>${money(placed)}</td><td style="font-size:10px;color:var(--t3)">${fmt(method)}</td><td>${sc2(l1,'sr-l1')}</td><td>${sc2(l2,'sr-l2')}</td><td>${sc2(l3,'sr-l3')}</td>`;
+    });
 
-  /* Accepted Today — accepted_lane_details */
-  /* f: [did, route, truck, opFreight, ?, status/method, placement_id, time, trip_status] */
-  const accRecs = parseDR(row.accepted_lane_details||'');
-  const accSec  = document.getElementById('acceptedSection');
-  if (accRecs.length) {
-    accSec.style.display='';
-    document.getElementById('accCount').textContent = `${accRecs.length} trip${accRecs.length>1?'s':''}`;
-    document.getElementById('accBody').innerHTML = accRecs.map((f,i) => {
-      const did    = f[0]||'';
-      const route  = f[1]||'';
-      const truck  = f[2]||'';
-      const opFr   = f[3]||'';
-      const status = f[5]||'';
-      const plc    = f[6]||'';
-      const ts     = f[7]||'';
-      const state  = f[8]||'';
-      return `<tr>
-        <td class="row-num">${i+1}</td>
-        <td class="mono">${fmt(did)}</td>
-        <td>${fmt(route)}</td>
-        <td style="color:var(--t2)">${fmt(truck)}</td>
-        <td class="fw">${money(opFr)}</td>
-        <td>${tripChip(state||status)}</td>
-        <td class="mono" style="font-size:10px">${fmt(plc)}</td>
-        <td style="font-size:10px;color:var(--t3)">${fmt(ts)}</td>
-      </tr>`;
-    }).join('');
-  } else accSec.style.display='none';
+  // accepted
+  sectionTable('pfAccSec','pfAccCnt','pfAccBody',parseDel(row.accepted_lane_details||''),
+    f=>{const[did,route,truck,opFr,,status,plc,ts,state]=f;
+      return `<td class="mono">${fmt(did)}</td><td>${fmt(route)}</td><td style="color:var(--t2)">${fmt(truck)}</td><td class="fw">${money(opFr)}</td><td>${chipTrip(state||status)}</td><td class="mono" style="font-size:10px">${fmt(plc)}</td><td style="font-size:10px;color:var(--t3)">${fmt(ts)}</td>`;
+    });
 
-  /* Historical Tokens — hist_token_details */
-  /* f: [did, route, truck, opFreight, placed_rate, result, date] */
-  const histRecs = parseDR(row.hist_token_details||'');
-  const histSec  = document.getElementById('histSection');
-  if (histRecs.length) {
-    histSec.style.display='';
-    document.getElementById('histCount').textContent = `${histRecs.length} record${histRecs.length>1?'s':''}`;
-    document.getElementById('histBody').innerHTML = histRecs.map((f,i) => {
-      const [did,route,truck,opFr,placed,result,date]=f;
-      return `<tr>
-        <td class="row-num">${i+1}</td>
-        <td class="mono">${fmt(did)}</td>
-        <td>${fmt(route)}</td>
-        <td style="color:var(--t2)">${fmt(truck)}</td>
-        <td class="fw">${money(opFr)}</td>
-        <td>${money(placed)}</td>
-        <td>${tripChip(result)}</td>
-        <td style="font-size:10px;color:var(--t3)">${fmt(date)}</td>
-      </tr>`;
-    }).join('');
-  } else histSec.style.display='none';
+  // hist tokens
+  sectionTable('pfHistSec','pfHistCnt','pfHistBody',parseDel(row.hist_token_details||''),
+    f=>{const[did,route,truck,opFr,placed,result,date]=f;
+      return `<td class="mono">${fmt(did)}</td><td>${fmt(route)}</td><td style="color:var(--t2)">${fmt(truck)}</td><td class="fw">${money(opFr)}</td><td>${money(placed)}</td><td>${chipTrip(result)}</td><td style="font-size:10px;color:var(--t3)">${fmt(date)}</td>`;
+    });
 
-  /* Vehicle profile */
-  const total=parseInt(row.total_vehicles||'0',10);
-  const corr =parseInt(row.corrected_vehicles||'0',10);
-  document.getElementById('vTotal').textContent = total;
-  document.getElementById('vCorr').textContent  = corr;
-  document.getElementById('vUnver').textContent = Math.max(0,total-corr);
-  /* avail_vehicles: vehicle_no####tyre####status####something, records by |||| */
-  const vehRecs = parseDR(row.avail_vehicles||'');
-  document.getElementById('vehList').innerHTML = vehRecs.length
-    ? vehRecs.map(f => {
-        const no=f[0]||'', tyre=f[1]||'', stat=(f[2]||'').toLowerCase();
-        const sc=stat==='open'?'chip chip-won':stat==='booked'?'chip chip-live':'chip chip-cancel';
-        return `<div class="veh-row">
-          <div class="veh-no">${no}</div>
-          <div class="veh-meta">
-            ${tyre ? `<span class="tag tag-gray">${tyre}T</span>`:''}
-            ${stat ? `<span class="${sc}">${stat}</span>`:''}
-          </div>
-        </div>`;
-      }).join('')
-    : '<div class="tbl-empty">No vehicle records</div>';
+  // vehicles
+  const tv=parseInt(row.total_vehicles||'0',10), cv=parseInt(row.corrected_vehicles||'0',10);
+  document.getElementById('vT').textContent=tv;
+  document.getElementById('vC').textContent=cv;
+  document.getElementById('vU').textContent=Math.max(0,tv-cv);
+  const vr=parseDel(row.avail_vehicles||'');
+  document.getElementById('vehList').innerHTML=vr.length
+    ?vr.map(f=>`<div class="small-row"><div class="sr-no">${f[0]||'—'}</div><div class="veh-meta" style="display:flex;gap:4px;margin-left:8px">${f[1]?`<span class="tag tag-gray">${f[1]}T</span>`:''}<span class="chip ${(f[2]||'').toLowerCase()==='open'?'c-won':'c-live'}">${f[2]||'—'}</span></div></div>`).join('')
+    :'<div class="te">No vehicle data</div>';
 
-  /* Call history */
-  document.getElementById('cTotal').textContent = row.total_calls||'0';
-  document.getElementById('cLast').textContent  = row.last_call_date||'—';
-  const dispFull = row.last_call_disposition||'';
-  const dispShort = dispFull.replace(/-$/, '').trim();
-  document.getElementById('cDisp').textContent = dispShort||'—';
-  /* call_history: date####disposition####caller####status, records by |||| */
-  const callRecs = parseDR(row.call_history||'');
-  document.getElementById('callList').innerHTML = callRecs.length
-    ? callRecs.map(f => {
-        const [date,disp,caller,status]=f;
-        const s=(status||'').toLowerCase();
-        const sc=s.includes('connect')?'chip chip-won':s.includes('not')||s.includes('busy')||s.includes('no')?'chip chip-lost':'chip chip-cancel';
-        return `<div class="call-row">
-          <div class="call-date">${fmt(date)}</div>
-          <div class="call-by">${fmt(caller)}</div>
-          <div class="call-disp"><span class="${sc}">${fmt(disp||status)}</span></div>
-        </div>`;
-      }).join('')
-    : '<div class="tbl-empty">No call history</div>';
+  // calls
+  document.getElementById('cTot').textContent =row.total_calls||'0';
+  document.getElementById('cDate').textContent=row.last_call_date||'—';
+  document.getElementById('cDisp').textContent=(row.last_call_disposition||'').replace(/-$/,'').trim()||'—';
+  const cr=parseDel(row.call_history||'');
+  document.getElementById('callList').innerHTML=cr.length
+    ?cr.map(f=>{const[date,disp,caller,status]=f;const s=(status||'').toLowerCase();const cls=s.includes('connect')?'c-won':s.includes('not')||s.includes('busy')?'c-lost':'c-nil';
+      return `<div class="small-row"><div class="sr-date">${fmt(date)}</div><div class="sr-by">${fmt(caller)}</div><div class="sr-right"><span class="chip ${cls}">${fmt(disp||status)}</span></div></div>`;}).join('')
+    :'<div class="te">No call history</div>';
 }
 
-/* ── DRAWER ── */
-function toggleDrawer() {
+/* ─── HELPERS ────────────────────────────────────────────────── */
+const bool = v => String(v).toLowerCase()==='true';
+const fmt  = v => (v&&v!=='')?v:'—';
+function money(v){ const n=parseInt(v,10); return (!n||isNaN(n))?'—':'₹'+n.toLocaleString('en-IN'); }
+function parseDel(raw){ if(!raw||!raw.trim()) return []; return raw.split(DR).map(r=>r.split(DF).map(f=>f.trim())).filter(r=>r.length>1||r[0]); }
+function sc2(v,cls){ return v&&v!==''?`<span class="sr ${cls}">${money(v)}</span>`:'<span class="sr-nil">—</span>'; }
+function chipTrip(st){ const s=(st||'').toUpperCase(); if(s.includes('CANCEL')) return '<span class="chip c-nil">Cancelled</span>'; if(s.includes('WON')||s.includes('MATCH')) return '<span class="chip c-won">Won</span>'; if(s.includes('LOST')) return '<span class="chip c-lost">Lost</span>'; return `<span class="chip c-live">${st||'—'}</span>`; }
+
+function sectionTable(secId,cntId,bodyId,recs,rowFn){
+  const sec=document.getElementById(secId);
+  if(!recs.length){sec.style.display='none';return;}
+  sec.style.display='';
+  document.getElementById(cntId).textContent=`${recs.length} record${recs.length>1?'s':''}`;
+  document.getElementById(bodyId).innerHTML=recs.map((f,i)=>`<tr><td class="rn">${i+1}</td>${rowFn(f)}</tr>`).join('');
+}
+
+function minsAgo(timeStr){
+  if(!timeStr) return null;
+  try{ const p=timeStr.split(':'); const d=new Date(); d.setHours(+p[0],+p[1],+(p[2]||0),0); const diff=Math.round((Date.now()-d)/60000); return diff<0?null:diff; }catch(e){return null;}
+}
+function fmtAgo(m){ if(m<60) return m+'m'; const h=Math.floor(m/60); return h+'h'+(m%60?String(m%60).padStart(2,'0')+'m':''); }
+
+function bestTime(r){
+  if(bool(r.accepted_today)&&r.last_accepted_time) return {time:r.last_accepted_time.split(' ').pop().slice(0,5)};
+  if(bool(r.token_paid_today)&&r.token_paid_time)  return {time:r.token_paid_time.slice(0,5)};
+  if(bool(r.bid_today)&&r.last_bid_time)           return {time:r.last_bid_time.slice(0,5)};
+  if(bool(r.ldp_today)&&r.ldp_view_time)           return {time:r.ldp_view_time.slice(0,5)};
+  if(r.last_run_time) return {time:r.last_run_time.slice(0,5)};
+  return {time:''};
+}
+
+function actBadge(r){
+  if(bool(r.accepted_today))   return {label:'ACCEPTED', cls:'tag-p1'};
+  if(bool(r.token_paid_today)) return {label:'TOKEN',    cls:'tag-p2'};
+  if(bool(r.bid_today)){
+    const m=minsAgo(r.last_bid_time);
+    const lbl=m!=null?`BID (${fmtAgo(m)})`:'BID';
+    return {label:lbl, cls:'tag-amber'};
+  }
+  if(bool(r.ldp_today)) return {label:'LDP',cls:'tag-blue'};
+  if(bool(r.vehicle_available_today)) return {label:'VA',cls:'tag-gray'};
+  return null;
+}
+
+/* ─── STATUS / SCHEDULE ──────────────────────────────────────── */
+function setStatus(ok){
+  const dot=document.getElementById('lvDot');
+  dot.style.background=ok?'#4CAF50':'#EF5350';
+  dot.style.animation=ok?'blink 2s infinite':'none';
+}
+function schedule(){
+  clearTimeout(timer);clearInterval(cdTimer);
+  nextAt=Date.now()+REFRESH_MS;
+  timer=setTimeout(loadData,REFRESH_MS);
+  cdTimer=setInterval(cd,1000);cd();
+}
+function cd(){
+  const s=Math.max(0,Math.round((nextAt-Date.now())/1000));
+  document.getElementById('lvStatus').textContent=`${allData.length} operators · next in ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+}
+function spin(on){
+  const btn=document.getElementById('lvRefBtn');
+  btn.classList.toggle('spin',on);btn.disabled=on;
+}
+
+/* ─── JUMP SEARCH ────────────────────────────────────────────── */
+const ji=document.getElementById('jumpSearch');
+const js=document.getElementById('jumpSug');
+ji.addEventListener('input',function(){
+  const q=this.value.trim().toUpperCase();
+  if(q.length<2){js.style.display='none';return;}
+  const hits=allData.filter(r=>(r.operator_code||'').toUpperCase().includes(q)).slice(0,8);
+  if(!hits.length){js.innerHTML='<div class="sug-no" style="padding:12px;text-align:center;color:var(--t3);font-size:12px">No operators found</div>';js.style.display='block';return;}
+  js.innerHTML=hits.map(r=>{const code=(r.operator_code||'').toUpperCase();const pri=r.priority||'';const cls=PTAG[pri]||'tag-gray';
+    return `<div style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);transition:background .1s" class="sug-item" data-code="${code}" onmouseenter="this.style.background='var(--p1)'" onmouseleave="this.style.background=''">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--p1);color:var(--p6);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;font-family:var(--mono)">${code.replace(/[^A-Z0-9]/g,'').slice(0,2)}</div>
+      <div><div style="font-size:13px;font-weight:700;font-family:var(--mono)">${code}</div><div style="font-size:11px;color:var(--t2)">${r.rm_name||'—'} · ${r.Cluster||'—'}</div></div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:6px">${pri?`<span class="tag ${cls}">${pri}</span>`:''}<span style="font-size:11px;color:var(--t3)">#${r.calling_rank||'—'}</span></div>
+    </div>`;}).join('');
+  js.style.display='block';
+  js.querySelectorAll('.sug-item').forEach(el=>el.addEventListener('click',()=>{ ji.value=''; js.style.display='none'; openProfile(el.dataset.code); }));
+});
+document.addEventListener('click',e=>{ if(!e.target.closest('.lv-search-wrap')&&!e.target.closest('#jumpSug')) js.style.display='none'; });
+ji.addEventListener('keydown',e=>{ if(e.key==='Enter'){const r=findRow(ji.value.trim().toUpperCase());if(r){js.style.display='none';openProfile(r.operator_code);}} });
+
+/* ─── STAGE TABS ─────────────────────────────────────────────── */
+document.getElementById('stageTabs').querySelectorAll('.stage-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.stage-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    currentStage=this.dataset.stage;
+    applyFilters();
+  });
+});
+
+/* ─── FILTER EVENTS ──────────────────────────────────────────── */
+['fRecency','fDRType','fRM','fStatus','textFilter'].forEach(id=>{
+  document.getElementById(id).addEventListener(id==='textFilter'?'input':'change',applyFilters);
+});
+document.getElementById('lvRefBtn').addEventListener('click',loadData);
+
+/* ─── DRAWER ─────────────────────────────────────────────────── */
+function toggleDr(){
   drawerOpen=!drawerOpen;
-  document.getElementById('drDrawer').classList.toggle('open',drawerOpen);
-  document.getElementById('fStep').classList.toggle('active',drawerOpen);
+  document.getElementById('pfDrawer').classList.toggle('open',drawerOpen);
+  document.getElementById('pfFStep').classList.toggle('active',drawerOpen);
 }
 
 loadData();

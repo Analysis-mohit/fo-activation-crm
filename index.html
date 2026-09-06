@@ -1,1353 +1,839 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FO Activation CRM — Wheelseye</title>
+<title>FO Caller CRM — Wheelseye</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --purple-50:#EEEDFE; --purple-200:#AFA9EC; --purple-600:#534AB7; --purple-800:#3C3489;
-  --teal-50:#E1F5EE;   --teal-600:#0F6E56;   --teal-800:#085041;
-  --blue-50:#E6F1FB;   --blue-600:#185FA5;   --blue-800:#0C447C;
-  --amber-50:#FAEEDA;  --amber-600:#854F0B;  --amber-800:#633806;
-  --red-50:#FCEBEB;    --red-600:#A32D2D;    --red-800:#791F1F;
-  --green-50:#EAF3DE;  --green-600:#3B6D11;  --green-800:#27500A;
-  --gray-50:#F1EFE8;   --gray-200:#B4B2A9;   --gray-600:#5F5E5A;
-  --bg:#F7F6F2; --surface:#FFFFFF; --surface-2:#F1EFE8;
-  --border:rgba(0,0,0,.10); --border-md:rgba(0,0,0,.18);
-  --text-1:#1A1A18; --text-2:#5F5E5A; --text-3:#9A9890;
-  --r-md:8px; --r-lg:12px; --r-xl:16px;
-  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  --mono:'SF Mono','Fira Code','Courier New',monospace;
-  --topbar:52px;
-}
-body { font-family:var(--font); background:var(--bg); color:var(--text-1); font-size:14px; line-height:1.5; height:100vh; overflow:hidden; }
-/* TOP BAR */
-.topbar { background:var(--surface); border-bottom:.5px solid var(--border); padding:0 1.25rem; height:var(--topbar); display:flex; align-items:center; gap:14px; position:fixed; top:0; left:0; right:0; z-index:200; }
-.brand  { display:flex; align-items:center; gap:8px; flex-shrink:0; }
-.brand-dot { width:26px; height:26px; border-radius:8px; background:var(--purple-600); display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:700; }
-.brand-name { font-size:13px; font-weight:600; } .brand-sub { font-size:10px; color:var(--text-3); }
-.top-search-wrap { flex:1; max-width:360px; position:relative; }
-.top-search-wrap svg.s-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); width:13px; height:13px; stroke:var(--text-3); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
-.top-search-wrap input { width:100%; height:32px; padding:0 30px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); color:var(--text-1); font-size:12px; outline:none; transition:border-color .15s,box-shadow .15s; }
-.top-search-wrap input:focus { border-color:var(--purple-600); box-shadow:0 0 0 3px var(--purple-50); }
-.top-search-wrap input::placeholder { color:var(--text-3); }
-.top-clear-btn { position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--text-3); display:none; padding:2px; }
-.top-clear-btn svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; }
-.top-suggestions { position:absolute; top:calc(100% + 6px); left:0; right:0; background:var(--surface); border:.5px solid var(--border-md); border-radius:var(--r-lg); box-shadow:0 8px 24px rgba(0,0,0,.10); z-index:300; overflow:hidden; display:none; }
-.sug-item { padding:8px 12px; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:.5px solid var(--border); transition:background .1s; }
-.sug-item:last-child { border-bottom:none; } .sug-item:hover { background:var(--surface-2); }
-.sug-avatar { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; flex-shrink:0; }
-.sug-code { font-size:12px; font-weight:600; font-family:var(--mono); } .sug-rm { font-size:10px; color:var(--text-2); margin-top:1px; }
-.sug-right { margin-left:auto; text-align:right; flex-shrink:0; }
-.sug-pri { font-size:9px; font-weight:700; padding:1px 6px; border-radius:10px; display:inline-block; margin-bottom:2px; }
-.sug-call { font-size:10px; color:var(--text-3); }
-.sug-no-result { padding:10px 12px; font-size:12px; color:var(--text-3); text-align:center; }
-.status-bar { margin-left:auto; display:flex; align-items:center; gap:10px; flex-shrink:0; }
-.status-chip { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-2); }
-.pulse-dot { width:7px; height:7px; border-radius:50%; background:var(--green-600); animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-.status-chip.error .pulse-dot { background:var(--red-600); animation:none; }
-.refresh-btn { height:28px; padding:0 10px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); color:var(--text-2); cursor:pointer; font-size:11px; display:flex; align-items:center; gap:5px; }
-.refresh-btn:hover { background:var(--surface-2); }
-.refresh-btn svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-.refresh-btn.spinning svg { animation:spin .8s linear infinite; }
-@keyframes spin { to{transform:rotate(360deg);} }
-/* LAYOUT */
-.app-layout { display:grid; grid-template-columns:320px 1fr; height:calc(100vh - var(--topbar)); margin-top:var(--topbar); overflow:hidden; }
-/* LEFT PANEL */
-.lead-panel { display:flex; flex-direction:column; border-right:.5px solid var(--border); background:var(--surface); overflow:hidden; }
-.filter-bar { padding:.5rem .75rem; border-bottom:.5px solid var(--border); display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
-.filter-row { display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
-.filter-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); flex-shrink:0; width:40px; }
-.pri-btn { height:20px; padding:0 7px; border-radius:20px; font-size:9px; font-weight:700; border:.5px solid var(--border-md); background:var(--surface-2); cursor:pointer; color:var(--text-2); transition:all .1s; white-space:nowrap; }
-.pri-btn.a-all  { background:var(--text-1);      color:#fff; border-color:var(--text-1); }
-.pri-btn.a-s4   { background:var(--green-600);   color:#fff; border-color:var(--green-600); }
-.pri-btn.a-s2   { background:var(--red-600);     color:#fff; border-color:var(--red-600); }
-.pri-btn.a-s3   { background:var(--amber-600);   color:#fff; border-color:var(--amber-600); }
-.pri-btn.a-s1   { background:#0e7490;            color:#fff; border-color:#0e7490; }
-.pri-btn.a-sh   { background:var(--purple-600);  color:#fff; border-color:var(--purple-600); }
-.pri-btn.a-s5   { background:var(--gray-600);    color:#fff; border-color:var(--gray-600); }
-.pri-btn.a-hot  { background:#C2500A; color:#fff; border-color:#C2500A; }
-.btn-cnt { opacity:.65; font-weight:400; font-size:8px; margin-left:2px; }
-/* Stage badges in lead cards */
-.lb-s4 { background:var(--green-50);  color:var(--green-800); }
-.lb-s2 { background:var(--red-50);    color:var(--red-800); }
-.lb-s3 { background:var(--amber-50);  color:var(--amber-800); }
-.lb-s5 { background:var(--gray-50);   color:var(--gray-600); }
-.lb-red-dr { background:#FFF0F0; color:#A32D2D; border:.5px solid #F5C0C0; }
-.f-sel { height:22px; padding:0 6px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); color:var(--text-1); font-size:10px; cursor:pointer; outline:none; flex:1; min-width:58px; }
-.lead-search-wrap { padding:.3rem .75rem; border-bottom:.5px solid var(--border); flex-shrink:0; position:relative; }
-.lead-search-wrap svg { position:absolute; left:18px; top:50%; transform:translateY(-50%); width:12px; height:12px; stroke:var(--text-3); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
-.lead-search { width:100%; height:26px; padding:0 8px 0 25px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface-2); font-size:12px; outline:none; }
-.lead-search:focus { background:var(--surface); border-color:var(--purple-600); box-shadow:0 0 0 2px var(--purple-50); }
-.lead-countbar { padding:.2rem .75rem; background:var(--surface-2); border-bottom:.5px solid var(--border); font-size:10px; color:var(--text-2); display:flex; justify-content:space-between; flex-shrink:0; }
-.lead-list { flex:1; overflow-y:auto; }
-.lead-list::-webkit-scrollbar { width:3px; }
-.lead-list::-webkit-scrollbar-thumb { background:var(--gray-200); border-radius:3px; }
-/* LEAD ROW */
-.lead-row { padding:.4rem .75rem; border-bottom:.5px solid var(--border); cursor:pointer; display:flex; align-items:flex-start; gap:7px; transition:background .1s; border-left:3px solid transparent; }
-.lead-row:hover  { background:var(--surface-2); }
-.lead-row.active { background:var(--purple-50); border-left-color:var(--purple-600); }
-.lead-row.is-hot { border-left-color:#C2500A; }
-.lead-row.is-hot.active { border-left-color:var(--purple-600); }
-.lead-row.called-today { background:#FFFBEB; }
-.lead-row.called-today:hover { background:#FEF3C7; }
-.lead-row.called-today.active { background:var(--purple-50); }
-.lead-rank { font-size:9px; color:var(--text-3); font-family:var(--mono); width:20px; text-align:right; flex-shrink:0; padding-top:3px; }
-.lead-body { flex:1; min-width:0; }
-.lead-top-row { display:flex; align-items:center; gap:4px; }
-.lead-code { font-size:12px; font-weight:700; font-family:var(--mono); letter-spacing:.3px; }
-.hot-dot { width:5px; height:5px; border-radius:50%; background:#C2500A; flex-shrink:0; display:inline-block; margin-bottom:1px; animation:pulse 1.5s infinite; }
-.lead-badges { display:flex; gap:3px; flex-wrap:wrap; margin-top:2px; }
-.lb { display:inline-block; padding:1px 5px; border-radius:10px; font-size:8px; font-weight:700; }
-.lb-p0{background:var(--red-50);color:var(--red-800);} .lb-p1{background:var(--purple-50);color:var(--purple-800);}
-.lb-p2{background:var(--amber-50);color:var(--amber-800);} .lb-p3{background:var(--gray-50);color:var(--gray-600);}
-.lb-rec-7{background:var(--green-50);color:var(--green-800);} .lb-rec-30{background:var(--amber-50);color:var(--amber-800);}
-.lb-rec-old{background:var(--gray-50);color:var(--gray-600);}
-.lb-dr-h{background:var(--blue-50);color:var(--blue-800);} .lb-dr-m{background:var(--teal-50);color:var(--teal-800);}
-.lb-dr-l{background:var(--gray-50);color:var(--gray-600);}
-.lb-hot{background:#FFF0E6;color:#C2500A;} .lb-sheet{background:var(--teal-50);color:var(--teal-800);}
-.lb-reddr{background:#FCEBEB;color:#7A1010;} .lb-lsb{background:#E6F1FB;color:#0C447C;} .lb-score{background:#EEEDFE;color:#3C3489;}
-.last-call-line { font-size:9px; color:var(--text-3); margin-top:2px; display:flex; align-items:center; gap:3px; }
-.call-dot-sm { width:4px; height:4px; border-radius:50%; flex-shrink:0; }
-.pagination { padding:.35rem .75rem; border-top:.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-.pg-btn { height:22px; padding:0 8px; border:.5px solid var(--border-md); border-radius:var(--r-md); background:var(--surface); font-size:10px; cursor:pointer; color:var(--text-2); }
-.pg-btn:hover:not(:disabled) { background:var(--surface-2); } .pg-btn:disabled { opacity:.4; cursor:default; }
-.pg-info { font-size:10px; color:var(--text-2); }
-/* RIGHT PANEL */
-.detail-panel { overflow-y:auto; background:var(--bg); }
-.detail-panel::-webkit-scrollbar { width:4px; }
-.detail-panel::-webkit-scrollbar-thumb { background:var(--gray-200); border-radius:4px; }
-.detail-inner { max-width:780px; margin:0 auto; padding:1rem 1.25rem 3rem; }
-.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:300px; padding:2rem; text-align:center; }
-.empty-state svg { width:36px; height:36px; stroke:var(--text-3); fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; margin-bottom:12px; }
-.empty-state h2 { font-size:14px; font-weight:600; margin-bottom:5px; } .empty-state p { font-size:12px; color:var(--text-2); }
-.section-lbl { font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text-3); margin-bottom:7px; display:flex; align-items:center; gap:5px; }
-/* STAGE CONTEXT (profile card) */
-.pcc { border-radius:var(--r-xl); padding:.75rem 1.125rem; margin-bottom:.875rem; border:.5px solid; display:flex; align-items:center; gap:12px; }
-.pcc.stage-4{background:var(--green-50);border-color:#B0D98E;} .pcc.stage-2{background:var(--red-50);border-color:#E8BEBE;}
-.pcc.stage-3{background:var(--amber-50);border-color:#EFD4A0;} .pcc.stage-5{background:var(--gray-50);border-color:var(--gray-200);}
-.pcc-badge { padding:3px 12px; border-radius:20px; font-size:13px; font-weight:800; flex-shrink:0; }
-.stage-4 .pcc-badge{background:var(--green-600);color:#fff;} .stage-2 .pcc-badge{background:var(--red-600);color:#fff;}
-.stage-3 .pcc-badge{background:var(--amber-600);color:#fff;} .stage-5 .pcc-badge{background:var(--gray-600);color:#fff;}
-.pcc-body { flex:1; min-width:0; }
-.pcc-def { font-size:11px; font-weight:700; margin-bottom:5px; }
-.stage-4 .pcc-def{color:var(--green-800);} .stage-2 .pcc-def{color:var(--red-800);}
-.stage-3 .pcc-def{color:var(--amber-800);} .stage-5 .pcc-def{color:var(--gray-600);}
-.pcc-stats { display:flex; gap:12px; flex-wrap:wrap; }
-.pcc-stat { text-align:center; } .pcc-val { font-size:16px; font-weight:700; line-height:1; } .pcc-lbl { font-size:9px; color:var(--text-3); margin-top:2px; }
-.pcc-right { text-align:right; flex-shrink:0; }
-.pcc-rank { font-size:10px; color:var(--text-3); font-family:var(--mono); }
-.pcc-recency { font-size:10px; font-weight:600; margin-top:3px; }
-.rec-7{color:var(--green-600);} .rec-30{color:var(--amber-600);} .rec-old{color:var(--gray-600);}
-/* ══ HOT TODAY CARD (NEW) ══ */
-.hot-today-wrap { margin-bottom:.875rem; }
-.hot-today-card {
-  border-radius:var(--r-xl);
-  border:1.5px solid #D46B0A;
-  background:linear-gradient(135deg,#FFFAF4 0%,#FFF3E5 100%);
-  padding:.875rem 1.125rem;
-  overflow:hidden;
-}
-.htc-header { display:flex; align-items:center; gap:8px; margin-bottom:.75rem; }
-.htc-pulse { width:8px; height:8px; border-radius:50%; background:#C2500A; animation:pulse 1.4s infinite; flex-shrink:0; }
-.htc-title { font-size:11px; font-weight:800; color:#7A3006; letter-spacing:.5px; text-transform:uppercase; }
-.htc-time  { font-size:10px; color:#B06030; margin-left:auto; }
-.htc-grid  { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
-.htc-grid.single { grid-template-columns:1fr; }
-.htc-box { background:rgba(255,255,255,.8); border:.5px solid rgba(194,80,10,.2); border-radius:var(--r-lg); padding:.625rem .875rem; }
-.htc-box-hdr { display:flex; align-items:center; gap:6px; margin-bottom:.5rem; }
-.htc-box-icon { font-size:14px; line-height:1; }
-.htc-box-ttl  { font-size:11px; font-weight:700; color:#6B3808; flex:1; }
-.htc-box-cnt  { font-size:9px; font-weight:700; background:#C2500A; color:#fff; padding:1px 6px; border-radius:10px; flex-shrink:0; }
-.htc-items { display:flex; flex-direction:column; gap:4px; }
-.htc-item { display:flex; gap:5px; align-items:flex-start; }
-.htc-item-dot { width:4px; height:4px; border-radius:50%; background:#C2500A; flex-shrink:0; margin-top:5px; }
-.htc-item-txt { font-size:11px; color:var(--text-2); line-height:1.4; flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-.htc-item-txt b { color:var(--text-1); font-weight:600; }
-.htc-item-txt .amt { color:var(--green-600); font-weight:700; }
-.htc-empty { font-size:11px; color:#A07050; font-style:italic; }
-.htc-veh-list { display:flex; flex-wrap:wrap; gap:3px; }
-.htc-veh-pill { display:inline-flex; align-items:center; gap:3px; background:rgba(255,255,255,.9); border:.5px solid rgba(194,80,10,.2); border-radius:6px; padding:2px 6px; }
-.htc-veh-pill .vn { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--green-800); }
-.htc-veh-pill .vt { font-size:9px; color:var(--text-2); }
-/* PROFILE CARD */
-.profile-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); padding:.875rem 1.125rem; margin-bottom:.875rem; display:flex; align-items:center; gap:12px; }
-.profile-avatar { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; }
-.profile-body { flex:1; min-width:0; }
-.profile-code { font-size:17px; font-weight:700; font-family:var(--mono); cursor:pointer; letter-spacing:.4px; }
-.profile-code:hover { text-decoration:underline; }
-.profile-rm { font-size:12px; color:var(--text-2); margin-top:1px; }
-.profile-meta { display:flex; gap:5px; margin-top:5px; flex-wrap:wrap; }
-.badge { display:inline-flex; align-items:center; gap:3px; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:500; }
-.badge-teal{background:var(--teal-50);color:var(--teal-800);} .badge-purple{background:var(--purple-50);color:var(--purple-800);}
-.badge-amber{background:var(--amber-50);color:var(--amber-800);} .badge-red{background:var(--red-50);color:var(--red-800);}
-.badge-blue{background:var(--blue-50);color:var(--blue-800);} .badge-green{background:var(--green-50);color:var(--green-800);}
-.badge-gray{background:var(--gray-50);color:var(--gray-600);} .badge-sheet{background:var(--teal-50);color:var(--teal-800);}
-.score-block { text-align:center; flex-shrink:0; padding-left:12px; border-left:.5px solid var(--border); }
-.score-val { font-size:22px; font-weight:700; color:var(--purple-600); line-height:1; }
-.score-label { font-size:9px; color:var(--text-3); margin-top:3px; text-transform:uppercase; letter-spacing:.4px; }
-/* ACTION BANNER */
-.action-banner { border-radius:var(--r-xl); padding:.75rem 1.125rem; margin-bottom:.875rem; display:flex; align-items:center; gap:10px; background:var(--purple-50); border:.5px solid var(--purple-200); }
-.action-banner.warm{background:var(--amber-50);border-color:#EF9F27;} .action-banner.cold{background:var(--surface-2);border-color:var(--border-md);}
-.action-icon { width:30px; height:30px; border-radius:50%; flex-shrink:0; background:var(--purple-600); color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px; }
-.action-banner.warm .action-icon{background:var(--amber-600);} .action-banner.cold .action-icon{background:var(--gray-600);}
-.action-text { flex:1; min-width:0; }
-.action-title { font-size:12px; font-weight:700; } .action-sub { font-size:11px; color:var(--text-2); margin-top:2px; }
-.action-pitch { font-size:11px; margin-top:5px; background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-md); padding:4px 8px; }
-.action-pitch b { color:var(--purple-800); }
-/* METRICS */
-.metrics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:.875rem; }
-.metric-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-lg); padding:.6rem .75rem; }
-.metric-label { font-size:10px; color:var(--text-2); margin-bottom:2px; } .metric-val { font-size:20px; font-weight:700; line-height:1; } .metric-sub { font-size:9px; color:var(--text-3); margin-top:2px; }
-.dr-drawer { display:none; border-top:.5px solid var(--border); } .dr-drawer.open { display:block; }
-.dr-drawer-header { padding:.5rem 1.125rem; display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border-bottom:.5px solid var(--border); }
-.dr-drawer-title { font-size:11px; font-weight:600; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-.dr-close-btn { background:none; border:.5px solid var(--border-md); border-radius:var(--r-md); cursor:pointer; color:var(--text-2); width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; }
-.dr-close-btn:hover { background:var(--surface); }
-.dr-table-wrap { overflow-x:auto; } .dr-table { width:100%; border-collapse:collapse; font-size:12px; }
-.dr-table th { text-align:left; padding:6px 1.125rem; font-size:9px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--text-3); background:var(--surface-2); border-bottom:.5px solid var(--border); white-space:nowrap; }
-.dr-table td { padding:8px 1.125rem; border-bottom:.5px solid var(--border); vertical-align:middle; }
-.dr-table tr:last-child td { border-bottom:none; } .dr-table tr:hover td { background:var(--bg); }
-.did-txt { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--blue-600); cursor:pointer; } .did-txt:hover { text-decoration:underline; }
-.route-txt { font-size:11px; max-width:180px; line-height:1.4; } .meta-txt { font-size:10px; color:var(--text-2); white-space:nowrap; }
-.bid-in-row { font-size:12px; font-weight:700; color:var(--green-600); white-space:nowrap; } .bid-in-row.top3 { color:var(--amber-600); } .bid-none { font-size:10px; color:var(--text-3); }
-.tok-badge { padding:2px 6px; border-radius:20px; font-size:9px; font-weight:600; display:inline-block; white-space:nowrap; }
-.tok-paid{background:var(--green-50);color:var(--green-800);} .tok-open{background:var(--surface-2);color:var(--text-3);}
-.dr-empty { padding:1rem; text-align:center; color:var(--text-3); font-size:12px; }
-/* BOTTOM GRID */
-.bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:.875rem; margin-bottom:.875rem; }
-.info-card { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; }
-.info-card-title { font-size:11px; font-weight:600; display:flex; align-items:center; gap:5px; padding:.6rem 1.125rem; border-bottom:.5px solid var(--border); }
-.veh-stats { display:flex; padding:.6rem 1.125rem; border-bottom:.5px solid var(--border); }
-.veh-stat { flex:1; text-align:center; border-right:.5px solid var(--border); } .veh-stat:last-child { border-right:none; }
-.veh-val { font-size:18px; font-weight:700; } .veh-val.red{color:var(--red-600);} .veh-val.green{color:var(--green-600);}
-.veh-label { font-size:9px; color:var(--text-3); margin-top:2px; }
-.avail-section { padding:.5rem 1.125rem; border-bottom:.5px solid var(--border); }
-.avail-lbl { font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--text-3); margin-bottom:5px; display:flex; align-items:center; gap:4px; }
-.avail-lbl .dot { width:6px; height:6px; border-radius:50%; background:var(--green-600); animation:pulse 2s infinite; }
-.avail-list { display:flex; flex-wrap:wrap; gap:4px; max-height:80px; overflow-y:auto; }
-.veh-pill { display:inline-flex; align-items:center; gap:4px; background:var(--green-50); border:.5px solid #BFE08F; border-radius:7px; padding:2px 7px; cursor:pointer; }
-.veh-pill .vn { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--green-800); } .veh-pill .vt { font-size:9px; color:var(--text-2); }
-.avail-empty { font-size:11px; color:var(--text-3); }
-.tyre-section { padding:.625rem 1.125rem; }
-.tyre-section-lbl { font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--text-3); margin-bottom:7px; }
-.tyre-row { margin-bottom:7px; } .tyre-row:last-child { margin-bottom:0; }
-.tyre-row-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; }
-.tyre-name { font-size:11px; font-weight:600; } .tyre-counts { font-size:10px; color:var(--text-2); } .tyre-counts span { font-weight:700; color:var(--green-600); }
-.bar-track { height:4px; background:var(--surface-2); border-radius:4px; overflow:hidden; }
-.bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--green-600),var(--teal-600)); }
-/* LANE TABS */
-.lane-tabs { display:flex; border-bottom:.5px solid var(--border); }
-.lane-tab { flex:1; padding:.45rem .625rem; font-size:10px; font-weight:600; color:var(--text-3); background:none; border:none; cursor:pointer; border-bottom:2px solid transparent; transition:color .12s,border-color .12s; white-space:nowrap; font-family:var(--font); }
-.lane-tab:hover { color:var(--text-2); } .lane-tab.active { color:var(--purple-600); border-bottom-color:var(--purple-600); }
-.lane-cnt { display:inline-flex; align-items:center; justify-content:center; background:var(--purple-50); color:var(--purple-800); min-width:15px; height:15px; padding:0 3px; border-radius:8px; font-size:8px; font-weight:700; margin-left:3px; vertical-align:middle; }
-.lane-tab.active .lane-cnt { background:var(--purple-600); color:#fff; }
-.lane-body { display:none; padding:.625rem 1.125rem; max-height:260px; overflow-y:auto; } .lane-body.active { display:block; }
-.lane-card { border:.5px solid var(--border); border-radius:var(--r-md); padding:.45rem .75rem; margin-bottom:5px; background:var(--bg); } .lane-card:last-child { margin-bottom:0; }
-.lane-card.paid-card{border-color:var(--green-600);background:var(--green-50);} .lane-card.best-card{border-color:var(--amber-600);box-shadow:inset 3px 0 0 var(--amber-600);} .lane-card.lost-card{border-color:#E0B4B4;}
-.lane-card-top { display:flex; align-items:center; gap:6px; margin-bottom:2px; flex-wrap:wrap; }
-.lane-did { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--blue-600); cursor:pointer; } .lane-did:hover { text-decoration:underline; }
-.lane-route { font-size:12px; font-weight:600; line-height:1.3; }
-.lane-meta { display:flex; gap:7px; flex-wrap:wrap; margin-top:3px; align-items:center; } .lane-meta-item { font-size:10px; color:var(--text-2); }
-.lane-bid { font-size:12px; font-weight:700; color:var(--green-600); margin-left:auto; white-space:nowrap; } .lane-bid.none { color:var(--text-3); font-weight:500; }
-.lane-placed { font-size:11px; font-weight:700; color:var(--purple-800); white-space:nowrap; }
-.lane-offered { font-size:10px; color:var(--blue-600); font-weight:600; }
-.lane-empty { font-size:11px; color:var(--text-3); text-align:center; padding:1rem 0; }
-.pill { font-size:8px; font-weight:700; padding:1px 5px; border-radius:10px; }
-.pill-amber{background:var(--amber-50);color:var(--amber-800);} .pill-green{background:var(--green-50);color:var(--green-800);}
-.pill-red{background:var(--red-50);color:var(--red-800);} .pill-gray{background:var(--surface-2);color:var(--text-2);}
-.method-chip { padding:2px 6px; border-radius:20px; font-size:9px; font-weight:600; display:inline-block; }
-.method-chip.bidding{background:var(--blue-50);color:var(--blue-800);} .method-chip.matching{background:var(--green-50);color:var(--green-800);}
-.verdict-note { font-size:10px; margin-top:4px; font-weight:600; border-radius:5px; padding:3px 7px; }
-.verdict-note.bad { background:var(--red-50); color:var(--red-800); }
-.hist-card { cursor:pointer; } .hist-card .chev { font-size:10px; color:var(--text-3); transition:transform .15s; display:inline-block; }
-.hist-card.open .chev { transform:rotate(90deg); } .hist-card .hist-details { display:none; margin-top:5px; } .hist-card.open .hist-details { display:block; }
-.hist-cmp { margin-left:auto; font-size:10px; font-weight:700; color:var(--text-2); white-space:nowrap; }
-/* CALL HISTORY */
-.call-section { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; margin-bottom:.875rem; }
-.call-section-hdr { padding:.625rem 1.125rem; border-bottom:.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-.call-section-title { font-size:11px; font-weight:600; display:flex; align-items:center; gap:5px; }
-.ch-table { width:100%; border-collapse:collapse; font-size:12px; }
-.ch-table th { text-align:left; padding:6px 1.125rem; font-size:9px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--text-3); background:var(--surface-2); border-bottom:.5px solid var(--border); white-space:nowrap; }
-.ch-table td { padding:8px 1.125rem; border-bottom:.5px solid var(--border); vertical-align:middle; }
-.ch-table tr:last-child td { border-bottom:none; } .ch-table tr:hover td { background:var(--bg); }
-.disp-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:600; white-space:nowrap; }
-.disp-conn{background:var(--green-50);color:var(--green-800);} .disp-notreach{background:var(--red-50);color:var(--red-800);}
-.disp-callback{background:var(--amber-50);color:var(--amber-800);} .disp-default{background:var(--surface-2);color:var(--text-2);}
-.call-empty { padding:1rem; text-align:center; color:var(--text-3); font-size:11px; }
-/* CALL LOG FORM */
-.log-form-wrap { background:var(--surface); border:.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; margin-bottom:.875rem; }
-.log-form-hdr  { padding:.625rem 1.125rem; border-bottom:.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-.log-form-body { padding:1rem 1.125rem; display:flex; flex-direction:column; gap:.75rem; }
-.lf-row   { display:flex; gap:.75rem; flex-wrap:wrap; }
-.lf-field { display:flex; flex-direction:column; gap:4px; flex:1; min-width:140px; }
-.lf-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; color:var(--text-3); }
-.lf-select,.lf-input,.lf-textarea {
-  width:100%; font-family:var(--font); font-size:13px;
-  background:var(--surface-2); border:.5px solid var(--border-md);
-  border-radius:var(--r-md); padding:7px 10px; color:var(--text-1);
-  outline:none; transition:border-color .15s;
-}
-.lf-select:focus,.lf-input:focus,.lf-textarea:focus { border-color:var(--purple-600); }
-.lf-textarea { resize:vertical; min-height:68px; }
-.lf-checks  { display:flex; gap:1.25rem; align-items:center; flex-wrap:wrap; }
-.lf-check   { display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; }
-.lf-check input { width:16px; height:16px; accent-color:var(--purple-600); cursor:pointer; }
-.lf-submit  { align-self:flex-start; background:var(--purple-600); color:#fff; border:none; border-radius:var(--r-md); padding:9px 22px; font-size:13px; font-weight:600; cursor:pointer; transition:background .15s; }
-.lf-submit:hover { background:var(--purple-800); }
-.lf-submit:disabled { background:var(--gray-200); cursor:not-allowed; }
-.lf-status  { font-size:11px; margin-top:2px; min-height:16px; }
-.lf-status.ok  { color:var(--green-600); }
-.lf-status.err { color:var(--red-600); }
-.lf-api-note { font-size:10px; color:var(--amber-600); background:var(--amber-50); border-radius:6px; padding:4px 10px; }
-.toast { position:fixed; bottom:20px; right:20px; background:var(--text-1); color:#fff; border-radius:var(--r-md); padding:8px 14px; font-size:12px; z-index:9999; display:none; max-width:280px; box-shadow:0 4px 12px rgba(0,0,0,.18); }
-.toast.show { display:block; }
-.notice-bar { background:var(--amber-50); border-bottom:.5px solid #EF9F27; padding:7px 1.25rem; font-size:11px; color:var(--amber-800); display:none; }
-.notice-bar a { color:var(--amber-600); font-weight:600; cursor:pointer; }
-svg.icon { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-2px; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple-50:  #EEEDFE; --purple-200: #AFA9EC; --purple-600: #534AB7; --purple-800: #3C3489;
+    --teal-50:    #E1F5EE; --teal-600:   #0F6E56; --teal-800:   #085041;
+    --blue-50:    #E6F1FB; --blue-600:   #185FA5; --blue-800:   #0C447C;
+    --amber-50:   #FAEEDA; --amber-600:  #854F0B; --amber-800:  #633806;
+    --red-50:     #FCEBEB; --red-600:    #A32D2D; --red-800:    #791F1F;
+    --green-50:   #EAF3DE; --green-600:  #3B6D11; --green-800:  #27500A;
+    --gray-50:    #F1EFE8; --gray-200:   #B4B2A9; --gray-600:   #5F5E5A;
+    --bg:         #F7F6F2;
+    --surface:    #FFFFFF;
+    --surface-2:  #F1EFE8;
+    --border:     rgba(0,0,0,0.10);
+    --border-md:  rgba(0,0,0,0.18);
+    --text-1:     #1A1A18;
+    --text-2:     #5F5E5A;
+    --text-3:     #9A9890;
+    --radius-md:  8px;
+    --radius-lg:  12px;
+    --radius-xl:  16px;
+    --font:       -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono:  'SF Mono', 'Fira Code', 'Courier New', monospace;
+  }
+
+  body { font-family: var(--font); background: var(--bg); color: var(--text-1); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+
+  /* ── TOP BAR ── */
+  .topbar { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 0 1.5rem; height: 56px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
+  .brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .brand-dot { width: 28px; height: 28px; border-radius: 8px; background: var(--purple-600); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 600; }
+  .brand-name { font-size: 14px; font-weight: 600; color: var(--text-1); }
+  .brand-sub  { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+  /* ── SEARCH ── */
+  .search-wrap { flex: 1; max-width: 420px; position: relative; }
+  .search-wrap svg.s-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--text-3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+  .search-wrap input { width: 100%; height: 36px; padding: 0 34px 0 34px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); background: var(--surface); color: var(--text-1); font-size: 13px; outline: none; transition: border-color .15s, box-shadow .15s; }
+  .search-wrap input:focus { border-color: var(--purple-600); box-shadow: 0 0 0 3px var(--purple-50); }
+  .search-wrap input::placeholder { color: var(--text-3); }
+  .clear-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-3); display: none; padding: 2px; line-height: 1; }
+  .clear-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+  .suggestions { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--surface); border: 0.5px solid var(--border-md); border-radius: var(--radius-lg); box-shadow: 0 8px 24px rgba(0,0,0,0.10); z-index: 200; overflow: hidden; display: none; }
+  .sug-item { padding: 10px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--border); transition: background .1s; }
+  .sug-item:last-child { border-bottom: none; }
+  .sug-item:hover { background: var(--surface-2); }
+  .sug-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--purple-50); color: var(--purple-800); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+  .sug-code  { font-size: 13px; font-weight: 600; color: var(--text-1); font-family: var(--font-mono); }
+  .sug-rm    { font-size: 11px; color: var(--text-2); margin-top: 1px; }
+  .sug-cluster { margin-left: auto; font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .sug-no-result { padding: 12px 14px; font-size: 13px; color: var(--text-3); text-align: center; }
+
+  /* ── STATUS BAR ── */
+  .status-bar { margin-left: auto; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  .status-chip { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-2); }
+  .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-600); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .status-chip.error .pulse-dot { background: var(--red-600); animation: none; }
+  .refresh-btn { height: 30px; padding: 0 12px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); background: var(--surface); color: var(--text-2); cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 5px; transition: background .12s; }
+  .refresh-btn:hover { background: var(--surface-2); }
+  .refresh-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .refresh-btn.spinning svg { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── MAIN LAYOUT ── */
+  .main { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+  /* ── EMPTY / LOADING / ERROR ── */
+  .center-state { text-align: center; padding: 4rem 1rem; }
+  .center-state svg.big-icon { width: 48px; height: 48px; stroke: var(--text-3); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 16px; }
+  .center-state h2 { font-size: 15px; font-weight: 600; color: var(--text-1); margin-bottom: 6px; }
+  .center-state p  { font-size: 13px; color: var(--text-2); }
+  .skeleton { background: var(--surface-2); border-radius: var(--radius-md); animation: shimmer 1.4s ease-in-out infinite; }
+  @keyframes shimmer { 0%,100%{opacity:.6} 50%{opacity:1} }
+
+  /* ── SECTION LABEL ── */
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+
+  /* ── PROFILE CARD ── */
+  .profile-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 1.25rem 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 16px; }
+  .profile-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--purple-50); color: var(--purple-800); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+  .profile-body { flex: 1; min-width: 0; }
+  .profile-code { font-size: 20px; font-weight: 700; color: var(--text-1); font-family: var(--font-mono); letter-spacing: .5px; }
+  .profile-rm   { font-size: 12px; color: var(--text-2); margin-top: 3px; }
+  .profile-meta { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+
+  /* run time chip */
+  .run-time-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-3); background: var(--surface-2); border: 0.5px solid var(--border); padding: 2px 8px; border-radius: 20px; font-family: var(--font-mono); }
+  .run-time-chip.fresh { color: var(--green-800); background: var(--green-50); border-color: rgba(59,109,17,.2); }
+
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .badge-teal   { background: var(--teal-50);   color: var(--teal-800); }
+  .badge-purple { background: var(--purple-50);  color: var(--purple-800); }
+  .badge-amber  { background: var(--amber-50);   color: var(--amber-800); }
+  .badge-red    { background: var(--red-50);     color: var(--red-800); }
+  .badge-blue   { background: var(--blue-50);    color: var(--blue-800); }
+  .badge-green  { background: var(--green-50);   color: var(--green-800); }
+  .badge-gray   { background: var(--gray-50);    color: var(--gray-600); }
+
+  .score-block { text-align: center; flex-shrink: 0; padding-left: 16px; border-left: 0.5px solid var(--border); }
+  .score-val   { font-size: 28px; font-weight: 700; color: var(--purple-600); line-height: 1; }
+  .score-label { font-size: 10px; color: var(--text-3); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* ── METRICS GRID ── */
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1rem; }
+  @media(max-width:600px){ .metrics-grid{ grid-template-columns: repeat(2,1fr); } }
+  .metric-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: .875rem 1rem; }
+  .metric-label { font-size: 11px; color: var(--text-2); margin-bottom: 4px; }
+  .metric-val   { font-size: 24px; font-weight: 700; color: var(--text-1); line-height: 1; }
+  .metric-sub   { font-size: 10px; color: var(--text-3); margin-top: 4px; }
+
+  /* ── FUNNEL CARD ── */
+  .funnel-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; margin-bottom: 1rem; }
+  .funnel-header { padding: .875rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid var(--border); }
+  .funnel-title { font-size: 13px; font-weight: 600; color: var(--text-1); display: flex; align-items: center; gap: 7px; }
+  .funnel-hint  { font-size: 11px; color: var(--text-3); }
+  .funnel-steps { display: flex; }
+  .funnel-step  { flex: 1; padding: .875rem 1rem; text-align: center; border-right: 0.5px solid var(--border); cursor: default; }
+  .funnel-step:last-child { border-right: none; }
+  .funnel-step.clickable { cursor: pointer; transition: background .12s; }
+  .funnel-step.clickable:hover { background: var(--purple-50); }
+  .funnel-step.clickable.active { background: var(--purple-50); }
+  .fs-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .fs-val   { font-size: 26px; font-weight: 700; line-height: 1; }
+  .fs-val.blue   { color: var(--blue-600); }
+  .fs-val.purple { color: var(--purple-600); }
+  .fs-val.green  { color: var(--green-600); }
+  .fs-hint  { font-size: 10px; color: var(--text-3); margin-top: 5px; }
+  .fs-hint-click { color: var(--purple-600); }
+
+  /* ── DR DRAWER ── */
+  .dr-drawer { display: none; border-top: 0.5px solid var(--border); }
+  .dr-drawer.open { display: block; }
+  .dr-drawer-header { padding: .75rem 1.25rem; display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); border-bottom: 0.5px solid var(--border); }
+  .dr-drawer-title { font-size: 12px; font-weight: 600; color: var(--text-1); display: flex; align-items: center; gap: 6px; }
+  .dr-close-btn { background: none; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); cursor: pointer; color: var(--text-2); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: background .12s; }
+  .dr-close-btn:hover { background: var(--surface); }
+  .dr-table-wrap { overflow-x: auto; }
+  .dr-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .dr-table th { text-align: left; padding: 8px 1.25rem; font-size: 10px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--text-3); background: var(--surface-2); border-bottom: 0.5px solid var(--border); white-space: nowrap; }
+  .dr-table td { padding: 10px 1.25rem; border-bottom: 0.5px solid var(--border); color: var(--text-1); vertical-align: middle; }
+  .dr-table tr:last-child td { border-bottom: none; }
+  .dr-table tr:hover td { background: var(--bg); }
+  .odvt-text { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--text-1); letter-spacing: .3px; }
+  .dr-empty { padding: 1.5rem; text-align: center; color: var(--text-3); font-size: 12px; }
+
+  /* ── SUPPLY TABLE (bids + tokens) ── */
+  .supply-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; margin-bottom: 1rem; }
+  .supply-header { padding: .875rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid var(--border); background: var(--surface); }
+  .supply-title { font-size: 13px; font-weight: 600; color: var(--text-1); display: flex; align-items: center; gap: 7px; }
+  .supply-count { font-size: 11px; color: var(--text-3); }
+  .supply-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .supply-table th { text-align: left; padding: 8px 1rem; font-size: 10px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--text-3); background: var(--surface-2); border-bottom: 0.5px solid var(--border); white-space: nowrap; }
+  .supply-table td { padding: 10px 1rem; border-bottom: 0.5px solid var(--border); color: var(--text-1); vertical-align: middle; }
+  .supply-table tr:last-child td { border-bottom: none; }
+  .supply-table tr:hover td { background: var(--bg); }
+  .mono { font-family: var(--font-mono); font-size: 11px; }
+  .freight-val { font-family: var(--font-mono); font-weight: 700; color: var(--text-1); }
+
+  /* supply range cells */
+  .sr-wrap { display: flex; gap: 4px; }
+  .sr-pill { padding: 2px 7px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .sr-l1 { background: var(--green-50);  color: var(--green-800); }
+  .sr-l2 { background: var(--blue-50);   color: var(--blue-800); }
+  .sr-l3 { background: var(--amber-50);  color: var(--amber-800); }
+  .sr-empty { color: var(--text-3); font-size: 11px; }
+
+  /* token paid chip */
+  .tok-paid   { background: var(--green-50);  color: var(--green-800);  padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+  .tok-unpaid { background: var(--gray-50);   color: var(--gray-600);   padding: 2px 8px; border-radius: 20px; font-size: 10px; }
+  .supply-empty { padding: 1.25rem; text-align: center; color: var(--text-3); font-size: 12px; }
+
+  /* ── BOTTOM CARDS ── */
+  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  @media(max-width:600px){ .bottom-grid{ grid-template-columns: 1fr; } }
+  .info-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 1rem 1.25rem; }
+  .info-card-title { font-size: 12px; font-weight: 600; color: var(--text-1); margin-bottom: .875rem; display: flex; align-items: center; gap: 6px; }
+
+  /* vehicle stats */
+  .veh-stats { display: flex; gap: 0; }
+  .veh-stat { flex: 1; text-align: center; padding: 0 .5rem; border-right: 0.5px solid var(--border); }
+  .veh-stat:last-child { border-right: none; }
+  .veh-val   { font-size: 22px; font-weight: 700; color: var(--text-1); }
+  .veh-val.red { color: var(--red-600); }
+  .veh-label { font-size: 10px; color: var(--text-3); margin-top: 4px; }
+
+  /* lane pills */
+  .lane-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+  .lane-pill  { background: var(--amber-50); color: var(--amber-800); padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 500; font-family: var(--font-mono); line-height: 1.4; }
+  .no-lanes   { font-size: 12px; color: var(--text-3); }
+
+  /* ── ERROR TOAST ── */
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--red-50); color: var(--red-800); border: 0.5px solid var(--red-600); padding: 10px 16px; border-radius: var(--radius-md); font-size: 12px; z-index: 9999; display: none; max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.10); }
+  .toast.show { display: block; }
+
+  /* ── NOTICE BANNER ── */
+  .notice-banner { background: var(--amber-50); border: 0.5px solid #EF9F27; border-radius: var(--radius-md); padding: 10px 14px; font-size: 11px; color: var(--amber-800); margin-bottom: 1rem; display: none; }
+  .notice-banner a { color: var(--amber-600); font-weight: 600; }
+
+  svg.icon { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -2px; }
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════════════  TOP BAR  ═══════════════════════════ -->
 <header class="topbar">
   <div class="brand">
     <div class="brand-dot">FO</div>
-    <div><div class="brand-name">FO Activation CRM</div><div class="brand-sub">Wheelseye · FO Growth</div></div>
+    <div>
+      <div class="brand-name">FO Caller CRM</div>
+      <div class="brand-sub">Wheelseye · Cx Growth</div>
+    </div>
   </div>
-  <div class="top-search-wrap">
-    <svg class="s-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="topSearch" placeholder="Jump to operator code…" autocomplete="off" spellcheck="false"/>
-    <button class="top-clear-btn" id="topClearBtn"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-    <div class="top-suggestions" id="topSuggestions"></div>
+
+  <div class="search-wrap">
+    <svg class="s-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Search operator code…" autocomplete="off" spellcheck="false" />
+    <button class="clear-btn" id="clearBtn" aria-label="Clear search">
+      <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="suggestions" id="suggestions" role="listbox"></div>
   </div>
+
   <div class="status-bar">
-    <div class="status-chip" id="statusChip"><div class="pulse-dot" id="pulseDot"></div><span id="statusText">Loading…</span></div>
-    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
-      <svg id="refreshIcon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      Refresh
+    <div class="status-chip" id="statusChip">
+      <div class="pulse-dot" id="pulseDot"></div>
+      <span id="statusText">Loading…</span>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" title="Refresh now">
+      <svg id="refreshIcon" viewBox="0 0 24 24">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      <span id="refreshLabel">Refresh</span>
     </button>
   </div>
 </header>
-<div class="notice-bar" id="noticeBanner">
-  ⚠️ Could not load data from Google Sheets. Make sure the sheet is shared as <b>"Anyone with the link can view"</b>. &nbsp;<a onclick="loadData()">Retry</a>
-</div>
-<div class="app-layout" id="appLayout" style="margin-top:var(--topbar)">
-  <!-- LEFT: LEAD LIST -->
-  <aside class="lead-panel">
-    <div class="filter-bar">
-      <div class="filter-row">
-        <span class="filter-lbl">Stage</span>
-        <button class="pri-btn a-all" data-pri="ALL">All <span class="btn-cnt" id="cnt-ALL"></span></button>
-        <button class="pri-btn" data-pri="LIVE">🔴 Live <span class="btn-cnt" id="cnt-LIVE"></span></button>
-        <button class="pri-btn" data-pri="HISTORY">📋 History <span class="btn-cnt" id="cnt-HISTORY"></span></button>
-        <button class="pri-btn" data-pri="ACCEPTED">🎉 Post Acceptance <span class="btn-cnt" id="cnt-ACCEPTED"></span></button>
-        <button class="pri-btn" data-pri="TOKEN">💰 Token Paid <span class="btn-cnt" id="cnt-TOKEN"></span></button>
+
+<!-- ═══════════════════════════  MAIN  ═══════════════════════════ -->
+<main class="main">
+
+  <div class="notice-banner" id="noticeBanner">
+    ⚠️ Could not load data from Google Sheets. Make sure the sheet is set to
+    <strong>"Anyone with the link → Viewer"</strong> and try again.
+    <a href="#" onclick="loadData();return false;">Retry now</a>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div class="center-state" id="emptyState">
+    <svg class="big-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <h2>Search an operator</h2>
+    <p>Type an operator code in the search bar above<br>to load their activity profile and live DR funnel.</p>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div id="loadingState" style="display:none">
+    <div class="center-state">
+      <svg class="big-icon" style="animation:spin 1s linear infinite" viewBox="0 0 24 24" aria-hidden="true">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      <h2>Loading data…</h2>
+      <p>Fetching from Google Sheets</p>
+    </div>
+  </div>
+
+  <!-- OPERATOR PROFILE -->
+  <div id="profileSection" style="display:none">
+
+    <!-- PROFILE HEADER -->
+    <div class="profile-card">
+      <div class="profile-avatar" id="profileAvatar">OP</div>
+      <div class="profile-body">
+        <div class="profile-code" id="profileCode">—</div>
+        <div class="profile-rm"  id="profileRM">—</div>
+        <div class="profile-meta">
+          <span class="badge badge-teal"   id="clusterBadge">—</span>
+          <span class="badge"              id="priorityBadge" style="display:none">—</span>
+          <span class="badge badge-purple" id="stageBadge"    style="display:none">—</span>
+          <span class="badge badge-green"  id="rankBadge"     style="display:none">—</span>
+          <span class="run-time-chip"      id="runTimeBadge"  style="display:none">—</span>
+        </div>
       </div>
-      <div class="filter-row">
-        <span class="filter-lbl">Filter</span>
-        <select class="f-sel" id="fRecency">
-          <option value="">All recency</option>
-          <option value="Last 7 days">Last 7d</option>
-          <option value="8-30 days">8–30d</option>
-          <option value="30+ days">30+ days</option>
-        </select>
-        <select class="f-sel" id="fDR">
-          <option value="">All DR types</option>
-          <option value="Red DR">🔴 Red DR (&lt;300 FOs)</option>
-          <option value="Normal DR">Normal DR</option>
-          <option value="High DR">High DR</option>
-          <option value="Mid DR">Mid DR</option>
-          <option value="Low DR">Low DR</option>
-        </select>
-      </div>
-      <div class="filter-row">
-        <span class="filter-lbl">RM</span>
-        <select class="f-sel" id="fRM"><option value="">All RMs</option></select>
-        <select class="f-sel" id="fCalled">
-          <option value="">All statuses</option>
-          <option value="called">Called</option>
-          <option value="not_called">Not Called</option>
-        </select>
+      <div class="score-block">
+        <div class="score-val"   id="scoreVal">—</div>
+        <div class="score-label">activation score<br><span style="color:var(--text-3)">last 15 days</span></div>
       </div>
     </div>
-    <div class="lead-search-wrap">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input class="lead-search" id="leadSearch" placeholder="Filter by code or RM…" autocomplete="off">
+
+    <!-- ACTIVITY METRICS -->
+    <div class="section-label" style="margin-bottom:8px">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Activity — last 15 days
     </div>
-    <div class="lead-countbar">
-      <strong id="filteredCount">0</strong>&nbsp;leads
-      <span id="pageRangeInfo" style="color:var(--text-3)"></span>
-    </div>
-    <div class="lead-list" id="leadList">
-      <div style="padding:1.5rem;text-align:center;color:var(--text-3);font-size:12px" id="listPlaceholder">Loading leads…</div>
-    </div>
-    <div class="pagination">
-      <button class="pg-btn" id="prevBtn" onclick="changePage(-1)" disabled>← Prev</button>
-      <span class="pg-info" id="pageLabel">—</span>
-      <button class="pg-btn" id="nextBtn" onclick="changePage(1)" disabled>Next →</button>
-    </div>
-  </aside>
-  <!-- RIGHT: DETAIL -->
-  <main class="detail-panel" id="detailPanel">
-    <div class="detail-inner">
-      <div class="empty-state" id="emptyState">
-        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-        <h2>Select a lead to view profile</h2>
-        <p>Click any operator from the list, or use the search bar to jump to one.</p>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">VA days</div>
+        <div class="metric-val" id="vaDays">—</div>
+        <div class="metric-sub">vehicle marked available</div>
       </div>
-      <div id="profileSection" style="display:none">
-        <!-- 1. PRIORITY CONTEXT -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Activation Stage</div>
-        <div class="pcc" id="pccCard">
-          <div class="pcc-badge" id="pccBadge">S5</div>
-          <div class="pcc-body">
-            <div class="pcc-def" id="pccDef">—</div>
-            <div class="pcc-stats">
-              <div class="pcc-stat"><div class="pcc-val" id="pccLDPs">—</div><div class="pcc-lbl">Lifetime LDPs</div></div>
-              <div class="pcc-stat"><div class="pcc-val" id="pccToks">—</div><div class="pcc-lbl">Lifetime Tokens</div></div>
-              <div class="pcc-stat"><div class="pcc-val" id="pccDRs">—</div><div class="pcc-lbl">DR Appearances</div></div>
-              <div class="pcc-stat"><div class="pcc-val" id="pccTrips">—</div><div class="pcc-lbl">Lifetime Trips</div></div>
-            </div>
-          </div>
-          <div class="pcc-right">
-            <div class="pcc-rank" id="pccRank">Rank #—</div>
-            <div class="pcc-recency" id="pccRecency">—</div>
-          </div>
-        </div>
-        <!-- 2. HOT TODAY (new — shown only when bid_today or vehicle_available_today) -->
-        <div id="hotTodayWrap" style="display:none">
-          <div class="section-lbl" style="color:#8B4010">
-            <span style="font-size:12px;line-height:1">🔥</span>Active Today
-          </div>
-          <div class="hot-today-card">
-            <div class="htc-header">
-              <div class="htc-pulse"></div>
-              <div class="htc-title" id="htcTitle">—</div>
-              <div class="htc-time"  id="htcTime"></div>
-            </div>
-            <div class="htc-grid" id="htcGrid"><!-- populated by renderHotToday() --></div>
-          </div>
-        </div>
-        <!-- 3. OPERATOR PROFILE -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Operator</div>
-        <div class="profile-card">
-          <div class="profile-avatar" id="profileAvatar">OP</div>
-          <div class="profile-body">
-            <div class="profile-code" id="profileCode" title="Click to copy">—</div>
-            <div class="profile-rm"   id="profileRM">—</div>
-            <div class="profile-meta" id="profileMeta">
-              <span class="badge badge-teal" id="clusterBadge">—</span>
-            </div>
-          </div>
-          <div class="score-block">
-            <div class="score-val" id="scoreVal">—</div>
-            <div class="score-label">Activity Score<br><span style="color:var(--text-3)">last 15d</span></div>
-          </div>
-        </div>
-        <!-- 4. ACTION BANNER -->
-        <div class="action-banner" id="actionBanner">
-          <div class="action-icon" id="actionIcon">📞</div>
-          <div class="action-text">
-            <div class="action-title" id="actionTitle">—</div>
-            <div class="action-sub"   id="actionSub">—</div>
-            <div class="action-pitch" id="actionPitch" style="display:none"></div>
-          </div>
-        </div>
-        <!-- 5. ACTIVITY METRICS -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Activity — last 15 days</div>
-        <div class="metrics-grid">
-          <div class="metric-card"><div class="metric-label">VA days</div><div class="metric-val" id="vaDays">—</div><div class="metric-sub">vehicle available</div></div>
-          <div class="metric-card"><div class="metric-label">LDP days</div><div class="metric-val" id="ldpDays">—</div><div class="metric-sub">browsed loads</div></div>
-          <div class="metric-card"><div class="metric-label">Total LDPs</div><div class="metric-val" id="ldpCount">—</div><div class="metric-sub">load detail views</div></div>
-          <div class="metric-card"><div class="metric-label">Tokens paid</div><div class="metric-val" id="tokenCount">—</div><div class="metric-sub">paid (15d)</div></div>
-        </div>
-        <!-- 6. LIVE LOADS -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Live Loads <span class="badge badge-green" style="font-size:9px;padding:1px 7px">● LIVE</span></div>
-        <div class="info-card" style="margin-bottom:.875rem;overflow:hidden;">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem .35rem;">
-            <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text-1);">
-              <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-              Op-search matches
-            </span>
-            <span id="cntLive" style="font-size:11px;font-weight:700;color:var(--purple-600);background:var(--purple-50);padding:1px 8px;border-radius:20px;">0</span>
-          </div>
-          <div style="display:flex;gap:6px;padding:.3rem .75rem .5rem;border-bottom:.5px solid var(--border);">
-            <input type="text" id="laneOFilter" placeholder="Filter origin…" oninput="filterLiveLanes()" style="flex:1;height:28px;padding:0 8px;border-radius:6px;border:.5px solid var(--border-md);font-size:11px;background:var(--surface-2);color:var(--text-1);outline:none;">
-            <input type="text" id="laneDFilter" placeholder="Filter destination…" oninput="filterLiveLanes()" style="flex:1;height:28px;padding:0 8px;border-radius:6px;border:.5px solid var(--border-md);font-size:11px;background:var(--surface-2);color:var(--text-1);outline:none;">
-          </div>
-          <div id="body-live" style="max-height:320px;overflow-y:auto;"></div>
-        </div>
-        <!-- 7. VEHICLE + LANE HISTORY -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle &amp; Lane History</div>
-        <div class="bottom-grid">
-          <div class="info-card">
-            <div class="info-card-title"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Vehicle profile</div>
-            <div class="veh-stats">
-              <div class="veh-stat"><div class="veh-val" id="totalVeh">—</div><div class="veh-label">total trucks</div></div>
-              <div class="veh-stat"><div class="veh-val green" id="corrVeh">—</div><div class="veh-label">verified</div></div>
-              <div class="veh-stat"><div class="veh-val red" id="unverVeh">—</div><div class="veh-label">unverified</div></div>
-            </div>
-            <div class="avail-section">
-              <div class="avail-lbl"><span class="dot"></span>Available today <span id="availCnt" style="color:var(--text-3)"></span></div>
-              <div class="avail-list" id="availList"></div>
-            </div>
-            <div class="tyre-section">
-              <div class="tyre-section-lbl">Tyre-wise breakdown</div>
-              <div id="tyreBreakdown"></div>
-            </div>
-          </div>
-          <div class="info-card">
-            <div class="info-card-title"><svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>Token &amp; Bid History</div>
-            <div class="lane-tabs">
-              <button class="lane-tab active" id="tab-paid" onclick="switchTab('paid')">Paid Today <span class="lane-cnt" id="cntPaid">0</span></button>
-              <button class="lane-tab" id="tab-hist" onclick="switchTab('hist')">Bid History <span class="lane-cnt" id="cntHist">0</span></button>
-            </div>
-            <div class="lane-body active" id="body-paid"></div>
-            <div class="lane-body" id="body-hist"></div>
-          </div>
-        </div>
-        <!-- 8. LOG A CALL -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Log a Call</div>
-        <div class="log-form-wrap">
-          <div class="log-form-hdr">
-            <div class="call-section-title"><svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Record outcome after each call</div>
-            <button id="openFormBtn" onclick="openCallForm()" style="display:none;height:26px;padding:0 10px;border-radius:6px;border:.5px solid var(--purple-600);background:var(--purple-600);color:#fff;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px">
-              <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              Open Form
-            </button>
-            <span id="lfApiNote" class="lf-api-note" style="display:none">⚠ Set FORM_URL in code to enable</span>
-          </div>
-          <div class="log-form-body">
-            <div class="lf-row">
-              <div class="lf-field">
-                <label class="lf-label" for="lfStatus">Call Status</label>
-                <select class="lf-select" id="lfStatus">
-                  <option value="">— select —</option>
-                  <option value="Connected">✅ Connected</option>
-                  <option value="Not Reachable">📵 Not Reachable</option>
-                  <option value="Callback">🔁 Callback</option>
-                </select>
-              </div>
-              <div class="lf-field">
-                <label class="lf-label" for="lfFollowup">Followup Date</label>
-                <input class="lf-input" type="date" id="lfFollowup">
-              </div>
-              <div class="lf-field">
-                <label class="lf-label" for="lfCaller">Your Name</label>
-                <input class="lf-input" type="text" id="lfCaller" placeholder="Enter your name">
-              </div>
-            </div>
-            <div class="lf-checks">
-              <label class="lf-check"><input type="checkbox" id="lfTraining"> Training Done</label>
-              <label class="lf-check"><input type="checkbox" id="lfInterested"> Operator Interested</label>
-            </div>
-            <div class="lf-field">
-              <label class="lf-label" for="lfNotes">Notes</label>
-              <textarea class="lf-textarea" id="lfNotes" placeholder="e.g. Operator said will pay token tomorrow, wants rate on NCR→HYD route…"></textarea>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-              <button class="lf-submit" id="lfSubmitBtn" onclick="submitCallLog()">Save Record</button>
-              <span class="lf-status" id="lfStatusMsg"></span>
-            </div>
-          </div>
-        </div>
-        <!-- 9. CALL HISTORY -->
-        <div class="section-lbl"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Call History — MP Load Support</div>
-        <div class="call-section">
-          <div class="call-section-hdr">
-            <div class="call-section-title"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Calling records</div>
-            <span style="font-size:10px;color:var(--text-3)" id="callBadge"></span>
-          </div>
-          <div id="callHistoryBody"><div class="call-empty">Select an operator to view call history.</div></div>
-        </div>
-      </div><!-- /profileSection -->
+      <div class="metric-card">
+        <div class="metric-label">LDP days</div>
+        <div class="metric-val" id="ldpDays">—</div>
+        <div class="metric-sub">days browsed loads</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total LDPs</div>
+        <div class="metric-val" id="ldpCount">—</div>
+        <div class="metric-sub">load detail views</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Tokens paid</div>
+        <div class="metric-val" id="tokenCount">—</div>
+        <div class="metric-sub">paid tokens (15d)</div>
+      </div>
     </div>
-  </main>
-</div>
-<div class="toast" id="toast"></div>
+
+    <!-- LIVE DR FUNNEL -->
+    <div class="section-label" style="margin-bottom:8px">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Live DR funnel — today
+      <span class="badge badge-green" style="font-size:10px;padding:2px 8px">● LIVE</span>
+    </div>
+    <div class="funnel-card">
+      <div class="funnel-header">
+        <div class="funnel-title">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Demand request pipeline
+        </div>
+        <div class="funnel-hint">click "In op-search" to see matched lanes</div>
+      </div>
+      <div class="funnel-steps">
+        <div class="funnel-step clickable" id="drStep" onclick="toggleDrawer()">
+          <div class="fs-label">In op-search</div>
+          <div class="fs-val blue" id="drCountVal">—</div>
+          <div class="fs-hint fs-hint-click">▾ view details</div>
+        </div>
+        <div class="funnel-step">
+          <div class="fs-label">Tokens paid</div>
+          <div class="fs-val purple" id="tokenDRVal">—</div>
+          <div class="fs-hint">of matched DRs</div>
+        </div>
+        <div class="funnel-step">
+          <div class="fs-label">Conversion</div>
+          <div class="fs-val green" id="convRateVal">—</div>
+          <div class="fs-hint">token / search</div>
+        </div>
+      </div>
+
+      <!-- EXPANDABLE DRAWER -->
+      <div class="dr-drawer" id="drDrawer">
+        <div class="dr-drawer-header">
+          <div class="dr-drawer-title">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            Matched lanes / vehicle types today
+          </div>
+          <button class="dr-close-btn" onclick="toggleDrawer()" aria-label="Close">✕</button>
+        </div>
+        <div class="dr-table-wrap">
+          <table class="dr-table">
+            <thead><tr><th>#</th><th>ODVT (Origin · Destination · Tyres · Size · Body)</th></tr></thead>
+            <tbody id="drTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODAY'S BIDS WITH SUPPLY RANGE -->
+    <div class="section-label" style="margin-bottom:8px" id="bidSectionLabel" style="display:none">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Today's bids
+      <span class="badge badge-blue" style="font-size:10px;padding:2px 8px">● TODAY</span>
+    </div>
+    <div class="supply-card" id="bidCard" style="display:none">
+      <div class="supply-header">
+        <div class="supply-title">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Bid details with supply range
+        </div>
+        <div class="supply-count" id="bidCount"></div>
+      </div>
+      <div class="dr-table-wrap">
+        <table class="supply-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Demand</th>
+              <th>Route</th>
+              <th>Truck</th>
+              <th>Op Freight</th>
+              <th>Token</th>
+              <th>L1</th>
+              <th>L2</th>
+              <th>L3</th>
+            </tr>
+          </thead>
+          <tbody id="bidTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TOKEN LANES WITH SUPPLY RANGE -->
+    <div class="section-label" style="margin-bottom:8px" id="tokenSectionLabel" style="display:none">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      Token-paid lanes today
+    </div>
+    <div class="supply-card" id="tokenCard" style="display:none">
+      <div class="supply-header">
+        <div class="supply-title">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Token lanes with supply range
+        </div>
+        <div class="supply-count" id="tokenLaneCount"></div>
+      </div>
+      <div class="dr-table-wrap">
+        <table class="supply-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Demand</th>
+              <th>Route</th>
+              <th>Truck</th>
+              <th>Op Freight</th>
+              <th>Placed Rate</th>
+              <th>Method</th>
+              <th>L1</th>
+              <th>L2</th>
+              <th>L3</th>
+            </tr>
+          </thead>
+          <tbody id="tokenTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bottom-grid">
+      <!-- VEHICLE PROFILE -->
+      <div class="info-card">
+        <div class="info-card-title">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          Vehicle profile
+        </div>
+        <div class="veh-stats">
+          <div class="veh-stat"><div class="veh-val" id="totalVeh">—</div><div class="veh-label">total trucks</div></div>
+          <div class="veh-stat"><div class="veh-val" id="corrVeh">—</div><div class="veh-label">attr. verified</div></div>
+          <div class="veh-stat"><div class="veh-val red" id="unverVeh">—</div><div class="veh-label">unverified</div></div>
+        </div>
+      </div>
+
+      <!-- MATCHED LANES -->
+      <div class="info-card">
+        <div class="info-card-title">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          Matched lanes today
+        </div>
+        <div class="lane-pills" id="lanePills"></div>
+      </div>
+    </div>
+
+  </div><!-- /profileSection -->
+
+</main>
+
+<!-- ERROR TOAST -->
+<div class="toast" id="errorToast"></div>
+
+<!-- ═══════════════════════════  SCRIPT  ═══════════════════════════ -->
 <script>
-/* ── DATA SOURCE: Google Sheets CSV ─────────────────────────────────
-   Sheet must be shared as "Anyone with the link can view"
-   Pipeline writes here every run (activation_calling_pipeline.py)
-   ─────────────────────────────────────────────────────────────────── */
-var SHEET_KEY  = '1nUhQ5SX0KpE83pYaAmtmXB1HBEFNoBKdc92bWSrhimQ';
-var SHEET_GID  = '0';
-var SHEET_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_KEY
-               + '/gviz/tq?tqx=out:csv&gid=' + SHEET_GID;
-var REFRESH_MS = 10*60*1000;
-var PAGE_SIZE  = 30;
-/* ── CALL LOG — Google Form ─────────────────────────────────────────────
-   After creating the Google Form and getting the pre-fill entry ID:
-     FORM_URL      → your Google Form's base URL (ends in /viewform)
-     FORM_ENTRY_OP → entry.XXXXXXXXX for the "Operator Code" question
-                     (Form → ⋮ → Get pre-filled link → fill one field → copy entry ID)
-   Leave FORM_URL as '' to hide the Log Call button.
-   ─────────────────────────────────────────────────────────────────────── */
-var FORM_URL      = '';   // ← e.g. 'https://docs.google.com/forms/d/e/XXXX/viewform'
-var FORM_ENTRY_OP = '';   // ← e.g. 'entry.123456789'
-/* ── CALL LOG API (legacy Flask — keep if still using) ──────────────── */
-var API_URL = 'https://script.google.com/macros/s/AKfycbwvyBh1NOEn6bq_eZzM-YwbwsPQDnCkQBcwsFiRuSRX0lvd2g3MWlr6HXHUD4UNeTnMkQ/exec';
-/* STATE */
-var allData=[],filtered=[],currentCode=null,currentPage=1;
-// Default: P0P1 = show only P0 + P1 + hot operators (fast load)
-// Change to 'ALL' to see everything including P2/P3
-var filterPri='ALL',drawerOpen=null;
-var activeTyre=null,currentLanes=[],currentTokenSet={};
-/* HELPERS */
-function rs(v){var n=parseFloat((v||'').toString().replace(/[^0-9.]/g,''));return(isNaN(n)||n<=0)?null:n;}
-function frs(n){if(n==null||isNaN(n)||n<=0)return'—';return'&#8377;'+Math.round(n).toLocaleString('en-IN');}
-function isTrueVal(v){return v===true||v==='TRUE'||v==='true'||v==='True'||v==='1'||v==='Yes';}
-function minsAgo(tsStr) {
-  /* Returns "X mins ago" string from an IST timestamp string like "2026-06-23 10:32:45".
-     Returns '' if unparseable or > 180 mins (outside 3-hr window). */
-  if(!tsStr||tsStr==='nan'||tsStr===''||tsStr==='NaT') return '';
-  var ts = new Date(tsStr.replace(' ','T'));
-  if(isNaN(ts)) return '';
-  // server returns IST; browser Date() treats as local — offset correction:
-  // add IST offset (+5:30 = +330 min) then subtract local offset
-  var diffMs = Date.now() - ts.getTime();
-  var mins = Math.round(diffMs / 60000);
-  if(mins < 0 || mins > 200) return '';
-  if(mins < 1)  return 'just now';
-  if(mins === 1) return '1 min ago';
-  return mins + ' mins ago';
-}
-function fmtTime(tsStr) {
-  /* Extracts HH:MM from "2026-06-30 10:23:45". Returns '' if invalid. */
-  if(!tsStr||tsStr==='nan'||tsStr===''||tsStr==='NaT') return '';
-  var ts=new Date(tsStr.replace(' ','T'));
-  if(isNaN(ts.getTime())) return '';
-  var h=ts.getHours(),m=ts.getMinutes();
-  return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
-}
-function priColor(p){return{P0:'#A32D2D',P1:'var(--purple-600)',P2:'var(--amber-600)',P3:'var(--gray-600)'}[p]||'var(--gray-600)';}
-function stageColor(s){return{'P1':'var(--green-600)','P2':'var(--amber-600)','P3':'var(--amber-600)','P4':'var(--gray-600)','VA':'#0e7490','H':'var(--purple-600)'}[s]||'var(--gray-600)';}
-var _stageOrd={'P1':0,'P2':1,'P3':2,'P4':3,'VA':4,'H':5};
-function _sigTime(r){if((r.stage||'')==='P1')return r.last_accepted_time||'';return r.last_bid_time||'';}
-function _sortLeads(arr){return arr.slice().sort(function(a,b){return(_sigTime(b)).localeCompare(_sigTime(a));});}
-function copyText(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){showToast('Copied: '+t);});}else showToast(t);}
-function set(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
-function fmtN(n){var v=Number(n||0);return isNaN(v)?'0':v.toLocaleString();}
-/* PARSERS */
-function parseLanes(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;var lows=(p[4]||'').split(';').map(rs).filter(function(x){return x!=null;});return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),loading:(p[3]||'').trim(),lows:lows,bid:lows.length?lows[0]:null,offered:rs(p[5]),own:rs(p[6]),tyre_req:(p[7]||'').trim()};}).filter(Boolean);}
-function parseTokenLanes(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),bid:rs(p[3]),placed:rs(p[4]),method:(p[5]||'').trim().toUpperCase()};}).filter(Boolean);}
-function parseHist(raw){if(!raw)return[];var out=raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),bid:rs(p[3]),placed:rs(p[4]),verdict:(p[5]||'').trim().toUpperCase(),date:(p[6]||'').trim()};}).filter(Boolean);out.sort(function(a,b){return b.date.localeCompare(a.date);});return out;}
-function parseTyres(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');return{tyres:(p[0]||'?').trim(),total:parseInt(p[1]||'0',10),verified:parseInt(p[2]||'0',10)};}).filter(Boolean).sort(function(a,b){return(parseInt(a.tyres)||9999)-(parseInt(b.tyres)||9999);});}
-function parseAvail(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');var vn=(p[0]||'').trim();if(!vn)return null;return{vn:vn,tyre:(p[1]||'').trim(),body:(p[2]||'').trim(),size:(p[3]||'').trim()};}).filter(Boolean);}
-function parseCallHistory(raw){if(!raw)return[];return raw.split('||||').map(function(seg){seg=seg.trim();if(!seg)return null;var p=seg.split('####');return{date:(p[0]||'').trim(),disposition:(p[1]||'').trim(),caller:(p[2]||'').trim(),disp_code:(p[3]||'').trim()};}).filter(Boolean);}
-function bidsTitle(l){return l.lows.length?'Lowest bids: '+l.lows.map(function(x){return'₹'+Math.round(x).toLocaleString('en-IN');}).join(' · '):'';}
-function tagLowest(lanes){lanes.forEach(function(l){l.isLow=(l.own!=null&&l.lows.length&&l.own<=l.lows[0]);});return lanes;}
-/* DATA LOAD — PapaParse reads CSV directly from Google Sheets CDN (~2-3s) */
-var _loadTimer = null;
-function loadData(){
+/* ─── CONFIG ─────────────────────────────────────────────────────── */
+const SHEET_ID   = '1JWUWuHwaVC_1P9wuZHe-TCLzPF8hcgUxuJyH7-SqpXA';
+const GID        = '0';
+const CSV_URL    = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+const REFRESH_MS = 5 * 60 * 1000;
+const MAX_SUGGESTIONS = 8;
+const DELIM_FIELD = '####';
+const DELIM_REC   = '||||';
+
+/* ─── STATE ──────────────────────────────────────────────────────── */
+let allData      = [];
+let drawerOpen   = false;
+let refreshTimer = null;
+let countdownTimer = null;
+let nextRefreshAt  = null;
+let currentCode    = null;
+
+/* ─── PRIORITY BADGE STYLES ──────────────────────────────────────── */
+const PRIORITY_STYLE = {
+  P1: 'badge-green',
+  P2: 'badge-teal',
+  P3: 'badge-blue',
+  P4: 'badge-purple',
+  VA: 'badge-amber',
+  H:  'badge-gray',
+};
+
+/* ─── FETCH & PARSE ──────────────────────────────────────────────── */
+async function loadData() {
   setLoading(true);
-  Papa.parse(SHEET_URL + '&t=' + Date.now(), {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    complete: function(results){
-      document.getElementById('noticeBanner').style.display='none';
-      allData=(results.data||[]).map(function(row){
-        var c={};
-        Object.keys(row).forEach(function(k){
-          c[k.trim()]=(row[k]===null||row[k]===undefined)?'':String(row[k]).trim();
-        });
-        return c;
-      });
-      populateRMFilter();updateStageCounts();applyFilters();
-      setStatus('ok', allData.length);
-      if(currentCode){var r=findRow(currentCode);if(r)renderProfile(r);}
-      setLoading(false);
-      if(_loadTimer) clearTimeout(_loadTimer);
-      _loadTimer = setTimeout(loadData, REFRESH_MS);
-    },
-    error: function(){
-      setStatus('error');
-      document.getElementById('noticeBanner').style.display='block';
-      setLoading(false);
-      if(_loadTimer) clearTimeout(_loadTimer);
-      _loadTimer = setTimeout(loadData, REFRESH_MS);
-    }
+  try {
+    const resp = await fetch(CSV_URL + '&t=' + Date.now(), { cache: 'no-store' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const text = await resp.text();
+    parseCSV(text);
+    setStatus('ok');
+    document.getElementById('noticeBanner').style.display = 'none';
+    scheduleRefresh();
+    if (currentCode) { const row = findRow(currentCode); if (row) renderProfile(row); }
+  } catch (err) {
+    setStatus('error', err.message);
+    document.getElementById('noticeBanner').style.display = 'block';
+    showToast('Could not reach Google Sheets — check public access setting.');
+    scheduleRefresh();
+  } finally {
+    setLoading(false);
+  }
+}
+
+function parseCSV(text) {
+  const result = Papa.parse(text, { header: true, skipEmptyLines: true });
+  allData = result.data.map(row => {
+    const clean = {};
+    for (const [k, v] of Object.entries(row))
+      clean[k.trim()] = typeof v === 'string' ? v.trim() : v;
+    return clean;
   });
 }
-function findRow(code){code=code.toUpperCase();for(var i=0;i<allData.length;i++){if((allData[i].operator_code||'').toUpperCase()===code)return allData[i];}return null;}
-function setStatus(state,count,updated){
-  var chip=document.getElementById('statusChip'),dot=document.getElementById('pulseDot');
-  chip.classList.toggle('error',state==='error');
-  dot.style.background=state==='error'?'var(--red-600)':'var(--green-600)';
-  dot.style.animation=state==='error'?'none':'pulse 2s infinite';
-  var txt = state==='error' ? 'Data load failed — check Apps Script URL' :
-    (count||allData.length).toLocaleString('en-IN')+' leads'+(updated?' · '+updated:'');
-  document.getElementById('statusText').textContent=txt;
+
+function findRow(code) {
+  return allData.find(r => (r.operator_code || '').toUpperCase() === code.toUpperCase());
 }
-function setLoading(on){var btn=document.getElementById('refreshBtn');btn.classList.toggle('spinning',on);btn.disabled=on;}
-/* FILTERS */
-function todayIST(){
-  var now=new Date();
-  var ist=new Date(now.getTime()+(5.5*60*60*1000));
-  return ist.toISOString().slice(0,10);
+
+/* ─── SCHEDULE / STATUS ──────────────────────────────────────────── */
+function scheduleRefresh() {
+  clearTimeout(refreshTimer); clearInterval(countdownTimer);
+  nextRefreshAt = Date.now() + REFRESH_MS;
+  refreshTimer = setTimeout(() => loadData(), REFRESH_MS);
+  updateCountdown();
+  countdownTimer = setInterval(updateCountdown, 1000);
 }
-function applyFilters(){
-  var recency=document.getElementById('fRecency').value,dr=document.getElementById('fDR').value;
-  var rm=document.getElementById('fRM').value,called=document.getElementById('fCalled').value;
-  var search=document.getElementById('leadSearch').value.trim().toUpperCase();
-  filtered=allData.filter(function(row){
-    if(filterPri==='LIVE'){
-      if(!['P1','P2','P3','P4','VA'].includes(row.stage))return false;
-    }else if(filterPri==='HISTORY'){
-      if(row.stage!=='H')return false;
-    }else if(filterPri==='ACCEPTED'){
-      if(row.stage!=='P1')return false;
-    }else if(filterPri==='TOKEN'){
-      if(row.stage!=='P2')return false;
-    }
-    if(recency&&row.recency_tier!==recency)return false;
-    if(dr){
-      if(dr==='Red DR'||dr==='Normal DR'){if(row.dr_supply_type!==dr)return false;}
-      else{if(row.dr_tier!==dr)return false;}
-    }
-    if(rm&&(row.rm_name||'').toUpperCase()!==rm.toUpperCase())return false;
-    if(search&&!(row.operator_code||'').toUpperCase().includes(search)&&!(row.rm_name||'').toUpperCase().includes(search))return false;
-    if(called==='called'&&!row.last_call_date)return false;
-    if(called==='not_called'&&row.last_call_date)return false;
-    return true;
-  });
-  // Sort by stage priority then signal time descending; called-today sink to bottom
-  var today=todayIST();
-  var uncalled=filtered.filter(function(r){return!(r.last_call_date||'').startsWith(today);});
-  var calledTdy=filtered.filter(function(r){return(r.last_call_date||'').startsWith(today);});
-  filtered=_sortLeads(uncalled).concat(_sortLeads(calledTdy));
-  currentPage=1;
-  document.getElementById('filteredCount').textContent=filtered.length.toLocaleString('en-IN');
-  renderLeadList();
+
+function updateCountdown() {
+  const secs = Math.max(0, Math.round((nextRefreshAt - Date.now()) / 1000));
+  const m = Math.floor(secs / 60), s = secs % 60;
+  const el = document.getElementById('statusText');
+  if (document.getElementById('statusChip').classList.contains('error')) return;
+  if (allData.length === 0) return;
+  el.textContent = `${allData.length} operators · next in ${m}:${String(s).padStart(2,'0')}`;
 }
-var _stageClass={'ALL':'a-all','LIVE':'a-s2','HISTORY':'a-sh','ACCEPTED':'a-s4','TOKEN':'a-s3'};
-document.querySelectorAll('.pri-btn').forEach(function(btn){
-  btn.addEventListener('click',function(){
-    document.querySelectorAll('.pri-btn').forEach(function(b){b.className='pri-btn';});
-    filterPri=btn.dataset.pri;
-    btn.classList.add(_stageClass[filterPri]||'a-all');
-    applyFilters();
-  });
-});
-['fRecency','fDR','fRM','fCalled'].forEach(function(id){document.getElementById(id).addEventListener('change',applyFilters);});
-document.getElementById('leadSearch').addEventListener('input',applyFilters);
-function updateStageCounts(){
-  var total=allData.length;
-  var live=allData.filter(function(r){return['P1','P2','P3','P4','VA'].includes(r.stage);}).length;
-  var hist=allData.filter(function(r){return r.stage==='H';}).length;
-  var accepted=allData.filter(function(r){return r.stage==='P1';}).length;
-  var token=allData.filter(function(r){return r.stage==='P2';}).length;
-  var m={'cnt-ALL':total,'cnt-LIVE':live,'cnt-HISTORY':hist,'cnt-ACCEPTED':accepted,'cnt-TOKEN':token};
-  Object.keys(m).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=m[id].toLocaleString('en-IN');});
+
+function setStatus(state, msg) {
+  const chip = document.getElementById('statusChip');
+  const dot  = document.getElementById('pulseDot');
+  chip.classList.toggle('error', state === 'error');
+  dot.style.background = state === 'error' ? 'var(--red-600)' : 'var(--green-600)';
+  if (state === 'error') { document.getElementById('statusText').textContent = 'Connection error'; dot.style.animation = 'none'; }
+  else { dot.style.animation = 'pulse 2s infinite'; }
 }
-function populateRMFilter(){
-  var rms=[...new Set(allData.map(function(r){return(r.rm_name||'').toUpperCase();}).filter(Boolean))].sort();
-  var sel=document.getElementById('fRM'),cur=sel.value;sel.innerHTML='<option value="">All RMs</option>';
-  rms.forEach(function(rm){var o=document.createElement('option');o.value=rm;o.textContent=rm;if(rm===cur)o.selected=true;sel.appendChild(o);});
+
+function setLoading(on) {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.toggle('spinning', on);
+  btn.disabled = on;
+  if (allData.length === 0 && on) { document.getElementById('emptyState').style.display='none'; document.getElementById('loadingState').style.display='block'; }
+  if (!on && allData.length === 0) { document.getElementById('loadingState').style.display='none'; document.getElementById('emptyState').style.display='block'; }
+  if (!on && allData.length > 0 && !currentCode) { document.getElementById('loadingState').style.display='none'; document.getElementById('emptyState').style.display='block'; }
 }
-function populateRouteFilters(){
-  var origins={},dests={};
-  allData.forEach(function(r){
-    var raw=r.bid_today_lane_details||'';
-    if(!raw)return;
-    raw.split('||||').forEach(function(seg){
-      var route=(seg.split('####')[1]||'').trim();
-      if(!route)return;
-      var parts=route.split('->');
-      var o=(parts[0]||'').trim(),d=(parts.length>1?parts[1]:'').trim();
-      if(o)origins[o]=1;
-      if(d)dests[d]=1;
+
+/* ─── SEARCH / AUTOCOMPLETE ──────────────────────────────────────── */
+const searchInput = document.getElementById('searchInput');
+const suggBox     = document.getElementById('suggestions');
+const clearBtn    = document.getElementById('clearBtn');
+
+searchInput.addEventListener('input', function () {
+  const q = this.value.trim().toUpperCase();
+  clearBtn.style.display = q ? 'block' : 'none';
+  if (q.length < 2) { suggBox.style.display = 'none'; return; }
+  const matches = allData.filter(r => (r.operator_code || '').toUpperCase().includes(q)).slice(0, MAX_SUGGESTIONS);
+  if (!matches.length) { suggBox.innerHTML = '<div class="sug-no-result">No operators found</div>'; suggBox.style.display = 'block'; return; }
+  suggBox.innerHTML = matches.map(r => {
+    const code = (r.operator_code || '').toUpperCase();
+    const pri  = r.priority || '';
+    return `<div class="sug-item" data-code="${code}" role="option">
+      <div class="sug-avatar">${code.replace(/[^A-Z0-9]/g,'').substring(0,2)}</div>
+      <div>
+        <div class="sug-code">${code}</div>
+        <div class="sug-rm">${r.rm_name ? r.rm_name.toUpperCase() : '—'}</div>
+      </div>
+      ${pri ? `<span class="badge ${PRIORITY_STYLE[pri]||'badge-gray'}" style="font-size:10px;padding:2px 7px;margin-left:auto">${pri}</span>` : ''}
+      <div class="sug-cluster" style="${pri ? 'margin-left:8px' : ''}">${r.Cluster || '—'}</div>
+    </div>`;
+  }).join('');
+  suggBox.querySelectorAll('.sug-item').forEach(el => {
+    el.addEventListener('click', () => {
+      searchInput.value = el.dataset.code;
+      clearBtn.style.display = 'block';
+      suggBox.style.display = 'none';
+      selectOperator(el.dataset.code);
     });
   });
-  var oSel=document.getElementById('fOrigin'),dSel=document.getElementById('fDest');
-  var curO=oSel.value,curD=dSel.value;
-  oSel.innerHTML='<option value="">All Origins</option>';
-  dSel.innerHTML='<option value="">All Destinations</option>';
-  Object.keys(origins).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;if(c===curO)o.selected=true;oSel.appendChild(o);});
-  Object.keys(dests).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;if(c===curD)o.selected=true;dSel.appendChild(o);});
-}
-/* LEAD LIST */
-function callDotColor(d){var v=(d||'').toLowerCase();if(v.includes('connect'))return'var(--green-600)';if(v.includes('callback')||v.includes('call back'))return'var(--amber-600)';if(v.includes('not reach')||v.includes('no answer')||v.includes('busy')||v.includes('switch'))return'var(--red-600)';return'var(--gray-200)';}
-function renderLeadList(){
-  var start=(currentPage-1)*PAGE_SIZE,page=filtered.slice(start,start+PAGE_SIZE);
-  var total=Math.ceil(filtered.length/PAGE_SIZE)||1;
-  document.getElementById('pageLabel').textContent=currentPage+' / '+total;
-  document.getElementById('pageRangeInfo').textContent=(start+1)+'–'+Math.min(start+PAGE_SIZE,filtered.length);
-  document.getElementById('prevBtn').disabled=currentPage<=1;document.getElementById('nextBtn').disabled=currentPage>=total;
-  var lp=document.getElementById('listPlaceholder');if(lp)lp.style.display='none';
-  if(!page.length){document.getElementById('leadList').innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--text-3);font-size:12px">No leads match.</div>';return;}
-  var recCls={'Last 7 days':'lb-rec-7','8-30 days':'lb-rec-30','30+ days':'lb-rec-old'};
-  var drCls={'High DR':'lb-dr-h','Mid DR':'lb-dr-m','Low DR':'lb-dr-l'};
-  var stageCls={'P1':'lb-s4','P2':'lb-s3','P3':'lb-s3','P4':'lb-s5','VA':'lb-s5','H':'lb-s2'};
-  var stageLbl={'P1':'P1 · Post Acceptance','P2':'P2 · Token Paid','P3':'P3 · Bid+VA','P4':'P4 · Bid/LDP','VA':'VA · Available','H':'H · History'};
-  var today=todayIST();
-  document.getElementById('leadList').innerHTML=page.map(function(row){
-    var code=(row.operator_code||'').toUpperCase();
-    var stage=row.stage||'P4';
-    var bidT=isTrueVal(row.bid_today), vaT=isTrueVal(row.vehicle_available_today), accT=isTrueVal(row.accepted_today);
-    var tokT=isTrueVal(row.token_paid_today), ldpT=isTrueVal(row.ldp_today);
-    var isHot=bidT||vaT||accT||tokT||ldpT||(row.hot_flag||'')!=='';
-    var calledToday=(row.last_call_date||'').startsWith(today);
-    var isSheet=(row.source||'')==='Sheet';
-    var isRedDR=(row.dr_supply_type||'')==='Red DR';
-    var active=code===currentCode?' active':'',hotCls=isHot?' is-hot':'',calledCls=calledToday?' called-today':'';
-    var pB='<span class="lb '+(stageCls[stage]||'lb-s5')+'">'+(stageLbl[stage]||stage)+'</span>';
-    var rB=row.recency_tier?'<span class="lb '+(recCls[row.recency_tier]||'lb-rec-old')+'">'+row.recency_tier+'</span>':'';
-    var dB=row.dr_tier?'<span class="lb '+(drCls[row.dr_tier]||'lb-dr-l')+'">'+row.dr_tier+'</span>':'';
-    var redDrB=isRedDR?'<span class="lb lb-red-dr">🔴 Red DR</span>':'';
-    // Hot badges: time-window aware labels
-    var hotB='';
-    if(accT)           hotB='<span class="lb lb-s4">🎉 Accepted</span>';
-    else if(vaT&&tokT) hotB='<span class="lb lb-hot">VA+TOKEN</span>';
-    else if(vaT&&bidT) hotB='<span class="lb lb-hot">VA+BID</span>';
-    else if(vaT&&ldpT) hotB='<span class="lb lb-hot">VA+LDP</span>';
-    else if(tokT)      hotB='<span class="lb lb-s3">TOKEN</span>';
-    else if(bidT&&vaT) hotB='<span class="lb lb-hot">BID+VA</span>';
-    else if(bidT)      hotB='<span class="lb lb-hot">BID (3h)</span>';
-    else if(ldpT)      hotB='<span class="lb" style="background:#E6F1FB;color:#0C447C">LDP</span>';
-    else if(vaT)       hotB='<span class="lb" style="background:#EAF3DE;color:#27500A">VA (4h)</span>';
-    // Activation score badge
-    var sc=parseFloat(row.activation_score||'0');
-    var scColor=sc>=50?'#C2500A':sc>=20?'#534AB7':'#9A9890';
-    var scB=sc>0?'<span class="lb lb-score" style="color:'+scColor+'">#'+sc+'</span>':'';
-    var sheetB=isSheet?'<span class="lb lb-sheet">Sheet</span>':'';
-    var hotDot=isHot?'<span class="hot-dot"></span>':'';
-    var _bidTs=bidT?(row.last_bid_time||''):(accT?(row.last_accepted_time||''):'');
-    var bidTime=fmtTime(_bidTs),bidRel=minsAgo(_bidTs);
-    var _bidRelShort=bidRel?(' · '+bidRel.replace(' mins ago','m').replace(' min ago','m').replace('just now','now')):'';
-    var bidAgeTag=bidTime?'<span style="font-size:8.5px;font-weight:700;color:#C2500A;background:#FFF0E6;padding:1px 6px;border-radius:8px;margin-left:3px">'+(accT?'✓ ':'⏱ ')+bidTime+_bidRelShort+'</span>':'';
-    var lastCall='';
-    if(row.last_call_date){var clr=callDotColor(row.last_call_disposition);lastCall='<div class="last-call-line"><div class="call-dot-sm" style="background:'+clr+'"></div>'+row.last_call_date+' · '+(row.last_call_disposition||'Called')+(row.last_caller?' · '+row.last_caller:'')+'</div>';}
-    return '<div class="lead-row'+active+hotCls+calledCls+'" data-code="'+code+'" onclick="selectOperator(\''+code+'\')">'+
-      '<div class="lead-rank">'+(row.calling_rank||'—')+'</div>'+
-      '<div class="lead-body">'+
-        '<div class="lead-top-row"><span class="lead-code">'+code+'</span>'+hotDot+bidAgeTag+'</div>'+
-        '<div class="lead-badges">'+scB+pB+hotB+redDrB+rB+dB+sheetB+'<span style="font-size:9px;color:var(--text-3)">'+(row.rm_name||'').toUpperCase()+'</span></div>'+
-        lastCall+
-      '</div></div>';
-  }).join('');
-}
-function changePage(dir){currentPage=Math.max(1,Math.min(Math.ceil(filtered.length/PAGE_SIZE)||1,currentPage+dir));renderLeadList();document.getElementById('leadList').scrollTop=0;}
-/* TOP SEARCH */
-var topSearch=document.getElementById('topSearch'),topSugg=document.getElementById('topSuggestions'),topClear=document.getElementById('topClearBtn');
-topSearch.addEventListener('input',function(){
-  var q=this.value.trim().toUpperCase();topClear.style.display=q?'block':'none';
-  if(q.length<2){topSugg.style.display='none';return;}
-  var matches=allData.filter(function(r){return(r.operator_code||'').toUpperCase().includes(q);}).slice(0,8);
-  if(!matches.length){topSugg.innerHTML='<div class="sug-no-result">No operators found</div>';topSugg.style.display='block';return;}
-  topSugg.innerHTML=matches.map(function(r){
-    var code=(r.operator_code||'').toUpperCase(),ini=code.replace(/[^A-Z0-9]/g,'').substring(0,2);
-    var st=r.stage||'P4';
-    var stBg={'P1':'#EAF3DE','P2':'#FAEEDA','P3':'#FAEEDA','P4':'#F1EFE8','VA':'#F1EFE8','H':'#FCEBEB'}[st]||'#F1EFE8';
-    var stShort={'P1':'P1','P2':'P2','P3':'P3','P4':'P4','VA':'VA','H':'H'}[st]||'P4';
-    var isHot=isTrueVal(r.bid_today)||isTrueVal(r.vehicle_available_today)||isTrueVal(r.accepted_today);
-    var hotTag=isHot?'<span style="font-size:9px;color:#C2500A;font-weight:700">● Hot</span> ':'';
-    var lastCall=r.last_call_date?'📞 '+r.last_call_date+' · '+(r.last_call_disposition||'Called'):'Not called';
-    return '<div class="sug-item" data-code="'+code+'">'+
-      '<div class="sug-avatar" style="background:'+stBg+';color:'+stageColor(st)+'">'+ini+'</div>'+
-      '<div><div class="sug-code">'+hotTag+code+'</div><div class="sug-rm">'+(r.rm_name||'—').toUpperCase()+'</div></div>'+
-      '<div class="sug-right"><div class="sug-pri" style="background:'+stageColor(st)+';color:#fff">'+stShort+'</div><div class="sug-call">'+lastCall+'</div></div>'+
-    '</div>';
-  }).join('');
-  topSugg.querySelectorAll('.sug-item').forEach(function(el){el.addEventListener('click',function(){topSearch.value=el.dataset.code;topClear.style.display='block';topSugg.style.display='none';selectOperator(el.dataset.code);});});
-  topSugg.style.display='block';
+  suggBox.style.display = 'block';
 });
-topSearch.addEventListener('keydown',function(e){
-  if(e.key==='Escape')topSugg.style.display='none';
-  if(e.key==='Enter'){var q=topSearch.value.trim().toUpperCase();var r=findRow(q);if(r){topSugg.style.display='none';selectOperator(q);}}
+
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { suggBox.style.display = 'none'; }
+  if (e.key === 'Enter') {
+    const q = searchInput.value.trim().toUpperCase();
+    const exact = allData.find(r => (r.operator_code || '').toUpperCase() === q);
+    if (exact) { suggBox.style.display = 'none'; selectOperator(q); }
+  }
 });
-topClear.addEventListener('click',function(){topSearch.value='';topClear.style.display='none';topSugg.style.display='none';});
-document.addEventListener('click',function(e){if(!e.target.closest('.top-search-wrap'))topSugg.style.display='none';});
-/* SELECT & RENDER */
-function selectOperator(code){
-  var row=findRow(code);if(!row){showToast('Operator '+code+' not found.');return;}
-  currentCode=code.toUpperCase();
-  document.getElementById('emptyState').style.display='none';
-  document.getElementById('profileSection').style.display='block';
-  document.getElementById('detailPanel').scrollTop=0;
-  try{renderLeadList();}catch(e){console.warn('renderLeadList:',e);}
-  try{renderProfile(row);}catch(e){console.error('renderProfile:',e);showToast('Profile error: '+e.message);}
+
+clearBtn.addEventListener('click', () => {
+  searchInput.value = ''; clearBtn.style.display = 'none'; suggBox.style.display = 'none';
+  currentCode = null;
+  document.getElementById('profileSection').style.display = 'none';
+  document.getElementById('emptyState').style.display     = 'block';
+});
+
+document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) suggBox.style.display = 'none'; });
+document.getElementById('refreshBtn').addEventListener('click', () => loadData());
+
+/* ─── HELPERS ────────────────────────────────────────────────────── */
+function fmt(v) { return v && v !== '' ? v : '—'; }
+function fmtMoney(v) {
+  const n = parseInt(v, 10);
+  if (!n || isNaN(n)) return '—';
+  return '₹' + n.toLocaleString('en-IN');
 }
-function renderProfile(row){
-  var code=(row.operator_code||'').toUpperCase(),ini=code.replace(/[^A-Z0-9]/g,'').substring(0,2);
-  var pri=row.priority||'P3';
-  var stage=row.stage||'P4';
-  var stageCssMap={'P1':'stage-4','P2':'stage-3','P3':'stage-3','P4':'stage-5','VA':'stage-5','H':'stage-2'};
-  var stageBadgeMap={'P1':'P1 · Post Acceptance','P2':'P2 · Token Paid','P3':'P3 · Bid+VA','P4':'P4 · Bid/LDP','VA':'VA · Vehicle Available','H':'H · History Only'};
-  var stageDefMap={
-    'P1':'Accepted a load today — highest priority (GOING_TO_LOAD)',
-    'P2':'Token paid or vehicle submitted today — push for acceptance',
-    'P3':'Bid placed + vehicle available today — high intent',
-    'P4':'Bid placed or LDP viewed today — standard follow-up',
-    'VA':'Vehicle available today — push for bidding',
-    'H':'Historical activity only (7d) — warm but no today signal'
-  };
-  var avatarBg={'P1':'#EAF3DE','P2':'#FAEEDA','P3':'#FAEEDA','P4':'#F1EFE8','VA':'#F1EFE8','H':'#FCEBEB'}[stage]||'#F1EFE8';
-  /* Stage context */
-  var card=document.getElementById('pccCard');if(card)card.className='pcc '+(stageCssMap[stage]||'stage-5');
-  set('pccBadge',stageBadgeMap[stage]||stage);set('pccDef',stageDefMap[stage]||'');
-  set('pccLDPs',fmtN(row.lifetime_ldps));set('pccToks',fmtN(row.lifetime_tokens));
-  set('pccDRs',fmtN(row.appeared_in_drs));set('pccTrips',fmtN(row.life_time_trips));
-  set('pccRank','Rank #'+(row.calling_rank||'—'));
-  var recEl=document.getElementById('pccRecency');
-  if(recEl){recEl.textContent=row.recency_tier||'';recEl.className='pcc-recency '+({'Last 7 days':'rec-7','8-30 days':'rec-30','30+ days':'rec-old'}[row.recency_tier]||'');}
-  /* Hot Today */
-  renderHotToday(row);
-  /* Profile */
-  var av=document.getElementById('profileAvatar');if(av){av.textContent=ini;av.style.background=avatarBg;av.style.color=stageColor(stage);}
-  var pc=document.getElementById('profileCode');if(pc){pc.textContent=code;pc.onclick=function(){copyText(code);};}
-  set('profileRM','RM: '+(row.rm_name?row.rm_name.toUpperCase():'—'));
-  set('scoreVal',fmtN(row.fo_activity_score));
-  var metaEl=document.getElementById('profileMeta');
-  if(metaEl){
-    var cluster=row.Cluster||row.cluster||'—';
-    var src=row.source||'Cohort';
-    metaEl.innerHTML='<span class="badge badge-teal">'+cluster+'</span>'+(src==='Sheet'?'<span class="badge badge-sheet">Sheet</span>':'');
+
+function srPill(val, cls, label) {
+  if (!val || val === '') return `<span class="sr-empty">—</span>`;
+  return `<span class="sr-pill ${cls}" title="${label}">${fmtMoney(val)}</span>`;
+}
+
+/* parse ####-delimited records split by |||| */
+function parseDelim(raw) {
+  if (!raw || raw.trim() === '') return [];
+  return raw.split('||||').map(r => r.split('####').map(f => f.trim())).filter(r => r.length > 1);
+}
+
+/* ─── SELECT & RENDER ────────────────────────────────────────────── */
+function selectOperator(code) {
+  const row = findRow(code);
+  if (!row) { showToast(`Operator ${code} not found in current data.`); return; }
+  currentCode = code;
+  renderProfile(row);
+}
+
+function renderProfile(row) {
+  drawerOpen = false;
+  document.getElementById('drDrawer').classList.remove('open');
+  document.getElementById('drStep').classList.remove('active');
+  document.getElementById('emptyState').style.display    = 'none';
+  document.getElementById('profileSection').style.display = 'block';
+
+  /* ── header ── */
+  const code = (row.operator_code || '').toUpperCase();
+  document.getElementById('profileAvatar').textContent = code.replace(/[^A-Z0-9]/g,'').substring(0,2);
+  document.getElementById('profileCode').textContent   = code;
+  document.getElementById('profileRM').textContent     = 'RM: ' + (row.rm_name ? row.rm_name.toUpperCase() : '—');
+  document.getElementById('clusterBadge').textContent  = row.Cluster || '—';
+
+  /* priority badge */
+  const priBadge = document.getElementById('priorityBadge');
+  const pri = row.priority || '';
+  if (pri) {
+    priBadge.textContent = pri;
+    priBadge.className   = 'badge ' + (PRIORITY_STYLE[pri] || 'badge-gray');
+    priBadge.style.display = '';
+  } else { priBadge.style.display = 'none'; }
+
+  /* stage badge */
+  const stageBadge = document.getElementById('stageBadge');
+  const stage = row.stage || '';
+  if (stage) {
+    stageBadge.textContent = stage;
+    stageBadge.style.display = '';
+  } else { stageBadge.style.display = 'none'; }
+
+  /* calling rank */
+  const rankBadge = document.getElementById('rankBadge');
+  const rank = row.calling_rank || '';
+  if (rank) {
+    rankBadge.textContent = `#${rank}`;
+    rankBadge.style.display = '';
+  } else { rankBadge.style.display = 'none'; }
+
+  /* last run time */
+  const rtBadge = document.getElementById('runTimeBadge');
+  const rt = row.last_run_time || '';
+  if (rt) {
+    rtBadge.textContent = `⏱ Last seen ${rt}`;
+    rtBadge.style.display = '';
+    // green if within last 30 min (rough check by comparing HH:MM)
+    try {
+      const now = new Date();
+      const parts = rt.split(':');
+      const runDate = new Date();
+      runDate.setHours(+parts[0], +parts[1], +parts[2] || 0, 0);
+      const diffMin = (now - runDate) / 60000;
+      rtBadge.className = 'run-time-chip' + (diffMin < 35 ? ' fresh' : '');
+    } catch(e) { rtBadge.className = 'run-time-chip'; }
+  } else { rtBadge.style.display = 'none'; }
+
+  /* activation score */
+  document.getElementById('scoreVal').textContent = Number(row.activation_score || row.fo_activity_score || 0).toFixed(1);
+
+  /* ── activity metrics ── */
+  document.getElementById('vaDays').textContent    = row.va_days    || '0';
+  document.getElementById('ldpDays').textContent   = row.ldp_days   || '0';
+  document.getElementById('ldpCount').textContent  = row.total_ldp_count || '0';
+  document.getElementById('tokenCount').textContent = row.token_count || '0';
+
+  /* ── DR funnel ── */
+  const drCount = parseInt(row.num_of_drs_in_opsearch || '0', 10);
+  const tokenDR = parseInt(row.num_of_drs_paid_token  || '0', 10);
+  const conv    = drCount > 0 ? Math.round((tokenDR / drCount) * 100) : 0;
+  document.getElementById('drCountVal').textContent  = drCount;
+  document.getElementById('tokenDRVal').textContent  = tokenDR;
+  document.getElementById('convRateVal').textContent = conv + '%';
+
+  /* DR drawer lanes */
+  const laneRaw = (row.lane_vt_details || '').trim();
+  const lanes   = laneRaw ? laneRaw.split('|').map(s => s.trim().toUpperCase()).filter(Boolean) : [];
+  const tbody   = document.getElementById('drTableBody');
+  tbody.innerHTML = lanes.length
+    ? lanes.map((l,i) => `<tr><td style="color:var(--text-3);font-size:11px;width:32px">${i+1}</td><td><span class="odvt-text">${l}</span></td></tr>`).join('')
+    : '<tr><td colspan="2" class="dr-empty">No lane details available</td></tr>';
+
+  /* ── vehicles ── */
+  const total = parseInt(row.total_vehicles     || '0', 10);
+  const corr  = parseInt(row.corrected_vehicles || '0', 10);
+  document.getElementById('totalVeh').textContent = total;
+  document.getElementById('corrVeh').textContent  = corr;
+  document.getElementById('unverVeh').textContent = Math.max(0, total - corr);
+
+  /* lane pills */
+  const pillsEl = document.getElementById('lanePills');
+  pillsEl.innerHTML = lanes.length
+    ? lanes.map(l => `<span class="lane-pill">${l}</span>`).join('')
+    : '<span class="no-lanes">No live matches today</span>';
+
+  /* ── TODAY'S BIDS — bid_today_lane_details ── */
+  /* Format: demand_id####route####truck####opfreight####token_paid####L1####L2####L3 */
+  const bidRecs = parseDelim(row.bid_today_lane_details || '');
+  const bidCard  = document.getElementById('bidCard');
+  const bidLabel = document.getElementById('bidSectionLabel');
+  const bidBody  = document.getElementById('bidTableBody');
+  if (bidRecs.length) {
+    bidCard.style.display  = '';
+    bidLabel.style.display = '';
+    document.getElementById('bidCount').textContent = `${bidRecs.length} demand${bidRecs.length>1?'s':''}`;
+    bidBody.innerHTML = bidRecs.map((f, i) => {
+      const [did, route, truck, opFr, tokPaid, l1, l2, l3] = f;
+      const paid = tokPaid === '1';
+      return `<tr>
+        <td style="color:var(--text-3);font-size:11px;width:28px">${i+1}</td>
+        <td><span class="mono">${fmt(did)}</span></td>
+        <td>${fmt(route)}</td>
+        <td style="color:var(--text-2)">${fmt(truck)}</td>
+        <td><span class="freight-val">${fmtMoney(opFr)}</span></td>
+        <td>${paid ? '<span class="tok-paid">✓ Paid</span>' : '<span class="tok-unpaid">Pending</span>'}</td>
+        <td>${srPill(l1,'sr-l1','L1 — Lowest rate card')}</td>
+        <td>${srPill(l2,'sr-l2','L2 — Mid rate card')}</td>
+        <td>${srPill(l3,'sr-l3','L3 — High rate card')}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    bidCard.style.display  = 'none';
+    bidLabel.style.display = 'none';
   }
-  /* Activity */
-  set('vaDays',row.va_days||'0');set('ldpDays',row.ldp_days||'0');
-  set('ldpCount',row.total_ldp_count||'0');set('tokenCount',row.token_count||'0');
-  /* Funnel counts (used by action banner) */
-  var drN=parseInt(row.num_of_drs_in_opsearch||'0',10),tokN=parseInt(row.num_of_drs_paid_token||'0',10);
-  var lanes=tagLowest(parseLanes(row.lane_vt_details||''));
-  var tokenSet={};(row.token_demand_ids||'').split(',').forEach(function(s){s=s.trim();if(s)tokenSet[s]=true;});
-  var tokenLanes=parseTokenLanes(row.token_lane_details||'');
-  var hist=parseHist(row.hist_token_details||'');
-  renderLaneTabs(lanes,tokenSet,tokenLanes,hist);renderActionBanner(drN,tokN,lanes,tokenSet);
-  /* Vehicles */
-  var tot=parseInt(row.total_vehicles||'0',10),ver=parseInt(row.corrected_vehicles||'0',10);
-  set('totalVeh',tot);set('corrVeh',ver);set('unverVeh',Math.max(0,tot-ver));
-  renderAvail(parseAvail(row.avail_vehicles||''));
-  renderTyres(parseTyres(row.tyre_breakdown||''));
-  renderCallHistory(row);
-  initLogForm();
-// }
-// /* HOT TODAY */
-// function renderHotToday(row){
-//   var bidToday=isTrueVal(row.bid_today),vaToday=isTrueVal(row.vehicle_available_today);
-//   var vehSubmitted=isTrueVal(row.vehicle_submitted),acceptedToday=isTrueVal(row.accepted_today);
-//   var tokPdToday=isTrueVal(row.token_paid_today),ldpToday=isTrueVal(row.ldp_today);
-//   var tokPdTime=(row.token_paid_time||'').trim(),ldpTime=(row.ldp_view_time||'').trim();
-//   var wrap=document.getElementById('hotTodayWrap'),grid=document.getElementById('htcGrid');
-//   if(!bidToday&&!vaToday&&!vehSubmitted&&!acceptedToday&&!tokPdToday&&!ldpToday){wrap.style.display='none';return;}
-//   wrap.style.display='block';
-//   // Activation score badge next to title
-//   var sc=parseFloat(row.activation_score||'0');
-//   var scStr=sc>0?' <span style="font-size:10px;font-weight:800;background:#534AB7;color:#fff;padding:1px 7px;border-radius:10px;">Score: '+sc+'</span>':'';
-//   document.getElementById('htcTime').innerHTML=scStr;
-//   var parts=[];
-//   if(acceptedToday) parts.push('Accepted ✓ (Stage 4)');
-//   if(bidToday)      parts.push('Bid (last 3h)');
-//   if(vaToday)       parts.push('VA (last 4h)');
-//   if(vehSubmitted)  parts.push('Vehicle Submitted ✓');
-//   set('htcTitle',parts.join(' + '));
-//   // grid: if 3+ signals, single column; if 2, side-by-side; if 1, single
-//   grid.className='htc-grid'+(bidToday&&vaToday?'':' single');
-//   var html='';
-//   /* Bid Today box — uses bid_today_lane_details (all bids incl. INITIATED/EXPIRED)
-//      Falls back to token_lane_details (paid tokens) if that column is empty.       */
-//   if(bidToday){
-//     // parse bid_today_lane_details: did####route####truck####amount
-//     // bid_today_lane_details: did####route####truck####opfreight####token_paid(0/1)
-//     // opFreight > 0 = bid submitted; token_paid=1 = also token paid
-//     var btRaw=row.bid_today_lane_details||'';
-//     var btLanes=btRaw?btRaw.split('||||').map(function(seg){
-//       seg=seg.trim();if(!seg)return null;
-//       var p=seg.split('####');var did=(p[0]||'').trim();if(!did)return null;
-//       return{did:did,route:(p[1]||'').trim(),truck:(p[2]||'').trim(),
-//              bid:rs(p[3]),tokenPaid:(p[4]||'0')==='1'};
-//     }).filter(Boolean):[];
-//     var paidCount=btLanes.filter(function(l){return l.tokenPaid;}).length;
-    var cntLabel=btLanes.length+(paidCount?' ('+paidCount+' paid)':'');
-    var bidAge=minsAgo(row.last_bid_time||'');
-    var bidAgeBar=bidAge
-      ? '<div style="background:#FFF3E5;border-radius:6px;padding:5px 8px;margin-bottom:5px;display:flex;align-items:center;gap:6px;">'
-        +'<span style="font-size:16px;line-height:1">⏱</span>'
-        +'<span style="font-size:11px;font-weight:700;color:#C2500A;">Last bid: <b>'+bidAge+'</b> — push for token payment now!</span>'
-        +'</div>'
-      : '';
-    html+='<div class="htc-box"><div class="htc-box-hdr"><span class="htc-box-icon">🔴</span>'
-      +'<span class="htc-box-ttl">Bid Today (last 3h)</span>'
-      +(btLanes.length?'<span class="htc-box-cnt">'+cntLabel+'</span>':'')
-      +'</div><div class="htc-items">'+bidAgeBar
-      +renderBidLaneItems(btLanes,'','')
-      +'</div></div>';
+
+  /* ── TOKEN LANES — token_lane_details ── */
+  /* Format: demand_id####route####truck####opfreight####placed_rate####method####L1####L2####L3 */
+  const tokRecs = parseDelim(row.token_lane_details || '');
+  const tokCard  = document.getElementById('tokenCard');
+  const tokLabel = document.getElementById('tokenSectionLabel');
+  const tokBody  = document.getElementById('tokenTableBody');
+  if (tokRecs.length) {
+    tokCard.style.display  = '';
+    tokLabel.style.display = '';
+    document.getElementById('tokenLaneCount').textContent = `${tokRecs.length} demand${tokRecs.length>1?'s':''}`;
+    tokBody.innerHTML = tokRecs.map((f, i) => {
+      const [did, route, truck, opFr, placedRate, method, l1, l2, l3] = f;
+      return `<tr>
+        <td style="color:var(--text-3);font-size:11px;width:28px">${i+1}</td>
+        <td><span class="mono">${fmt(did)}</span></td>
+        <td>${fmt(route)}</td>
+        <td style="color:var(--text-2)">${fmt(truck)}</td>
+        <td><span class="freight-val">${fmtMoney(opFr)}</span></td>
+        <td>${fmtMoney(placedRate)}</td>
+        <td><span style="font-size:10px;color:var(--text-3)">${fmt(method)}</span></td>
+        <td>${srPill(l1,'sr-l1','L1 — Lowest rate card')}</td>
+        <td>${srPill(l2,'sr-l2','L2 — Mid rate card')}</td>
+        <td>${srPill(l3,'sr-l3','L3 — High rate card')}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    tokCard.style.display  = 'none';
+    tokLabel.style.display = 'none';
   }
-  /* Vehicle Available Today box */
-  if(vaToday){
-    var avail=parseAvail(row.avail_vehicles||'');
-    var vehHtml=avail.length?'<div class="htc-veh-list">'+avail.slice(0,6).map(function(v){
-      var spec=[v.tyre?v.tyre+'T':'',v.body,v.size?v.size+'ft':''].filter(Boolean).join(' ');
-      return '<span class="htc-veh-pill"><span class="vn">'+v.vn+'</span>'+(spec?'<span class="vt">'+spec+'</span>':'')+'</span>';
-    }).join('')+(avail.length>6?'<span style="font-size:10px;color:#A05018;align-self:center">+'+(avail.length-6)+' more</span>':'')+'</div>'
-    :'<div class="htc-empty">Vehicle details loading…</div>';
-    html+='<div class="htc-box"><div class="htc-box-hdr"><span class="htc-box-icon">🟡</span><span class="htc-box-ttl">Vehicle Available (last 4h)</span>'+(avail.length?'<span class="htc-box-cnt">'+avail.length+'</span>':'')+'</div><div class="htc-items">'+vehHtml+'</div></div>';
-  }
-  /* Accepted Today box — GOING_TO_LOAD (Stage 4 — highest priority) */
-  if(acceptedToday){
-    var accAge=minsAgo(row.last_accepted_time||'');
-    var accAgeBar=accAge
-      ? '<div style="background:#EAF3DE;border-radius:6px;padding:5px 8px;margin-bottom:5px;display:flex;align-items:center;gap:6px;">'
-        +'<span style="font-size:16px;line-height:1">⏱</span>'
-        +'<span style="font-size:11px;font-weight:700;color:#15803D;">Accepted: <b>'+accAge+'</b> — call now for handholding!</span>'
-        +'</div>'
-      : '';
-    // Parse accepted_lane_details: did####route####truck####opfreight####placed####method####consignment_code####accepted_time
-    var accRaw=row.accepted_lane_details||'';
-    var accItems=accRaw?accRaw.split('||||').map(function(seg){
-      seg=seg.trim();if(!seg)return null;
-      var p=seg.split('####');
-      return{did:(p[0]||'').trim(),route:(p[1]||'').trim(),truck:(p[2]||'').trim(),
-             cc:(p[6]||'').trim(),ts:(p[7]||'').trim(),state:(p[8]||'').trim()};
-    }).filter(Boolean):[];
-    // state colour map
-    var _stateClr={GOING_TO_LOAD:'#15803D',LOADING:'#0F6E56',LOADED:'#0C447C',
-                   IN_TRANSIT:'#534AB7',DELIVERED:'#3B6D11',CANCELLED:'#A32D2D',
-                   REJECTED:'#A32D2D'};
-    var accDetails=accItems.length?accItems.map(function(a){
-      var route=a.route||(a.did?'Demand #'+a.did:'Unknown demand');
-      var ccTag=a.cc?'<span style="font-size:9px;font-family:var(--mono);color:#0F6E56;background:#E1F5EE;padding:1px 6px;border-radius:6px;margin-left:4px">'+a.cc+'</span>':'';
-      var didTag=a.did?'<span style="font-size:9px;color:var(--text-3);font-family:var(--mono);margin-left:3px">#'+a.did+'</span>':'';
-      var timeTag=a.ts?'<span style="font-size:9px;color:#15803D;margin-left:4px">@ '+a.ts.slice(11,16)+'</span>':'';
-      var stClr=(_stateClr[a.state]||'#5F5E5A');
-      var stateTag=a.state?'<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:4px;background:rgba(0,0,0,.05);color:'+stClr+'">'+a.state.replace(/_/g,' ')+'</span>':'';
-      return '<div class="htc-item"><div class="htc-item-dot" style="background:#15803D"></div>'
-        +'<div class="htc-item-txt"><b>'+route+'</b>'+ccTag+didTag+timeTag+stateTag+'</div></div>';
-    }).join(''):'';
-    html+='<div class="htc-box" style="border-color:#15803D;background:#F0FFF6;border-width:2px;">'
-      +'<div class="htc-box-hdr"><span class="htc-box-icon">🎉</span>'
-      +'<span class="htc-box-ttl" style="color:#15803D;font-weight:800;">Bid Accepted / GOING_TO_LOAD</span>'
-      +'<span class="htc-box-cnt" style="background:#15803D;color:#fff;">Stage 4</span></div>'
-      +'<div class="htc-items">'+accAgeBar+accDetails
-      +'<div style="font-size:11px;color:#15803D;font-weight:600;padding:4px 0;">'
-      +'Call immediately — handhold loading address, POC number, vehicle readiness &amp; advance policy.</div>'
-      +'</div></div>';
-  }
-  /* Token Paid Today box (without vehicle submission) */
-  if(tokPdToday&&!vehSubmitted){
-    var tpTimeTag=tokPdTime?'<span style="font-size:9px;font-weight:700;background:#D1FAE5;color:#065F46;padding:1px 7px;border-radius:8px;margin-left:6px">⏱ '+tokPdTime+'</span>':'';
-    html+='<div class="htc-box" style="border-color:#0F6E56;background:#F0FFF6;">'
-      +'<div class="htc-box-hdr"><span class="htc-box-icon">💰</span>'
-      +'<span class="htc-box-ttl" style="color:#0F6E56;">Token Paid Today</span>'+tpTimeTag+'</div>'
-      +'<div class="htc-items"><div style="font-size:11px;color:#0F6E56;font-weight:600;padding:4px 0;">'
-      +'✅ Token paid today — push for vehicle submission and acceptance.</div></div></div>';
-  }
-  /* Vehicle Submitted Today box */
-  if(vehSubmitted){
-    var vsTimeTag=tokPdTime?'<span style="font-size:9px;font-weight:700;background:#D1FAE5;color:#065F46;padding:1px 7px;border-radius:8px;margin-left:6px">⏱ '+tokPdTime+'</span>':'';
-    html+='<div class="htc-box" style="border-color:#15803D;background:#F0FFF6;">'
-      +'<div class="htc-box-hdr"><span class="htc-box-icon">🚛</span>'
-      +'<span class="htc-box-ttl" style="color:#15803D;">Vehicle Submitted + Token Paid</span>'+vsTimeTag+'</div>'
-      +'<div class="htc-items"><div style="font-size:11px;color:#15803D;font-weight:600;padding:4px 0;">'
-      +'✅ Operator has submitted vehicle number with token payment today.</div></div></div>';
-  }
-  /* LDP Viewed Today box */
-  if(ldpToday){
-    var ldpTimeTag=ldpTime?'<span style="font-size:9px;font-weight:700;background:#E0E7FF;color:#3730A3;padding:1px 7px;border-radius:8px;margin-left:6px">⏱ '+ldpTime+'</span>':'';
-    // parse ldp_lane_details: demand_id####route####truck####view_time ||||
-    var ldpRaw=row.ldp_lane_details||'';
-    var ldpItems=ldpRaw?ldpRaw.split('||||').map(function(seg){
-      seg=seg.trim();if(!seg)return null;
-      var p=seg.split('####');
-      return{did:(p[0]||'').trim(),route:(p[1]||'').trim(),truck:(p[2]||'').trim(),vt:(p[3]||'').trim()};
-    }).filter(Boolean):[];
-    var ldpDemandHtml=ldpItems.length?ldpItems.map(function(l){
-      var truckTag=l.truck?'<span style="font-size:9px;color:var(--text-3)"> · 🚛 '+l.truck+'</span>':'';
-      var vtTag=l.vt?'<span style="font-size:9px;font-weight:700;background:#E0E7FF;color:#3730A3;padding:1px 5px;border-radius:6px;margin-left:4px">⏱ '+l.vt+'</span>':'';
-      var didTag=l.did?'<span style="font-size:9px;color:var(--text-3);font-family:var(--mono);margin-left:3px">#'+l.did+'</span>':'';
-      return '<div class="htc-item"><div class="htc-item-dot" style="background:#534AB7"></div>'
-        +'<div class="htc-item-txt"><b>'+(l.route||('Demand #'+l.did))+'</b>'+truckTag+vtTag+didTag+'</div></div>';
-    }).join('')
-    :'<div class="htc-empty" style="color:#534AB7">Demand details loading…</div>';
-    html+='<div class="htc-box" style="border-color:#534AB7;background:#F5F4FF;">'
-      +'<div class="htc-box-hdr"><span class="htc-box-icon">👁</span>'
-      +'<span class="htc-box-ttl" style="color:#534AB7;">LDP Viewed Today</span>'+ldpTimeTag
-      +(ldpItems.length?'<span class="htc-box-cnt" style="background:#534AB7;color:#fff;">'+ldpItems.length+'</span>':'')+'</div>'
-      +'<div class="htc-items">'+ldpDemandHtml
-      +'<div style="font-size:10px;color:#534AB7;font-weight:600;padding:4px 0 0;">High intent — push for token payment on these demands.</div>'
-      +'</div></div>';
-  }
-  grid.innerHTML=html;
 }
-/* ACTION BANNER */
-function renderActionBanner(drN,tokN,lanes,tokenSet){
-  var banner=document.getElementById('actionBanner'),icon=document.getElementById('actionIcon'),
-      title=document.getElementById('actionTitle'),sub=document.getElementById('actionSub'),
-      pitch=document.getElementById('actionPitch');
-  banner.className='action-banner';pitch.style.display='none';
-  var open=lanes.filter(function(l){return!tokenSet[l.did];});
-  var best=open.filter(function(l){return l.bid!=null;}).sort(function(a,b){return a.bid-b.bid;})[0]||
-           open.filter(function(l){return l.offered!=null;}).sort(function(a,b){return a.offered-b.offered;})[0]||open[0];
-  if(drN===0){banner.classList.add('cold');icon.textContent='🔍';title.textContent='No live lanes in op-search right now';sub.textContent='Ask the operator to mark a vehicle available & set preferred lanes, then refresh.';}
-  else if(tokN===0){banner.classList.add('warm');icon.textContent='🎯';title.textContent=drN+' live lane'+(drN>1?'s':'')+' · 0 tokens paid today';sub.textContent='Push the operator to pay a token now. Lead with the lowest-bid lane.';}
-  else{icon.textContent='✅';title.textContent=tokN+' token'+(tokN>1?'s':'')+' paid · '+open.length+' lane'+(open.length!==1?'s':'')+' still open';sub.textContent=open.length?'Keep pushing — close the remaining open lanes.':'All live lanes converted today!';}
-  if(best){var rate=best.bid!=null?best.bid:best.offered;var lbl=best.bid!=null?'lowest bid':'~rate';pitch.style.display='block';
-    pitch.innerHTML='Pitch → <b>'+(best.route||'Demand '+best.did)+'</b>'+(rate?' · '+lbl+' <b>₹'+Math.round(rate).toLocaleString('en-IN')+'</b>':'')+(best.truck?' · '+best.truck:'')+' &nbsp;<span class="lane-did" onclick="copyText(\''+best.did+'\')">&#35;'+best.did+' ⧉</span>';}
+
+/* ─── DRAWER TOGGLE ──────────────────────────────────────────────── */
+function toggleDrawer() {
+  drawerOpen = !drawerOpen;
+  document.getElementById('drDrawer').classList.toggle('open', drawerOpen);
+  document.getElementById('drStep').classList.toggle('active', drawerOpen);
 }
-/* BID TODAY LANE ITEMS */
-function renderBidLaneItems(lanes,oF,dF){
-  if(!lanes||!lanes.length) return '<div class="htc-empty">Rate entered — demand details unavailable</div>';
-  var shown=lanes;
-  if(oF||dF){
-    shown=lanes.filter(function(l){
-      var parts=(l.route||'').split('->');
-      var orig=(parts[0]||'').trim().toUpperCase();
-      var dest=(parts.length>1?parts[1]:'').trim().toUpperCase();
-      return(!oF||orig.indexOf(oF.toUpperCase())>=0)&&(!dF||dest.indexOf(dF.toUpperCase())>=0);
-    });
-  }
-  if(!shown.length) return '<div class="htc-empty">No matching loads for this filter.</div>';
-  var html=shown.map(function(l){
-    var route=l.route||(l.did?'Demand #'+l.did:'');
-    var truck=l.truck?'<span style="color:var(--text-3)"> · '+l.truck+'</span>':'';
-    var amt=l.bid!=null?'<span class="amt">₹'+Math.round(l.bid).toLocaleString('en-IN')+'</span>':'';
-    var paid=l.tokenPaid?'<span style="font-size:9px;font-weight:700;background:var(--green-50);color:var(--green-800);padding:1px 5px;border-radius:8px;margin-left:3px">✓ Paid</span>':'';
-    var didTag=l.did?'<span style="font-size:9px;color:var(--text-3);font-family:var(--mono);margin-left:3px">#'+l.did+'</span>':'';
-    return '<div class="htc-item"><div class="htc-item-dot"></div><div class="htc-item-txt"><b>'+route+'</b>'+truck+(amt?' · '+amt:'')+paid+didTag+'</div></div>';
-  }).join('');
-  if(shown.length<lanes.length) html+='<div style="font-size:10px;color:#A05018;margin-top:3px">Showing '+shown.length+' of '+lanes.length+' demands</div>';
-  return html;
+
+/* ─── TOAST ──────────────────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg) {
+  const toast = document.getElementById('errorToast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 5000);
 }
-/* LANE TABS */
-function liveCardHTML(l,ts){
-  var isPaid=!!ts[l.did];var cls='lane-card'+(isPaid?' paid-card':(l.isLow?' best-card':''));
-  var pills='';if(isPaid)pills+='<span class="pill pill-green">✓ Paid</span>';else if(l.isLow)pills+='<span class="pill pill-amber">★ You lead (L1)</span>';
-  var rate;if(l.lows.length)rate='<span class="lane-bid" title="'+bidsTitle(l)+'">L1 ₹'+Math.round(l.lows[0]).toLocaleString('en-IN')+'</span>';
-  else if(l.offered!=null)rate='<span class="lane-offered" style="margin-left:auto">~₹'+Math.round(l.offered).toLocaleString('en-IN')+' offered</span>';
-  else rate='<span class="lane-bid none">no bid yet</span>';
-  var lows2=l.lows.length>1?'<span class="lane-meta-item">bids: '+l.lows.map(function(x){return'₹'+Math.round(x).toLocaleString('en-IN');}).join(' · ')+'</span>':'';
-  var own=l.own!=null?'<span class="lane-meta-item">your bid <b>₹'+Math.round(l.own).toLocaleString('en-IN')+'</b></span>':'';
-  return '<div class="'+cls+'"><div class="lane-card-top"><span class="lane-did" onclick="copyText(\''+l.did+'\')">&#35;'+l.did+'</span>'+pills+rate+'</div>'+
-    '<div class="lane-route">'+(l.route||'—')+'</div>'+
-    '<div class="lane-meta">'+
-      (l.truck?'<span class="lane-meta-item">🚛 '+l.truck+'</span>':'')+
-      (l.loading?'<span class="lane-meta-item">🕐 '+l.loading+'</span>':'')+
-      lows2+own+
-    '</div></div>';
-}
-function tokenCardHTML(l){
-  return '<div class="lane-card paid-card"><div class="lane-card-top"><span class="lane-did" onclick="copyText(\''+l.did+'\')">&#35;'+l.did+'</span>'+
-    '<span class="pill pill-green">✓ Paid</span>'+(l.bid!=null?'<span class="lane-bid">₹'+Math.round(l.bid).toLocaleString('en-IN')+'</span>':'')+'</div>'+
-    '<div class="lane-route">'+(l.route||'—')+'</div>'+
-    '<div class="lane-meta">'+
-      (l.truck?'<span class="lane-meta-item">🚛 '+l.truck+'</span>':'')+
-      (l.placed!=null?'<span class="lane-placed">placed ₹'+Math.round(l.placed).toLocaleString('en-IN')+'</span>':'')+
-    '</div></div>';
-}
-function histCardHTML(h){
-  var mc=h.method==='BIDDING'?'bidding':'matching';var chip='',cls='lane-card hist-card',note='';
-  if(h.verdict==='WON'){chip='<span class="pill pill-green">✓ Placed</span>';}
-  else if(h.verdict==='LOST'){chip='<span class="pill pill-red">✗ Lost</span>';cls+=' lost-card';
-    if(h.bid&&h.placed&&h.bid>h.placed){var diff=Math.round(h.bid-h.placed);note='<div class="verdict-note bad">⚠ Bid was ₹'+diff.toLocaleString('en-IN')+' higher than placed rate.</div>';}}
-  else{chip='<span class="pill pill-gray">Not placed</span>';}
-  var cmp=(h.bid?'bid ₹'+Math.round(h.bid).toLocaleString('en-IN'):'')+(h.placed?' → placed ₹'+Math.round(h.placed).toLocaleString('en-IN'):(h.bid?' → not placed':''));
-  return '<div class="'+cls+'" onclick="this.classList.toggle(\'open\')">'+
-    '<div class="lane-card-top"><span class="chev">▸</span><span class="lane-did" onclick="event.stopPropagation();copyText(\''+h.did+'\')">&#35;'+h.did+'</span>'+chip+
-    '<span class="hist-cmp">'+cmp+'</span></div>'+
-    '<div class="hist-details"><div class="lane-route">'+(h.route||'—')+'</div>'+
-    '<div class="lane-meta">'+
-      (h.truck?'<span class="lane-meta-item">🚛 '+h.truck+'</span>':'')+
-      (h.method?'<span class="method-chip '+mc+'">'+h.method+'</span>':'')+
-      (h.bid?'<span class="lane-meta-item">your bid <b>₹'+Math.round(h.bid).toLocaleString('en-IN')+'</b></span>':'')+
-      (h.placed?'<span class="lane-placed">placed ₹'+Math.round(h.placed).toLocaleString('en-IN')+'</span>':'')+
-      (h.date?'<span class="lane-meta-item" style="margin-left:auto;color:var(--text-3)">'+h.date+'</span>':'')+
-    '</div>'+note+'</div></div>';
-}
-var currentTokenSet={};
-function renderLaneTabs(lanes,ts,tl,hist){
-  currentLanes=lanes;currentTokenSet=ts;activeTyre=null;
-  // clear live route filters on new operator load
-  var loF=document.getElementById('laneOFilter');if(loF)loF.value='';
-  var ldF=document.getElementById('laneDFilter');if(ldF)ldF.value='';
-  document.getElementById('cntPaid').textContent=tl.length;
-  document.getElementById('cntHist').textContent=hist.length;
-  renderLiveLoads();
-  switchTab('paid');
-  document.getElementById('body-paid').innerHTML=tl.length?tl.map(tokenCardHTML).join(''):'<div class="lane-empty">No tokens paid today</div>';
-  if(!hist.length){document.getElementById('body-hist').innerHTML='<div class="lane-empty">No bids in last 15 days</div>';}
-  else{var lost=hist.filter(function(h){return h.verdict==='LOST'&&h.bid!=null&&h.placed!=null&&h.bid>h.placed;}).length;
-    var head=lost?'<div style="font-size:11px;color:var(--red-800);background:var(--red-50);border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠️ '+lost+' lane'+(lost>1?'s':'')+' lost where bid > placed rate.</div>':'';
-    document.getElementById('body-hist').innerHTML=head+hist.map(histCardHTML).join('');}
-}
-function switchTab(n){['paid','hist'].forEach(function(t){document.getElementById('tab-'+t).classList.toggle('active',t===n);document.getElementById('body-'+t).classList.toggle('active',t===n);});}
-/* VEHICLES */
-function renderAvail(av){
-  var el=document.getElementById('availList'),cnt=document.getElementById('availCnt');
-  cnt.textContent=av.length?'· '+av.length+' truck'+(av.length>1?'s':''):'';
-  if(!av.length){el.innerHTML='<div class="avail-empty">No vehicle available right now</div>';return;}
-  el.innerHTML=av.map(function(v){
-    var spec=[v.tyre?v.tyre+'T':'',v.body,v.size?v.size+'ft':''].filter(Boolean).join(' · ');
-    var isActive=activeTyre&&activeTyre===v.tyre;
-    var style=isActive?'background:var(--purple-50);border-color:var(--purple-600)':'';
-    return '<span class="veh-pill" style="'+style+'" onclick="filterByVehicle(\''+v.tyre+'\')" title="Click to see matching loads">'+
-      '<span class="vn">'+v.vn+'</span>'+(spec?'<span class="vt">'+spec+' ▾</span>':'')+'</span>';
-  }).join('');
-}
-function filterByVehicle(tyre){
-  activeTyre=(activeTyre===tyre)?null:tyre;renderLiveLoads();
-  var row=allData.find(function(r){return(r.operator_code||'').toUpperCase()===currentCode;});
-  if(row)renderAvail(parseAvail(row.avail_vehicles||''));
-}
-function renderLiveLoads(){
-  var bl=document.getElementById('body-live');
-  var oF=((document.getElementById('laneOFilter')||{}).value||'').trim().toUpperCase();
-  var dF=((document.getElementById('laneDFilter')||{}).value||'').trim().toUpperCase();
-  var lanes=activeTyre?currentLanes.filter(function(l){return l.tyre_req===activeTyre;}):currentLanes;
-  if(oF||dF){lanes=lanes.filter(function(l){
-    var parts=(l.route||'').replace('→','->').split('->');
-    var orig=(parts[0]||'').trim().toUpperCase();
-    var dest=(parts.length>1?parts[1]:'').trim().toUpperCase();
-    return(!oF||orig.indexOf(oF)>=0)&&(!dF||dest.indexOf(dF)>=0);
-  });}
-  var totalShown=activeTyre?currentLanes.length:lanes.length;
-  var cntEl=document.getElementById('cntLive');
-  if(cntEl){
-    var base=activeTyre?currentLanes.length:currentLanes.length;
-    cntEl.textContent=(oF||dF||activeTyre)?(lanes.length+'/'+base):base;
-  }
-  var tyreGroups={};currentLanes.forEach(function(l){var t=l.tyre_req||'?';tyreGroups[t]=(tyreGroups[t]||0)+1;});
-  var chips='';
-  if(Object.keys(tyreGroups).length>1){
-    chips='<div style="display:flex;gap:4px;flex-wrap:wrap;padding:.4rem .75rem .25rem;border-bottom:.5px solid var(--border)">';
-    chips+='<button onclick="filterByVehicle(null)" style="height:20px;padding:0 8px;border-radius:20px;font-size:9px;font-weight:700;border:.5px solid var(--border-md);cursor:pointer;'+(activeTyre?'background:var(--surface-2);color:var(--text-2)':'background:var(--text-1);color:#fff')+'">All ('+currentLanes.length+')</button>';
-    Object.keys(tyreGroups).sort(function(a,b){return(parseInt(a)||0)-(parseInt(b)||0);}).forEach(function(t){
-      var isA=activeTyre===t;
-      chips+='<button onclick="filterByVehicle(\''+t+'\')" style="height:20px;padding:0 8px;border-radius:20px;font-size:9px;font-weight:700;border:.5px solid var(--border-md);cursor:pointer;'+(isA?'background:var(--purple-600);color:#fff':'background:var(--surface-2);color:var(--text-2)')+'">'
-        +t+' Tyre ('+tyreGroups[t]+')</button>';
-    });
-    chips+='</div>';
-  }
-  bl.innerHTML=chips+(lanes.length?lanes.map(function(l){return liveCardHTML(l,currentTokenSet);}).join('')
-    :'<div class="lane-empty">'+(oF||dF?'No loads match this route filter':(activeTyre?'No loads matching '+activeTyre+'-tyre vehicles':'No live matches today'))+'</div>');
-}
-function filterLiveLanes(){renderLiveLoads();}
-function renderTyres(tyres){
-  var el=document.getElementById('tyreBreakdown');
-  el.innerHTML=tyres.length?tyres.map(function(t){var pct=t.total>0?Math.round(t.verified/t.total*100):0;
-    return '<div class="tyre-row"><div class="tyre-row-top"><span class="tyre-name">'+(t.tyres==='Unknown'?'Unknown':t.tyres+' Tyres')+'</span><span class="tyre-counts"><span>'+t.verified+'</span> / '+t.total+' verified</span></div><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%"></div></div></div>';}).join('')
-    :'<div style="font-size:11px;color:var(--text-3)">No tyre data</div>';
-}
-/* CALL LOG FORM */
-function initLogForm(){
-  var btn=document.getElementById('openFormBtn');
-  var note=document.getElementById('lfApiNote');
-  if(btn) btn.style.display=FORM_URL?'flex':'none';
-  if(note) note.style.display=FORM_URL?'none':'block';
-}
-function openCallForm(){
-  if(!FORM_URL){showToast('Set FORM_URL in the code first.');return;}
-  var url=FORM_URL;
-  /* Pre-fill Operator Code if entry ID is configured */
-  if(FORM_ENTRY_OP&&currentCode) url+='?'+FORM_ENTRY_OP+'='+encodeURIComponent(currentCode);
-  window.open(url,'_blank','noopener');
-}
-function submitCallLog(){
-  var op=currentCode;
-  if(!op){showToast('Select an operator first.');return;}
-  if(!API_URL){showToast('API URL not configured — set API_URL in the code.');return;}
-  var status  = document.getElementById('lfStatus').value;
-  var followup= document.getElementById('lfFollowup').value;
-  var caller  = document.getElementById('lfCaller').value.trim();
-  var training= document.getElementById('lfTraining').checked;
-  var interested=document.getElementById('lfInterested').checked;
-  var notes   = document.getElementById('lfNotes').value.trim();
-  if(!status){showToast('Please select a call status.');return;}
-  /* ── SNAPSHOT: grab current CRM state for this operator ── */
-  var row=allData.find(function(r){return(r.operator_code||'').toUpperCase()===op;})||{};
-  var snapshot={
-    stage:                  row.stage||'',
-    activation_score:       row.activation_score||'',
-    calling_rank:           row.calling_rank||'',
-    priority:               row.priority||'',
-    hot_flag:               row.hot_flag||'',
-    dr_supply_type:         row.dr_supply_type||'',
-    red_dr_count:           row.red_dr_count||'',
-    red_odvt_ratio:         row.red_odvt_ratio||'',
-    lifetime_ldps:          row.lifetime_ldps||'',
-    lifetime_tokens:        row.lifetime_tokens||'',
-    appeared_in_drs:        row.appeared_in_drs||'',
-    bid_today:              row.bid_today||'',
-    last_bid_time:          row.last_bid_time||'',
-    accepted_today:         row.accepted_today||'',
-    last_accepted_time:     row.last_accepted_time||'',
-    vehicle_available_today:row.vehicle_available_today||'',
-    vehicle_submitted:      row.vehicle_submitted||'',
-    va_days:                row.va_days||'',
-    ldp_days:               row.ldp_days||'',
-    total_ldp_count:        row.total_ldp_count||'',
-    token_count:            row.token_count||'',
-    num_of_drs_in_opsearch: row.num_of_drs_in_opsearch||'',
-    rm_name:                row.rm_name||'',
-    Cluster:                row.Cluster||'',
-    recency_tier:           row.recency_tier||'',
-    days_since_last_event:  row.days_since_last_event||''
-  };
-  var btn=document.getElementById('lfSubmitBtn');
-  var msg=document.getElementById('lfStatusMsg');
-  btn.disabled=true; btn.textContent='Saving…';
-  msg.className='lf-status'; msg.textContent='';
-  /* ── POST the payload in the request BODY (not the URL) ──
-     Sending the snapshot in a long ?payload= query string overflows the URL
-     length limit and fails as a "network error". POST with a plain-text body
-     stays a "simple" CORS request (no preflight), which Apps Script can answer. */
-  fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({
-      operator_code:op, call_status:status, training_done:training,
-      interested:interested, followup_date:followup||null,
-      notes:notes, caller:caller, snapshot:snapshot
-    })
-  })
-  .then(function(r){return r.json();})
-  .then(function(d){
-    if(d.status==='ok'){
-      msg.className='lf-status ok'; msg.textContent='✓ Saved successfully!';
-      document.getElementById('lfStatus').value='';
-      document.getElementById('lfFollowup').value='';
-      document.getElementById('lfNotes').value='';
-      document.getElementById('lfTraining').checked=false;
-//       document.getElementById('lfInterested').checked=false;
-//       showToast('Call log saved for '+op);
-//     } else {
-//       msg.className='lf-status err'; msg.textContent='Error: '+(d.msg||'save failed');
-//     }
-//   })
-//   .catch(function(e){
-//     msg.className='lf-status err'; msg.textContent='Network error — check API_URL or Apps Script deployment.';
-//   })
-//   .finally(function(){
-//     btn.disabled=false; btn.textContent='Save Record';
-//   });
-// }
-// /* CALL HISTORY */
-// function dispClass(d){var v=(d||'').toLowerCase();if(v.includes('connect'))return'disp-conn';if(v.includes('callback')||v.includes('call back'))return'disp-callback';if(v.includes('not reach')||v.includes('no answer')||v.includes('busy'))return'disp-notreach';return'disp-default';}
-// function renderCallHistory(row){
-//   var body=document.getElementById('callHistoryBody'),badge=document.getElementById('callBadge');
-//   var calls=parseCallHistory(row.call_history||''),total=parseInt(row.total_calls||'0',10);
-//   badge.textContent=total?total+' call'+(total>1?'s':'')+' total':'';
-//   if(!calls.length){body.innerHTML='<div class="call-empty">No calls made to this operator in the MP Load Support campaign.</div>';return;}
-//   body.innerHTML='<div style="overflow-x:auto"><table class="ch-table"><thead><tr><th>#</th><th>Date</th><th>Disposition</th><th>Code</th><th>Caller (RM)</th></tr></thead><tbody>'+
-//     calls.map(function(c,i){
-//       return '<tr><td style="color:var(--text-3);font-size:11px;width:24px">'+(i+1)+'</td>'+
-//         '<td style="font-size:12px;white-space:nowrap">'+c.date+'</td>'+
-//         '<td><span class="disp-badge '+dispClass(c.disposition)+'">'+(c.disposition||'—')+'</span></td>'+
-//         '<td style="font-size:11px;color:var(--text-2)">'+(c.disp_code||'—')+'</td>'+
-//         '<td style="font-size:12px">'+(c.caller||'—')+'</td></tr>';}).join('')+
-//     '</tbody></table></div>';
-// }
-// /* TOAST */
-// var toastTimer;
-// function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},4000);}
-// /* INIT */
-// document.getElementById('noticeBanner').addEventListener('DOMSubtreeModified',function(){
-//   var shown=this.style.display!=='none';
-//   document.getElementById('appLayout').style.marginTop=shown?'calc(var(--topbar) + 30px)':'var(--topbar)';
-// });
-// loadData();
-// </script>
-// </body>
-// </html> -->
+
+/* ─── INIT ───────────────────────────────────────────────────────── */
+loadData();
+</script>
+</body>
+</html>

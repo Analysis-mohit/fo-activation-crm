@@ -40,7 +40,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px
 
 /* ── LIST VIEW ── */
 #listView{max-width:720px;margin:0 auto;padding:24px 16px 48px}
-.lv-title{font-size:22px;font-weight:800;color:var(--t1);margin-bottom:18px}
+.lv-title{font-size:22px;font-weight:800;color:var(--t1);margin-bottom:4px}
+
+/* caller bar */
+.caller-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:9px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rad);box-shadow:var(--shadow)}
+.caller-avatar{width:28px;height:28px;border-radius:50%;background:var(--p5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;font-family:var(--mono)}
+.caller-lbl{font-size:11px;font-weight:600;color:var(--t2);flex-shrink:0}
+.caller-sel{flex:1;border:none;background:transparent;color:var(--t1);font-size:13px;font-weight:600;outline:none;cursor:pointer;min-width:0}
+.caller-badge{font-size:10px;background:var(--p1);color:var(--p6);padding:2px 8px;border-radius:20px;font-weight:600;flex-shrink:0}
 
 /* search */
 .lv-search-wrap{position:relative;margin-bottom:16px}
@@ -61,6 +68,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px
 .stage-btn.tab-post.active{background:var(--g6);border-color:var(--g6);color:#fff}
 .stage-btn.tab-tok{background:var(--a1);border-color:var(--a2);color:var(--a6)}
 .stage-btn.tab-tok.active{background:var(--a6);border-color:var(--a6);color:#fff}
+.stage-btn.tab-mine{background:var(--p1);border-color:var(--p2);color:var(--p6)}
+.stage-btn.tab-mine.active{background:var(--p6);border-color:var(--p6);color:#fff}
+.stage-btn.tab-nc{background:var(--r1);border-color:var(--r2);color:var(--r6)}
+.stage-btn.tab-nc.active{background:var(--r6);border-color:var(--r6);color:#fff}
 
 /* filters */
 .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
@@ -134,7 +145,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px
 .lv-empty{text-align:center;padding:4rem;color:var(--t3);font-size:13px}
 .lv-empty svg{width:40px;height:40px;stroke:var(--t3);fill:none;stroke-width:1.4;display:block;margin:0 auto 12px}
 
-/* status bar (top of list) */
+/* status bar */
 .status-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:11px;color:var(--t3)}
 .live-dot{width:7px;height:7px;border-radius:50%;background:#4CAF50;animation:blink 2s infinite;flex-shrink:0}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -149,6 +160,44 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px
 .back-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid var(--border);border-radius:var(--rad-sm);background:var(--surface);color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;margin-bottom:16px;transition:all .12s}
 .back-btn:hover{border-color:var(--p6);color:var(--p6)}
 .back-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── CALL BRIEFING CARD ── */
+.brief-card{background:linear-gradient(135deg,#1A1A2E 0%,#2D2B55 100%);border:1.5px solid rgba(107,95,204,.4);border-radius:var(--rad-lg);padding:18px 20px;margin-bottom:12px;box-shadow:0 4px 20px rgba(26,26,46,.3)}
+.brief-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brief-title{font-size:13px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px;letter-spacing:.2px}
+.brief-pri{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700}
+.bpri-p1{background:rgba(46,125,50,.3);color:#81C784;border:1px solid rgba(46,125,50,.4)}
+.bpri-p2{background:rgba(0,105,92,.3);color:#4DB6AC;border:1px solid rgba(0,105,92,.4)}
+.bpri-p3{background:rgba(21,101,192,.3);color:#64B5F6;border:1px solid rgba(21,101,192,.4)}
+.bpri-p4{background:rgba(230,81,0,.3);color:#FFB74D;border:1px solid rgba(230,81,0,.4)}
+.bpri-va{background:rgba(230,81,0,.3);color:#FFB74D;border:1px solid rgba(230,81,0,.4)}
+.bpri-h{background:rgba(84,110,122,.3);color:#90A4AE;border:1px solid rgba(84,110,122,.4)}
+
+.brief-section{margin-bottom:12px}
+.brief-sec-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.4);margin-bottom:7px;font-weight:600}
+.brief-why-items{display:flex;flex-wrap:wrap;gap:5px}
+.why-item{font-size:11px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:3px 10px;color:rgba(255,255,255,.8)}
+.brief-pts-list{display:flex;flex-direction:column;gap:5px}
+.brief-pt{font-size:12px;color:rgba(255,255,255,.8);padding:5px 10px;border-left:2px solid rgba(107,95,204,.7);background:rgba(255,255,255,.04);border-radius:0 4px 4px 0}
+
+/* log call form */
+.log-form{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:var(--rad);padding:12px 14px;margin-top:4px}
+.log-form-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.4);margin-bottom:9px;font-weight:600}
+.log-row{display:flex;gap:7px;align-items:flex-start;flex-wrap:wrap}
+.log-sel{flex:0 0 auto;height:34px;padding:0 10px;border:1px solid rgba(255,255,255,.18);border-radius:var(--rad-sm);background:rgba(255,255,255,.08);color:#fff;font-size:12px;outline:none;cursor:pointer}
+.log-sel option{color:#000;background:#fff}
+.log-inp{flex:1;min-width:130px;height:34px;padding:0 10px;border:1px solid rgba(255,255,255,.18);border-radius:var(--rad-sm);background:rgba(255,255,255,.08);color:#fff;font-size:12px;outline:none}
+.log-inp::placeholder{color:rgba(255,255,255,.3)}
+.log-btn{height:34px;padding:0 16px;border:none;border-radius:var(--rad-sm);background:var(--p5);color:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .12s}
+.log-btn:hover{background:#5b50c0}
+.saved-notes{margin-top:9px;display:flex;flex-direction:column;gap:4px}
+.saved-note{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:var(--rad-sm);padding:7px 10px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.note-time{font-size:10px;color:rgba(255,255,255,.35);white-space:nowrap;flex-shrink:0;font-family:var(--mono)}
+.note-disp{font-size:10px;padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.disp-conn{background:rgba(46,125,50,.35);color:#81C784}
+.disp-notconn{background:rgba(198,40,40,.3);color:#EF9A9A}
+.disp-other{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6)}
+.note-text{font-size:11px;color:rgba(255,255,255,.65);flex:1}
 
 /* profile header */
 .pf-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rad-lg);padding:18px 20px;margin-bottom:10px;box-shadow:var(--shadow)}
@@ -286,7 +335,17 @@ table.t tr:hover td{background:var(--bg)}
 
 <!-- ════ LIST VIEW ════ -->
 <div id="listView">
-  <div class="lv-title">FO Activation CRM</div>
+  <div class="lv-title" style="margin-bottom:12px">FO Activation CRM</div>
+
+  <!-- caller identity bar -->
+  <div class="caller-bar">
+    <div class="caller-avatar" id="callerAv">?</div>
+    <span class="caller-lbl">Caller:</span>
+    <select class="caller-sel" id="callerSel">
+      <option value="">Select your name to filter my leads</option>
+    </select>
+    <span class="caller-badge" id="callerBadge" style="display:none">My leads</span>
+  </div>
 
   <!-- global search jump -->
   <div class="lv-search-wrap">
@@ -300,6 +359,8 @@ table.t tr:hover td{background:var(--bg)}
     <div class="stage-lbl">Stage</div>
     <button class="stage-btn active" data-stage="all">All <span class="cnt" id="cnt-all">0</span></button>
     <button class="stage-btn live-btn" data-stage="live"><span class="dot-live"></span>Live <span class="cnt" id="cnt-live">0</span></button>
+    <button class="stage-btn tab-mine" data-stage="mine">👤 My Leads <span class="cnt" id="cnt-mine">0</span></button>
+    <button class="stage-btn tab-nc" data-stage="notcalled">📞 Not Called <span class="cnt" id="cnt-notcalled">0</span></button>
     <button class="stage-btn" data-stage="history">🗂 History <span class="cnt" id="cnt-history">0</span></button>
     <button class="stage-btn tab-post" data-stage="accepted">🎉 Post Acceptance <span class="cnt" id="cnt-accepted">0</span></button>
     <button class="stage-btn tab-tok" data-stage="token">💰 Token Paid <span class="cnt" id="cnt-token">0</span></button>
@@ -359,6 +420,44 @@ table.t tr:hover td{background:var(--bg)}
     <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     Back to list
   </button>
+
+  <!-- ── CALL BRIEFING ── -->
+  <div class="brief-card" id="pfBrief">
+    <div class="brief-top">
+      <div class="brief-title">
+        <svg style="width:15px;height:15px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.44 2 2 0 0 1 3.59 1.28h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.78a16 16 0 0 0 6.29 6.29l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Call Briefing
+      </div>
+      <span id="briefPri" class="brief-pri"></span>
+    </div>
+    <div class="brief-section">
+      <div class="brief-sec-lbl">Why call</div>
+      <div class="brief-why-items" id="briefWhy"></div>
+    </div>
+    <div class="brief-section">
+      <div class="brief-sec-lbl">Talking points</div>
+      <div class="brief-pts-list" id="briefPts"></div>
+    </div>
+    <!-- log call form -->
+    <div class="log-form">
+      <div class="log-form-lbl">Log this call</div>
+      <div class="log-row">
+        <select class="log-sel" id="logDisp">
+          <option value="">Disposition</option>
+          <option value="Connected - Positive">Connected - Positive</option>
+          <option value="Connected - Callback">Connected - Callback</option>
+          <option value="Connected - Not Interested">Connected - Not Interested</option>
+          <option value="Not Connected - Busy">Not Connected - Busy</option>
+          <option value="Not Connected - No Answer">Not Connected - No Answer</option>
+          <option value="Not Connected - Switched Off">Not Connected - Switched Off</option>
+          <option value="Not Connected - Wrong Number">Not Connected - Wrong Number</option>
+        </select>
+        <input class="log-inp" id="logNote" type="text" placeholder="Add a note (optional)…" />
+        <button class="log-btn" onclick="logCall()">Save</button>
+      </div>
+      <div class="saved-notes" id="briefNotes"></div>
+    </div>
+  </div>
 
   <!-- profile card -->
   <div class="pf-card">
@@ -510,6 +609,130 @@ let nextAt=null, timer=null, cdTimer=null, currentRow=null;
 /* ─── PRIORITY MAP ─────────────────────────────────────────────── */
 const PTAG = {P1:'tag-p1',P2:'tag-p2',P3:'tag-p3',P4:'tag-p4',VA:'tag-va',H:'tag-h'};
 
+/* ─── MY RM ────────────────────────────────────────────────────── */
+function getMyRM(){ try{return localStorage.getItem('crm_my_rm')||'';}catch(e){return '';} }
+function setMyRM(rm){ try{localStorage.setItem('crm_my_rm',rm);}catch(e){} }
+
+function updateCallerBar(){
+  const rm=getMyRM();
+  const av=document.getElementById('callerAv');
+  const badge=document.getElementById('callerBadge');
+  if(rm){
+    av.textContent=rm.replace(/[^A-Z0-9]/gi,'').slice(0,2).toUpperCase();
+    av.style.background='var(--p5)';
+    badge.style.display='';
+  } else {
+    av.textContent='?';
+    av.style.background='var(--gr6)';
+    badge.style.display='none';
+  }
+  const sel=document.getElementById('callerSel');
+  if(sel.value!==rm) sel.value=rm;
+}
+
+/* ─── LOCAL CALL NOTES ─────────────────────────────────────────── */
+function noteKey(code){
+  const d=new Date();
+  return `crm_note_${code}_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+}
+function getNotes(code){
+  try{ return JSON.parse(localStorage.getItem(noteKey(code))||'[]'); }catch(e){return [];}
+}
+function saveNote(code,disp,note){
+  const notes=getNotes(code);
+  const now=new Date();
+  const time=now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false});
+  notes.unshift({disp,note:note||'',time});
+  try{localStorage.setItem(noteKey(code),JSON.stringify(notes.slice(0,15)));}catch(e){}
+}
+function renderNotes(code){
+  const notes=getNotes(code);
+  const el=document.getElementById('briefNotes');
+  if(!notes.length){el.innerHTML='';return;}
+  el.innerHTML=notes.map(n=>{
+    const conn=n.disp.toLowerCase().includes('connected');
+    const nc=n.disp.toLowerCase().includes('not connected');
+    const cls=conn&&!nc?'disp-conn':nc?'disp-notconn':'disp-other';
+    return `<div class="saved-note">
+      <span class="note-time">${n.time}</span>
+      <span class="note-disp ${cls}">${n.disp||'—'}</span>
+      ${n.note?`<span class="note-text">${n.note}</span>`:''}
+    </div>`;
+  }).join('');
+}
+function logCall(){
+  const code=(currentRow?.operator_code||'').toUpperCase();
+  if(!code) return;
+  const disp=document.getElementById('logDisp').value;
+  const note=document.getElementById('logNote').value.trim();
+  if(!disp){alert('Please select a disposition first.');return;}
+  saveNote(code,disp,note);
+  document.getElementById('logDisp').value='';
+  document.getElementById('logNote').value='';
+  renderNotes(code);
+}
+
+/* ─── WHY CALL + TALKING POINTS ───────────────────────────────── */
+function whyCallReasons(row){
+  const reasons=[];
+  const pri=row.priority||'';
+  const red=parseInt(row.red_dr_count||'0',10);
+  const drs=parseInt(row.num_of_drs_in_opsearch||'0',10);
+
+  if(pri==='P1'&&bool(row.accepted_today)) reasons.push('Accepted a trip today');
+  if(bool(row.token_paid_today)) reasons.push(`Token paid ${row.token_paid_time?'at '+row.token_paid_time.slice(0,5):''}`);
+  if(bool(row.bid_today)){
+    const m=minsAgo(row.last_bid_time);
+    reasons.push(`Bid placed ${m!=null?fmtAgo(m)+' ago':'today'}`);
+  }
+  if(bool(row.ldp_today)) reasons.push('Viewed demand details today');
+  if(bool(row.vehicle_available_today)) reasons.push('Vehicle available today');
+  if(drs>0) reasons.push(`${drs} demand${drs>1?'s':''} in op-search${red>0?` · ${red} Red DR`:''}`);
+  if(row.recency_tier) reasons.push(row.recency_tier);
+  if(bool(row.trained_graduate)) reasons.push('Trained graduate');
+
+  return reasons.length?reasons:['Active operator in calling queue'];
+}
+
+function talkingPoints(row){
+  const pri=row.priority||'';
+  const pts=[];
+  const red=parseInt(row.red_dr_count||'0',10);
+  const drs=parseInt(row.num_of_drs_in_opsearch||'0',10);
+
+  if(pri==='P1'){
+    pts.push('Congratulate on the accepted trip');
+    pts.push('Confirm vehicle dispatch and trip start details');
+    pts.push('Ask if any support or documentation is needed');
+  } else if(pri==='P2'){
+    if(bool(row.token_paid_today)){
+      pts.push('Follow up on the token paid — confirm vehicle submission status');
+      pts.push('Remind about required documents and vehicle check-in');
+    } else if(bool(row.vehicle_available_today)){
+      pts.push('Vehicle is available — share matched demand opportunities');
+      pts.push('Encourage paying token to secure the load now');
+    }
+  } else if(pri==='P3'){
+    pts.push('Bid was placed — nudge towards completing token payment');
+    if(drs>0) pts.push(`${drs} demand${drs>1?'s are':' is'} live in op-search — highlight urgency`);
+    if(red>0) pts.push(`${red} Red DR${red>1?'s':''} matched — premium freight, mention the rate`);
+  } else if(pri==='P4'){
+    pts.push('Showed interest (bid or viewed demands) — encourage token payment to secure load');
+    if(red>0) pts.push(`${red} Red DR matched — good rate available, act before it fills`);
+  } else {
+    if(bool(row.vehicle_available_today)){
+      pts.push('Vehicle is available — share active demand options');
+      pts.push('Encourage browsing and bidding on matched loads');
+    } else {
+      pts.push('Check on their upcoming vehicle availability');
+      pts.push('Share current active demands in their region');
+    }
+  }
+
+  if(bool(row.trained_graduate)) pts.push('Reinforce platform benefits and support as a trained operator');
+  return pts;
+}
+
 /* ─── DATA LOAD ────────────────────────────────────────────────── */
 async function loadData(){
   spin(true);
@@ -527,7 +750,6 @@ async function loadData(){
     applyFilters();
     setStatus(true);
     schedule();
-    // if profile open, refresh it
     if(currentRow){const fresh=findRow(currentRow.operator_code);if(fresh){currentRow=fresh;renderProfile(fresh);}}
   } catch(e){
     setStatus(false);
@@ -547,7 +769,15 @@ function buildFilters(){
   setOpts('fRecency','All recency',recencies);
   setOpts('fDRType' ,'All DR types',drTypes);
   setOpts('fRM'     ,'All RMs',rms);
+
+  // populate caller selector
+  const csel=document.getElementById('callerSel');
+  const curVal=csel.value||getMyRM();
+  csel.innerHTML=`<option value="">Select your name</option>`+rms.map(v=>`<option value="${v}"${v===curVal?' selected':''}>${v}</option>`).join('');
+  if(curVal&&!csel.value) csel.value=curVal;
+  updateCallerBar();
 }
+
 function setOpts(id,placeholder,vals){
   const el=document.getElementById(id);
   const cur=el.value;
@@ -562,25 +792,30 @@ function applyFilters(){
   const rm     = document.getElementById('fRM').value;
   const status = document.getElementById('fStatus').value;
   const text   = document.getElementById('textFilter').value.trim().toUpperCase();
+  const myRM   = getMyRM();
 
   // update tab counts
   const cnt = grp => {
     let d=allData;
-    if(grp==='live')     d=d.filter(r=>r.priority!=='H');
-    if(grp==='history')  d=d.filter(r=>r.priority==='H');
-    if(grp==='accepted') d=d.filter(r=>bool(r.accepted_today));
-    if(grp==='token')    d=d.filter(r=>bool(r.token_paid_today));
+    if(grp==='live')      d=d.filter(r=>r.priority!=='H');
+    if(grp==='history')   d=d.filter(r=>r.priority==='H');
+    if(grp==='accepted')  d=d.filter(r=>bool(r.accepted_today));
+    if(grp==='token')     d=d.filter(r=>bool(r.token_paid_today));
+    if(grp==='mine')      d=d.filter(r=>myRM&&r.rm_name===myRM);
+    if(grp==='notcalled') d=d.filter(r=>!bool(r.called_today)&&r.priority!=='H');
     return d.length;
   };
-  ['all','live','history','accepted','token'].forEach(s=>{
+  ['all','live','history','accepted','token','mine','notcalled'].forEach(s=>{
     const el=document.getElementById('cnt-'+s); if(el) el.textContent=cnt(s);
   });
 
   filtered = allData.filter(r=>{
-    if(stage==='live'     && r.priority==='H') return false;
-    if(stage==='history'  && r.priority!=='H') return false;
-    if(stage==='accepted' && !bool(r.accepted_today)) return false;
-    if(stage==='token'    && !bool(r.token_paid_today)) return false;
+    if(stage==='live'      && r.priority==='H') return false;
+    if(stage==='history'   && r.priority!=='H') return false;
+    if(stage==='accepted'  && !bool(r.accepted_today)) return false;
+    if(stage==='token'     && !bool(r.token_paid_today)) return false;
+    if(stage==='mine'      && (!myRM||r.rm_name!==myRM)) return false;
+    if(stage==='notcalled' && (bool(r.called_today)||r.priority==='H')) return false;
     if(recency && r.recency_tier!==recency) return false;
     if(drType  && r.dr_supply_type!==drType) return false;
     if(rm      && r.rm_name!==rm) return false;
@@ -593,7 +828,6 @@ function applyFilters(){
     }
     return true;
   });
-  // sort by calling_rank asc
   filtered.sort((a,b)=>parseInt(a.calling_rank||9999)-parseInt(b.calling_rank||9999));
   page=1;
   renderList();
@@ -628,8 +862,9 @@ function renderList(){
     const isLive   = pri!=='H';
     const called   = bool(r.called_today);
     const pos      = start+idx+1;
+    const myRM     = getMyRM().toUpperCase();
+    const isMyLead = myRM&&rm===myRM;
 
-    // best time to show
     const t = bestTime(r);
     let timeHtml='';
     if(t.time){
@@ -638,10 +873,8 @@ function renderList(){
       timeHtml=`<span class="time-chip ${fresh?'fresh':''}">${t.time}${ago!==null?' · '+fmtAgo(ago):''}</span>`;
     }
 
-    // activity badge
     const act = actBadge(r);
 
-    // last call
     let callHtml='';
     if(r.last_call_date && r.last_call_disposition){
       const disp=(r.last_call_disposition||'').replace(/-$/,'').trim();
@@ -656,7 +889,7 @@ function renderList(){
           <div class="op-dot ${isLive?'live':'idle'}"></div>
           <div class="op-code">${code}</div>
           ${timeHtml}
-          <div class="rm-name">${rm}</div>
+          <div class="rm-name" style="${isMyLead?'color:var(--p6)':''}">${rm}${isMyLead?' ★':''}</div>
         </div>
         <div class="op-tags">
           <span class="tag tag-outline">#${pos}</span>
@@ -723,12 +956,29 @@ function showList(){
 /* ─── RENDER PROFILE ─────────────────────────────────────────── */
 function renderProfile(row){
   const code = (row.operator_code||'').toUpperCase();
+
+  /* ── call briefing ── */
+  const pri=row.priority||'';
+  const priLabels={P1:'P1 · Post Acceptance',P2:'P2 · Token / Vehicle',P3:'P3 · Bid + VA',P4:'P4 · Bid / LDP',VA:'VA',H:'History'};
+  const priClsBrief={P1:'bpri-p1',P2:'bpri-p2',P3:'bpri-p3',P4:'bpri-p4',VA:'bpri-va',H:'bpri-h'};
+  document.getElementById('briefPri').textContent=priLabels[pri]||pri||'—';
+  document.getElementById('briefPri').className='brief-pri '+(priClsBrief[pri]||'bpri-h');
+
+  const reasons=whyCallReasons(row);
+  document.getElementById('briefWhy').innerHTML=reasons.map(r=>`<span class="why-item">${r}</span>`).join('');
+
+  const pts=talkingPoints(row);
+  document.getElementById('briefPts').innerHTML=pts.map(p=>`<div class="brief-pt">${p}</div>`).join('');
+
+  // render saved notes
+  renderNotes(code);
+
+  /* ── profile card ── */
   document.getElementById('pfAv').textContent  = code.replace(/[^A-Z0-9]/g,'').slice(0,2);
   document.getElementById('pfCode').textContent = code;
   document.getElementById('pfRM').textContent   = `${row.rm_name||'—'} · ${row.Cluster||'—'}`;
 
   const tags = document.getElementById('pfTags');
-  const pri  = row.priority||'';
   let th = '';
   if(pri) th+=`<span class="tag ${PTAG[pri]||'tag-gray'}">${pri}</span>`;
   if(row.stage&&row.stage!==pri) th+=`<span class="tag tag-gray">${row.stage}</span>`;
@@ -901,6 +1151,13 @@ function spin(on){
   const btn=document.getElementById('lvRefBtn');
   btn.classList.toggle('spin',on);btn.disabled=on;
 }
+
+/* ─── CALLER SELECTOR ────────────────────────────────────────── */
+document.getElementById('callerSel').addEventListener('change',function(){
+  setMyRM(this.value);
+  updateCallerBar();
+  applyFilters();
+});
 
 /* ─── JUMP SEARCH ────────────────────────────────────────────── */
 const ji=document.getElementById('jumpSearch');

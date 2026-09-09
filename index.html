@@ -95,35 +95,35 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px
 /* ── LP SCROLLABLE LIST ── */
 .lp-list{flex:1;overflow-y:auto;padding:6px 8px 24px}
 
-/* compact operator card */
-.lp-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:9px 10px 8px;margin-bottom:6px;cursor:pointer;transition:all .12s;border-left:3px solid transparent;box-shadow:var(--shadow)}
-.lp-card:hover{border-color:var(--p6);box-shadow:0 2px 10px rgba(83,71,181,.12)}
-.lp-card.selected{border-color:var(--p6);background:var(--p1);border-left-color:var(--p6)}
+/* compact operator card — matches screenshot style */
+.lp-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rad-lg);padding:12px 14px 10px;margin-bottom:7px;cursor:pointer;transition:all .15s;display:flex;gap:12px;align-items:flex-start;border-left:3px solid transparent;box-shadow:var(--shadow)}
+.lp-card:hover{border-color:var(--p6);box-shadow:0 2px 12px rgba(83,71,181,.12)}
+.lp-card.selected{border-color:var(--p6);background:var(--p1);border-left-color:var(--p6)!important}
 .lp-card.pri-p1{border-left-color:var(--g6)}
 .lp-card.pri-p2{border-left-color:var(--teal6)}
 .lp-card.pri-p3{border-left-color:var(--b6)}
 .lp-card.pri-p4{border-left-color:var(--a6)}
 .lp-card.pri-va{border-left-color:var(--a6)}
 .lp-card.pri-h {border-left-color:var(--gr6)}
-.lp-card.selected.pri-p1{border-color:var(--g6)}
-.lp-card.selected.pri-p2{border-color:var(--teal6)}
-.lp-card.selected.pri-p3{border-color:var(--b6)}
-.lp-card.selected.pri-p4{border-color:var(--a6)}
-.lp-card.selected.pri-h {border-color:var(--gr6)}
 
-.lc-top{display:flex;align-items:center;gap:6px;margin-bottom:4px}
-.lc-rank{font-size:11px;font-weight:800;color:var(--t3);font-family:var(--mono);min-width:22px;flex-shrink:0}
-.lc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+/* rank number — big gray on the left, exactly like screenshot */
+.lc-rank{font-size:18px;font-weight:800;color:var(--t3);min-width:34px;text-align:right;flex-shrink:0;padding-top:1px;font-family:var(--mono);line-height:1.1}
+
+/* right body */
+.lc-body{flex:1;min-width:0}
+
+.lc-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px}
+.lc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .lc-dot.live{background:#4CAF50;box-shadow:0 0 0 2px rgba(76,175,80,.2)}
 .lc-dot.idle{background:var(--t3)}
-.lc-code{font-size:13px;font-weight:800;color:var(--t1);font-family:var(--mono);letter-spacing:.3px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lc-time{font-size:10px;color:var(--t2);background:var(--surface2);padding:1px 6px;border-radius:20px;font-family:var(--mono);white-space:nowrap;flex-shrink:0}
+.lc-code{font-size:15px;font-weight:800;color:var(--t1);font-family:var(--mono);letter-spacing:.3px}
+.lc-time{font-size:11px;color:var(--t2);background:var(--surface2);padding:2px 8px;border-radius:20px;font-family:var(--mono);white-space:nowrap}
 .lc-time.fresh{color:var(--g6);background:var(--g1)}
-.lc-rm{font-size:10px;font-weight:600;color:var(--t3);flex-shrink:0;text-transform:uppercase;letter-spacing:.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70px}
+.lc-rm{font-size:11px;font-weight:600;color:var(--t3);margin-left:auto;padding-left:6px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}
 .lc-rm.mine{color:var(--p6)}
 
-.lc-tags{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-bottom:4px}
-.tag{display:inline-flex;align-items:center;gap:2px;padding:1px 6px;border-radius:20px;font-size:10px;font-weight:500;white-space:nowrap}
+.lc-tags{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:5px}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
 .tag-p1{background:var(--g1);color:var(--g6)}
 .tag-p2{background:var(--teal1);color:var(--teal6)}
 .tag-p3{background:var(--b1);color:var(--b6)}
@@ -138,22 +138,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px
 .tag-purple{background:var(--p1);color:var(--p6)}
 .tag-outline{background:transparent;border:1px solid var(--border);color:var(--t2)}
 
-.lc-meta{font-size:10px;color:var(--t3);display:flex;align-items:center;gap:5px;margin-bottom:5px;min-height:14px}
-.lc-meta .cdot-g{width:5px;height:5px;border-radius:50%;background:var(--g6);flex-shrink:0}
-.lc-meta .cdot-r{width:5px;height:5px;border-radius:50%;background:var(--t3);flex-shrink:0}
+.lc-meta{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:5px;margin-bottom:6px;min-height:15px}
+.lc-meta .cdot-g{width:6px;height:6px;border-radius:50%;background:var(--g6);flex-shrink:0}
+.lc-meta .cdot-r{width:6px;height:6px;border-radius:50%;background:var(--t3);flex-shrink:0}
 
-/* quick log chips */
+/* quick log chips — subtle, sits at bottom of card */
 .lc-chips{display:flex;gap:4px}
-.qchip{flex:1;height:24px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--t2);font-size:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;transition:all .12s;white-space:nowrap}
-.qchip:hover{border-color:currentColor}
-.qchip.qc-conn{color:var(--g6)}
-.qchip.qc-conn:hover{background:var(--g1);border-color:var(--g6)}
-.qchip.qc-cb{color:var(--b6)}
-.qchip.qc-cb:hover{background:var(--b1);border-color:var(--b6)}
-.qchip.qc-na{color:var(--t3)}
-.qchip.qc-na:hover{background:var(--surface);border-color:var(--t2)}
+.qchip{flex:1;height:22px;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--t3);font-size:10px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:2px;transition:all .12s;white-space:nowrap}
+.qchip:hover{border-color:currentColor;background:var(--surface2)}
+.qchip.qc-conn:hover{color:var(--g6);background:var(--g1);border-color:var(--g6)}
+.qchip.qc-cb:hover{color:var(--b6);background:var(--b1);border-color:var(--b6)}
+.qchip.qc-na:hover{color:var(--t2);background:var(--surface2);border-color:var(--t2)}
 .qchip-flash{animation:chipFlash .5s ease}
-@keyframes chipFlash{0%{transform:scale(1.08);opacity:.7}100%{transform:scale(1);opacity:1}}
+@keyframes chipFlash{0%{transform:scale(1.06);opacity:.6}100%{transform:scale(1);opacity:1}}
 
 /* pag inside list */
 .lp-pag{display:flex;gap:4px;padding:8px 0;justify-content:center}
@@ -1014,24 +1011,28 @@ function renderList(){
     }
 
     return `<div class="lp-card pri-${pri.toLowerCase()||'h'} ${isSelected?'selected':''}" onclick="selectOperator(${globalIdx})">
-      <div class="lc-top">
-        <span class="lc-rank">${rank}</span>
-        <div class="lc-dot ${isLive?'live':'idle'}"></div>
-        <span class="lc-code">${code}</span>
-        ${timeHtml}
-        <span class="lc-rm ${isMyLead?'mine':''}">${rm||'—'}${isMyLead?' ★':''}</span>
-      </div>
-      <div class="lc-tags">
-        ${pri?`<span class="tag ${priCls}">${pri}</span>`:''}
-        ${act?`<span class="tag ${act.cls}">${act.label}</span>`:''}
-        ${r.dr_supply_type==='Red DR'?'<span class="tag tag-red">🔴 Red</span>':''}
-        ${called||hasNote?`<span class="tag tag-green">${hasNote?'✓ Logged':'Called'}</span>`:''}
-      </div>
-      ${callHtml}
-      <div class="lc-chips">
-        <button class="qchip qc-conn" onclick="quickLog(event,'${code}','Connected - Positive')">✓ Connected</button>
-        <button class="qchip qc-cb"   onclick="quickLog(event,'${code}','Connected - Callback')">↩ Callback</button>
-        <button class="qchip qc-na"   onclick="quickLog(event,'${code}','Not Connected - No Answer')">✗ No Answer</button>
+      <div class="lc-rank">${rank}</div>
+      <div class="lc-body">
+        <div class="lc-top">
+          <div class="lc-dot ${isLive?'live':'idle'}"></div>
+          <span class="lc-code">${code}</span>
+          ${timeHtml}
+          <span class="lc-rm ${isMyLead?'mine':''}">${rm||'—'}${isMyLead?' ★':''}</span>
+        </div>
+        <div class="lc-tags">
+          ${pri?`<span class="tag ${priCls}">${pri} · ${r.stage||pri}</span>`:''}
+          ${act?`<span class="tag ${act.cls}">${act.label}</span>`:''}
+          ${r.dr_supply_type==='Red DR'?'<span class="tag tag-red">🔴 Red DR</span>':''}
+          ${r.recency_tier?`<span class="tag tag-gray">${r.recency_tier}</span>`:''}
+          ${r.dr_tier?`<span class="tag tag-outline">${r.dr_tier}</span>`:''}
+          ${called||hasNote?`<span class="tag tag-green">${hasNote?'✓ Logged':'Called ✓'}</span>`:''}
+        </div>
+        ${callHtml}
+        <div class="lc-chips">
+          <button class="qchip qc-conn" onclick="quickLog(event,'${code}','Connected - Positive')">✓ Connected</button>
+          <button class="qchip qc-cb"   onclick="quickLog(event,'${code}','Connected - Callback')">↩ Callback</button>
+          <button class="qchip qc-na"   onclick="quickLog(event,'${code}','Not Connected - No Answer')">✗ No Answer</button>
+        </div>
       </div>
     </div>`;
   }).join('');

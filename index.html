@@ -555,8 +555,10 @@ table.t tr:hover td{background:var(--bg)}
 /* ── CONFIG ── */
 // ⚠️ Update GID after creating the "Trailer Data" tab — get it from the sheet URL (?gid=XXXXXXXX)
 const SHEET_ID  = '108eum9qGl1-8YwVm82b-92jtqbjKNX13BLy8mmIx_uY';
-const GID       = '156395631'
+const GID       = '0';
 const CSV_URL   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+// ⚠️ Paste your deployed Apps Script URL here after deploying trailer_crm_logger.gs
+const LOGGER_URL = 'https://script.google.com/macros/s/AKfycbxUEEjd3ukTf4Pi-daJHswJ3_9Gwt4AG5DP46M-pNXIDTKEUh3X9JdrSpHkzK8wOCrF/exec';
 const REFRESH_MS = 5*60*1000;
 const PAGE_SIZE  = 50;
 const DF = '####', DR = '||||';
@@ -627,12 +629,23 @@ function selectDisp(disp){
   badge.innerHTML=`<span style="font-size:10px;color:var(--tr6);font-weight:600;margin-bottom:4px;display:block">Selected: ${disp}</span>`;
   document.getElementById('dispNote').focus();
 }
+function postLog(payload){
+  if(!LOGGER_URL) return;
+  fetch(LOGGER_URL,{method:'POST',body:JSON.stringify(payload)}).catch(()=>{});
+}
 function saveDispLog(){
   const code=(currentRow?.operator_code||'').toUpperCase();
   if(!code) return;
   if(!selectedDisp){alert('Please select a disposition first.');return;}
   const note=document.getElementById('dispNote').value.trim();
   saveNote(code,selectedDisp,note);
+  postLog({
+    operator_code: code,
+    stage:         currentRow?.priority||'',
+    rm_name:       getMyRM(),
+    disposition:   selectedDisp,
+    note:          note
+  });
   selectedDisp='';
   document.getElementById('dispNote').value='';
   document.getElementById('dispSelBadge').style.display='none';
@@ -641,6 +654,14 @@ function saveDispLog(){
 }
 function quickLog(e,code,disp){
   e.stopPropagation();
+  const row=findRow(code);
+  postLog({
+    operator_code: code,
+    stage:         row?.priority||'',
+    rm_name:       getMyRM(),
+    disposition:   disp,
+    note:          ''
+  });
   saveNote(code,disp,'');
   const chip=e.currentTarget;
   chip.classList.add('qchip-flash');

@@ -79,7 +79,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px
 .count-lbl{font-size:11px;font-weight:700;color:var(--t1)}
 .count-range{font-size:10px;color:var(--t3)}
 .lp-list{flex:1;overflow-y:auto;padding:6px 8px 24px}
-.lp-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rad);padding:9px 12px 8px;margin-bottom:5px;cursor:pointer;transition:all .15s;display:flex;gap:10px;align-items:flex-start;border-left:3px solid transparent;box-shadow:var(--shadow)}
+.lp-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rad);padding:6px 10px 5px;margin-bottom:4px;cursor:pointer;transition:all .15s;display:flex;gap:8px;align-items:flex-start;border-left:3px solid transparent;box-shadow:var(--shadow)}
 .lp-card:hover{border-color:var(--tr6);box-shadow:0 2px 10px rgba(106,27,154,.1)}
 .lp-card.selected{border-color:var(--tr6);background:var(--tr1);border-left-color:var(--tr6)!important}
 .lp-card.pri-p1{border-left-color:var(--g6)}
@@ -89,13 +89,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px
 .lp-card.pri-va{border-left-color:var(--a6)}
 .lp-card.pri-h {border-left-color:var(--gr6)}
 .lp-card.pri-v {border-left-color:var(--tr6)}
-.lc-rank{font-size:16px;font-weight:800;color:var(--t3);min-width:30px;text-align:right;flex-shrink:0;padding-top:1px;font-family:var(--mono);line-height:1.1}
+.lc-rank{font-size:13px;font-weight:800;color:var(--t3);min-width:24px;text-align:right;flex-shrink:0;padding-top:1px;font-family:var(--mono);line-height:1.1}
 .lc-body{flex:1;min-width:0}
 .lc-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}
 .lc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .lc-dot.live{background:#4CAF50;box-shadow:0 0 0 2px rgba(76,175,80,.2)}
 .lc-dot.idle{background:var(--t3)}
-.lc-code{font-size:14px;font-weight:800;color:var(--t1);font-family:var(--mono);letter-spacing:.3px}
+.lc-code{font-size:12px;font-weight:800;color:var(--t1);font-family:var(--mono);letter-spacing:.3px}
 .lc-time{font-size:10px;color:var(--t2);background:var(--surface2);padding:1px 7px;border-radius:20px;font-family:var(--mono);white-space:nowrap}
 .lc-time.fresh{color:var(--g6);background:var(--g1)}
 .lc-rm{font-size:10px;font-weight:600;color:var(--t3);margin-left:auto;padding-left:4px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}
@@ -120,8 +120,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);font-size:13px
 .lc-meta{font-size:10px;color:var(--t3);display:flex;align-items:center;gap:4px;margin-bottom:5px;min-height:13px}
 .lc-meta .cdot-g{width:5px;height:5px;border-radius:50%;background:var(--g6);flex-shrink:0}
 .lc-meta .cdot-r{width:5px;height:5px;border-radius:50%;background:var(--t3);flex-shrink:0}
-.lc-chips{display:flex;gap:4px}
-.qchip{flex:1;height:20px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--t3);font-size:9px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:2px;transition:all .12s;white-space:nowrap}
+.lc-chips{display:flex;gap:3px}
+.qchip{flex:1;height:18px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--t3);font-size:9px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:2px;transition:all .12s;white-space:nowrap}
 .qchip:hover{border-color:currentColor;background:var(--surface2)}
 .qchip.qc-conn:hover{color:var(--g6);background:var(--g1);border-color:var(--g6)}
 .qchip.qc-cb:hover{color:var(--b6);background:var(--b1);border-color:var(--b6)}
@@ -328,8 +328,8 @@ table.t tr:hover td{background:var(--bg)}
       <span class="caller-lbl">Caller:</span>
       <select class="caller-sel" id="callerSel">
         <option value="">Select your name</option>
-        <option value="Yash Chandan">Yash Chandan</option>
-        <option value="Nikhil Kohli">Nikhil Kohli</option>
+        <option value="Vikash Jatav">Vikash Jatav</option>
+        <option value="Shalu Chaursia">Shalu Chaursia</option>
       </select>
       <span class="caller-badge" id="callerBadge" style="display:none">My leads</span>
     </div>
@@ -973,13 +973,19 @@ function renderProfile(row){
 
   const lr=parseDel(row.lane_vt_details||'');
   document.getElementById('pfDRBody').innerHTML=lr.length
-    ?lr.map((f,i)=>{const sup=f.find((v,idx2)=>idx2>2&&v&&v.includes(';'))||'';const[l1='',l2='',l3='']=sup.split(';');
+    ?lr.map((f,i)=>{
+      // format: did####route####truck####''####lows(;sep)####''####own_fr
+      const[l1='',l2='',l3='']=(f[4]||'').split(';');
       return `<tr><td class="rn">${i+1}</td><td class="mono">${f[0]||'—'}</td><td>${f[1]||'—'}</td><td style="color:var(--t2)">${f[2]||'—'}</td><td style="display:flex;gap:3px">${sc2(l1,'sr-l1')}${sc2(l2,'sr-l2')}${sc2(l3,'sr-l3')}</td></tr>`;}).join('')
     :'<tr><td colspan="5" class="te">No matched trailer lanes today</td></tr>';
 
   // bids today
   sectionTable('pfBidSec','pfBidCnt','pfBidBody',parseDel(row.bid_today_lane_details||''),
-    f=>{const[did,route,truck,opFr,tokP,l1,l2,l3]=f;const paid=tokP==='1'||bool(tokP);
+    f=>{
+      // format: did####route####truck####opFr####tokP####lows(;sep)
+      const[did,route,truck,opFr,tokP,rawLows]=f;
+      const paid=tokP==='1'||bool(tokP);
+      const[l1='',l2='',l3='']=(rawLows||'').split(';');
       return `<td class="mono">${fmt(did)}</td><td>${fmt(route)}</td><td style="color:var(--t2)">${fmt(truck)}</td><td class="fw">${money(opFr)}</td><td>${paid?'<span class="chip c-won">Paid</span>':'<span class="chip c-nil">Pending</span>'}</td><td>${sc2(l1,'sr-l1')}</td><td>${sc2(l2,'sr-l2')}</td><td>${sc2(l3,'sr-l3')}</td>`;});
 
   // LDP today (ldp_lane_details: demand_id####route####truck####view_time)
@@ -1034,7 +1040,7 @@ function renderActiveToday(row){
   const container=document.getElementById('dpActiveToday');
   const cards=[];
   if(bool(row.accepted_today)){
-    const time=row.last_accepted_time?(row.last_accepted_time.split(' ').pop()||'').slice(0,5):'';
+    const time=extractTime(row.last_accepted_time||'');
     const lanes=parseDel(row.accepted_lane_details||'');
     const laneStr=lanes.length?lanes.map(f=>f[1]||'').filter(Boolean).join(', '):'';
     cards.push(`<div class="at-card atc-p1"><div class="at-icon at-icon-p1">🎉</div><div class="at-body"><div class="at-type">Trailer Load Accepted</div><div class="at-detail">Accepted a trailer DR today</div>${laneStr?`<div class="at-lane">Route: ${laneStr}</div>`:''}<div class="at-nudge">Call to confirm vehicle dispatch ↗</div></div>${time?`<div class="at-time">${time}</div>`:''}</div>`);
@@ -1046,7 +1052,7 @@ function renderActiveToday(row){
     cards.push(`<div class="at-card atc-p2"><div class="at-icon at-icon-p2">💰</div><div class="at-body"><div class="at-type">Token Paid</div><div class="at-detail">Paid token on ${lanes.length||1} trailer demand${(lanes.length||1)!==1?'s':''}</div>${laneStr?`<div class="at-lane">Route: ${laneStr}</div>`:''}<div class="at-nudge">Follow up on vehicle submission ↗</div></div>${time?`<div class="at-time">${time}</div>`:''}</div>`);
   }
   if(bool(row.bid_today)){
-    const time=row.last_bid_time?(row.last_bid_time||'').slice(0,5):'';
+    const time=extractTime(row.last_bid_time||'');
     const m=minsAgo(row.last_bid_time);const ago=m!=null?` · ${fmtAgo(m)} ago`:'';
     const lanes=parseDel(row.bid_today_lane_details||'');
     const laneStr=lanes.length?lanes.map(f=>f[1]||'').filter(Boolean).join(', '):'';
@@ -1084,14 +1090,31 @@ function sectionTable(secId,cntId,bodyId,recs,rowFn){
   document.getElementById(cntId).textContent=`${recs.length} record${recs.length>1?'s':''}`;
   document.getElementById(bodyId).innerHTML=recs.map((f,i)=>`<tr><td class="rn">${i+1}</td>${rowFn(f)}</tr>`).join('');
 }
-function minsAgo(timeStr){if(!timeStr) return null;try{const p=timeStr.split(':');const d=new Date();d.setHours(+p[0],+p[1],+(p[2]||0),0);const diff=Math.round((Date.now()-d)/60000);return diff<0?null:diff;}catch(e){return null;}}
+function minsAgo(timeStr){
+  if(!timeStr) return null;
+  try{
+    let d;
+    if(timeStr.includes('-')&&timeStr.includes(' ')){
+      // full timestamp: "2026-10-12 14:32:00"
+      d=new Date(timeStr.replace(' ','T'));
+    } else {
+      // time only: "14:32" or "14:32:00"
+      const p=timeStr.split(':');
+      d=new Date(); d.setHours(+p[0],+p[1],+(p[2]||0),0);
+    }
+    if(isNaN(d.getTime())) return null;
+    const diff=Math.round((Date.now()-d)/60000);
+    return diff<0?null:diff;
+  }catch(e){return null;}
+}
 function fmtAgo(m){if(m<60) return m+'m';const h=Math.floor(m/60);return h+'h'+(m%60?String(m%60).padStart(2,'0')+'m':'');}
+function extractTime(s){if(!s)return '';const t=s.includes(' ')?s.split(' ')[1]:s;return (t||'').slice(0,5);}
 function bestTime(r){
-  if(bool(r.accepted_today)&&r.last_accepted_time) return {time:r.last_accepted_time.split(' ').pop().slice(0,5)};
-  if(bool(r.token_paid_today)&&r.token_paid_time)  return {time:r.token_paid_time.slice(0,5)};
-  if(bool(r.bid_today)&&r.last_bid_time)           return {time:r.last_bid_time.slice(0,5)};
-  if(bool(r.ldp_today)&&r.ldp_view_time)           return {time:r.ldp_view_time.slice(0,5)};
-  if(r.last_run_time) return {time:r.last_run_time.slice(0,5)};
+  if(bool(r.accepted_today)&&r.last_accepted_time) return {time:extractTime(r.last_accepted_time)};
+  if(bool(r.token_paid_today)&&r.token_paid_time)  return {time:extractTime(r.token_paid_time)};
+  if(bool(r.bid_today)&&r.last_bid_time)           return {time:extractTime(r.last_bid_time)};
+  if(bool(r.ldp_today)&&r.ldp_view_time)           return {time:extractTime(r.ldp_view_time)};
+  if(r.last_run_time) return {time:extractTime(r.last_run_time)};
   return {time:''};
 }
 function actBadge(r){
